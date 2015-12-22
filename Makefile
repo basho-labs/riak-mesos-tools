@@ -15,12 +15,12 @@ clean:
 package: package_cli
 package_cli: $(BUILD_DIR)/riak-mesos-cli-$(PACKAGE_VERSION).tar.gz
 $(BUILD_DIR)/riak-mesos-cli-$(PACKAGE_VERSION).tar.gz:
-	-rm -rf $(BUILD_DIR)/riak_mesos_cli
-	mkdir -p $(BUILD_DIR)/riak_mesos_cli
-	cp -R bin $(BUILD_DIR)/riak_mesos_cli/
-	cp -R config $(BUILD_DIR)/riak_mesos_cli/
-	echo "Thank you for downloading Riak Mesos Framework CLI tools. Run './bin/riak-mesos --help' to get started. Please visit https://github.com/basho-labs/riak-mesos-tools for usage information." > $(BUILD_DIR)/riak_mesos_cli/INSTALL.txt
-	cd $(BUILD_DIR) && tar -zcvf riak_mesos_cli_$(PACKAGE_VERSION).tar.gz riak_mesos_cli
+	-rm -rf $(BUILD_DIR)/riak-mesos-cli
+	mkdir -p $(BUILD_DIR)/riak-mesos-cli
+	cp -R bin $(BUILD_DIR)/riak-mesos-cli/
+	cp -R config $(BUILD_DIR)/riak-mesos-cli/
+	echo "Thank you for downloading Riak Mesos Framework CLI tools. Copy and verify the config with: 'cp config/config.example.json /etc/riak-mesos/config.json'. Run './bin/riak-mesos --help' to get started. Please visit https://github.com/basho-labs/riak-mesos-tools for usage information." > $(BUILD_DIR)/riak-mesos-cli/INSTALL.txt
+	cd $(BUILD_DIR) && tar -zcvf riak-mesos-cli-$(PACKAGE_VERSION).tar.gz riak-mesos-cli
 sync: sync_cli
 sync_cli:
 	cd $(BUILD_DIR)/ && \
