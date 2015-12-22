@@ -1,0 +1,37 @@
+{
+    "director": {
+        "url": "file:///vagrant/_build/riak_mesos_director_linux_amd64_0.2.0.tar.gz",
+        "use-public": false
+    },
+    "marathon": {
+        "url": "http://localhost:8080"
+    },
+    "riak": {
+        "auth-principal": "riak",
+        "auth-provider": "",
+        "auth-secret-file": "",
+        "cpus": 0.5,
+        "flags": "-use_reservations",
+        "framework-name": "riak",
+        "healthcheck-grace-period-seconds": 300,
+        "healthcheck-interval-seconds": 60,
+        "healthcheck-max-consecutive-failures": 5,
+        "healthcheck-timeout-seconds": 20,
+        "hostname": "",
+        "instances": 1,
+        "ip": "",
+        "log": "",
+        "master": "zk://master.mesos:2181/mesos",
+        "mem": 2048,
+        "node": {
+            "cpus": 1.0,
+            "disk": 1000,
+            "mem": 2000
+        },
+        "role": "riak",
+        "super-chroot": "true",
+        "url": "file:///vagrant/_build/riak_mesos_linux_amd64_0.2.0.tar.gz",
+        "user": "root",
+        "zk": "master.mesos:2181"
+    }
+}
