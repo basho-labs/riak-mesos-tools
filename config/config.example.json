@@ -17,7 +17,7 @@
         "healthcheck-interval-seconds": 60,
         "healthcheck-max-consecutive-failures": 5,
         "healthcheck-timeout-seconds": 20,
-        "hostname": "",
+        "hostname": "riak.mesos",
         "instances": 1,
         "ip": "",
         "log": "",
