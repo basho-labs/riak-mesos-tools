@@ -21,7 +21,7 @@
         "instances": 1,
         "ip": "",
         "log": "",
-        "master": "zk://master.mesos:2181/mesos",
+        "master": "zk://leader.mesos:2181/mesos",
         "mem": 2048,
         "node": {
             "cpus": 1.0,
@@ -32,6 +32,6 @@
         "super-chroot": "true",
         "url": "file:///vagrant/_build/riak_mesos_linux_amd64_0.2.0.tar.gz",
         "user": "root",
-        "zk": "master.mesos:2181"
+        "zk": "leader.mesos:2181"
     }
 }
