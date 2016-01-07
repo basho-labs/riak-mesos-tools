@@ -88,7 +88,7 @@ def _default_framework_config():
             'user': 'root',
             'framework-name': 'riak',
             'role': 'riak',
-            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/coreos/riak_mesos_linux_amd64_0.3.0.tar.gz',
+            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_linux_amd64_0.3.0.tar.gz',
             'auth-provider': '',
             'auth-principal': 'riak',
             'auth-secret-file': '',
@@ -108,7 +108,7 @@ def _default_framework_config():
             'healthcheck-max-consecutive-failures': 5
         },
         'director': {
-            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/coreos/riak_mesos_director_linux_amd64_0.3.0.tar.gz'
+            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_director_linux_amd64_0.3.0.tar.gz'
         },
         'marathon': {
             'url': 'http://leader.mesos:8080'

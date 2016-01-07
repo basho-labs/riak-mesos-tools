@@ -8,7 +8,7 @@
         "url": {
           "type": "string",
           "description": "The URL of the Proxy package",
-          "default": "http:\/\/riak-tools.s3.amazonaws.com\/riak-mesos\/coreos\/riak_mesos_director_linux_amd64_0.3.0.tar.gz"
+          "default": "http:\/\/riak-tools.s3.amazonaws.com\/riak-mesos\/ubuntu\/riak_mesos_director_linux_amd64_0.3.0.tar.gz"
         }
       }
     },
@@ -57,7 +57,7 @@
         "url": {
           "type": "string",
           "description": "Riak Mesos Framework download URL.",
-          "default": "http:\/\/riak-tools.s3.amazonaws.com\/riak-mesos\/coreos\/riak_mesos_linux_amd64_0.3.0.tar.gz"
+          "default": "http:\/\/riak-tools.s3.amazonaws.com\/riak-mesos\/ubuntu\/riak_mesos_linux_amd64_0.3.0.tar.gz"
         },
         "auth-provider": {
           "type": "string",

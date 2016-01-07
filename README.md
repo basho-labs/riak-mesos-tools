@@ -109,12 +109,6 @@ The resulting `config.json` can then be modified to fit your environment. Here i
 
 ### Install the RMF
 
-Since I'll be running the RMF on a Mesos cluster with Ubuntu 14.04, I'm going to replace `coreos` with `ubuntu` in my `config.json` like so:
-
-```
-sed -i.bak 's/coreos/ubuntu/g' config.json
-```
-
 Run the following command to create a Marathon application with the id `riak`:
 
 ```
