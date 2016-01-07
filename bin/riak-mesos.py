@@ -88,7 +88,7 @@ def _default_framework_config():
             'user': 'root',
             'framework-name': 'riak',
             'role': 'riak',
-            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/coreos/riak_mesos_linux_amd64_0.2.0.tar.gz',
+            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/coreos/riak_mesos_linux_amd64_0.3.0.tar.gz',
             'auth-provider': '',
             'auth-principal': 'riak',
             'auth-secret-file': '',
@@ -108,7 +108,7 @@ def _default_framework_config():
             'healthcheck-max-consecutive-failures': 5
         },
         'director': {
-            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/coreos/riak_mesos_director_linux_amd64_0.2.0.tar.gz'
+            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/coreos/riak_mesos_director_linux_amd64_0.3.0.tar.gz'
         },
         'marathon': {
             'url': 'http://leader.mesos:8080'
@@ -864,7 +864,7 @@ def main():
         print('Start and manage Riak nodes')
         return 0
     if '--version' in args:
-        print('Riak Mesos Framework Version 0.2.0')
+        print('Riak Mesos Framework Version 0.3.0')
         return 0
     if '--config-schema' in args:
         print('{}')

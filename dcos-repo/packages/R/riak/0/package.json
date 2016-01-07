@@ -1,6 +1,6 @@
 {
   "name": "riak",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "framework": true,
   "tags": ["mesosphere", "framework", "database", "riak"],
   "maintainer": "help@basho.com",
