@@ -25,6 +25,12 @@ Before getting started with the RMF, there are a few environment and system rela
 
 The Python based CLI tool has been uploaded to [http://riak-tools.s3.amazonaws.com/riak-mesos/riak-mesos-cli-0.3.0.tar.gz](http://riak-tools.s3.amazonaws.com/riak-mesos/riak-mesos-cli-0.3.0.tar.gz). It should contain the following files:
 
+### Quick install:
+
+```
+curl -s -L https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/master/install.sh | sh
+```
+
 * `config.json`: Sample configuration file with the default values.
 * `riak-mesos`: The executable Python CLI tool.
 * `zktool_darwin_amd64`: Binary dependency used to perform Zookeeper calls. Used when run from Mac OSX environments.
