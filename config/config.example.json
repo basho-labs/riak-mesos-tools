@@ -4,7 +4,7 @@
         "use-public": false
     },
     "marathon": {
-        "url": "http://leader.mesos:8080"
+        "url": "http://marathon.mesos:8080"
     },
     "riak": {
         "auth-principal": "riak",

@@ -111,7 +111,7 @@ def _default_framework_config():
             'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_director_linux_amd64_0.3.0.tar.gz'
         },
         'marathon': {
-            'url': 'http://leader.mesos:8080'
+            'url': 'http://marathon.mesos:8080'
         }
     }
 

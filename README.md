@@ -109,7 +109,7 @@ The resulting `config.json` can then be modified to fit your environment. Here i
 * `riak.auth-principal`: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
 * `riak.flags`: Any additional flags to pass to the RMF. Default value is: `"-use_reservations"`. Remove this parameter when running Mesos version 0.23 or lower.
 * `director.url`: Location for the RMF smart proxy. The smart proxy will automatically detect changes in the Riak cluster topology based on updates to Zookeeper values stored by each of the running Riak nodes.
-* `marathon.url`: Address for Marathon. Default value is: `"http://leader.mesos:8080"`.
+* `marathon.url`: Address for Marathon. Default value is: `"http://marathon.mesos:8080"`.
 
 ***Note:*** If you did change any of the default configuration values, any future `riak-mesos` commands must include the `--config /path/to/your/config.json` argument, although the examples in the rest of this document will not include them.
 
@@ -121,10 +121,10 @@ Run the following command to create a Marathon application with the id `riak`:
 riak-mesos framework install
 ```
 
-You can check the status of the Marathon app deployment by navigating to [http://leader.mesos:8080](http://leader.mesos:8080) directly, or with this snippet:
+You can check the status of the Marathon app deployment by navigating to [http://marathon.mesos:8080](http://marathon.mesos:8080) directly, or with this snippet:
 
 ```
-curl --silent http://leader.mesos:8080/v2/apps/riak | python -m json.tool | grep alive
+curl --silent http://marathon.mesos:8080/v2/apps/riak | python -m json.tool | grep alive
 ```
 
 ## Create a cluster
