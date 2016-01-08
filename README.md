@@ -23,7 +23,7 @@ Before getting started with the RMF, there are a few environment and system rela
 
 ### Download and Install the CLI Tool
 
-The Python based CLI tool has been uploaded to [http://riak-tools.s3.amazonaws.com/riak-mesos/riak_mesos_cli_0.3.0.tar.gz](http://riak-tools.s3.amazonaws.com/riak-mesos/riak_mesos_cli_0.3.0.tar.gz). It should contain the following files:
+The Python based CLI tool has been uploaded to [http://riak-tools.s3.amazonaws.com/riak-mesos/riak-mesos-cli-0.3.0.tar.gz](http://riak-tools.s3.amazonaws.com/riak-mesos/riak-mesos-cli-0.3.0.tar.gz). It should contain the following files:
 
 * `config.json`: Sample configuration file with the default values.
 * `riak-mesos`: The executable Python CLI tool.
@@ -32,8 +32,8 @@ The Python based CLI tool has been uploaded to [http://riak-tools.s3.amazonaws.c
 
 ```
 mkdir -p $HOME/bin
-cd $HOME/bin && curl -O http://riak-tools.s3.amazonaws.com/riak-mesos/riak_mesos_cli_0.3.0.tar.gz
-tar xvzf riak_mesos_cli_0.3.0.tar.gz
+cd $HOME/bin && curl -O http://riak-tools.s3.amazonaws.com/riak-mesos/riak-mesos-cli-0.3.0.tar.gz
+tar xvzf riak-mesos-cli-0.3.0.tar.gz
 export PATH=$HOME/bin/riak_mesos_cli:$PATH
 ```
 

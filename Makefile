@@ -24,7 +24,7 @@ $(BUILD_DIR)/riak-mesos-cli-$(PACKAGE_VERSION).tar.gz:
 sync: sync_cli
 sync_cli:
 	cd $(BUILD_DIR)/ && \
-		s3cmd put --acl-public riak_mesos_cli_$(PACKAGE_VERSION).tar.gz s3://$(DEPLOY_BASE)/
+		s3cmd put --acl-public riak-mesos-cli-$(PACKAGE_VERSION).tar.gz s3://$(DEPLOY_BASE)/
 ### CLI Package end
 
 ### DCOS Package begin
