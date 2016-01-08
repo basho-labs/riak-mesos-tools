@@ -34,7 +34,7 @@ The Python based CLI tool has been uploaded to [http://riak-tools.s3.amazonaws.c
 mkdir -p $HOME/bin
 cd $HOME/bin && curl -O http://riak-tools.s3.amazonaws.com/riak-mesos/riak-mesos-cli-0.3.0.tar.gz
 tar xvzf riak-mesos-cli-0.3.0.tar.gz
-export PATH=$HOME/bin/riak-mesos-cli:$PATH
+export PATH=$HOME/bin/riak-mesos-cli/bin:$PATH
 ```
 
 ### Print Usage
