@@ -242,7 +242,8 @@ class Config(object):
     def director_marathon_json(self, cluster):
         return {
            'id': '/riak-director',
-           'cmd': './riak_mesos_director/director_linux_amd64',
+           #'cmd': './riak_mesos_director/director_linux_amd64',
+           'cmd': './director/bin/ermf-director'
            'cpus': 0.5,
            'mem': 500.0,
            'ports': [0,0,0,0],
