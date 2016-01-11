@@ -108,7 +108,9 @@ def _default_framework_config():
             'healthcheck-max-consecutive-failures': 5
         },
         'director': {
-            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_director_linux_amd64_0.3.0.tar.gz'
+            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_director_linux_amd64_0.3.0.tar.gz',
+            #'cmd': './riak_mesos_director/director_linux_amd64' # Use this for version 0.2.0 of the director
+            'cmd': './director/bin/ermf-director'
         },
         'marathon': {
             'url': 'http://marathon.mesos:8080'
@@ -242,8 +244,7 @@ class Config(object):
     def director_marathon_json(self, cluster):
         return {
            'id': '/riak-director',
-           #'cmd': './riak_mesos_director/director_linux_amd64',
-           'cmd': './director/bin/ermf-director'
+           'cmd': self.get_any('director', 'cmd'),
            'cpus': 0.5,
            'mem': 500.0,
            'ports': [0,0,0,0],
