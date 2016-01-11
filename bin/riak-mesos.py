@@ -109,8 +109,8 @@ def _default_framework_config():
         },
         'director': {
             'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_director_linux_amd64_0.3.0.tar.gz',
-            #'cmd': './riak_mesos_director/director_linux_amd64' # Use this for version 0.2.0 of the director
-            'cmd': './director/bin/ermf-director'
+            'cmd': './director/bin/ermf-director',
+            'use-public': False
         },
         'marathon': {
             'url': 'http://marathon.mesos:8080'
@@ -242,7 +242,7 @@ class Config(object):
         return json.dumps(self.framework_marathon_json())
 
     def director_marathon_json(self, cluster):
-        return {
+        director_marathon_conf = {
            'id': '/riak-director',
            'cmd': self.get_any('director', 'cmd'),
            'cpus': 0.5,
@@ -268,6 +268,9 @@ class Config(object):
               }
            ]
         }
+        if self.get_any('director', 'use-public'):
+            director_marathon_conf['acceptedResourceRoles'] = [ 'public' ]
+        return director_marathon_conf
     def director_marathon_string(self, cluster):
         return json.dumps(self.director_marathon_json(cluster))
     def string(self):
