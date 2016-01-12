@@ -1,4 +1,6 @@
 # riak-mesos-tools
+    
+[![Build Status](https://travis-ci.org/basho-labs/riak-mesos-tools.svg?branch=master)](https://travis-ci.org/basho-labs/riak-mesos-tools)
 
 CLI and other tools for interacting with the Riak Mesos Framework.
 
