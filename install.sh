@@ -1,9 +1,8 @@
 #!/bin/bash
 
 mkdir -p $HOME/bin
-cd $HOME/bin && curl -O https://github.com/basho-labs/riak-mesos-tools/archive/master.tar.gz riak-mesos-tools-master.tar.gz
-tar xvzf riak-mesos-tools-master.tar.gz
-mv riak-mesos-tools-master riak-mesos-tools
+cd $HOME/bin && curl -sL https://github.com/basho-labs/riak-mesos-tools/archive/master.tar.gz | tar xvzf
+mv master riak-mesos-tools
 
 echo ""
 echo "riak-mesos-tools installed to $HOME/bin/riak-mesos-tools"
