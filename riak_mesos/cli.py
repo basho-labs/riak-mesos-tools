@@ -40,6 +40,7 @@ def usage():
     print('    framework install')
     print('    framework wait-for-service')
     print('    framework clean-metadata')
+    print('    framework teardown')
     print('    framework uninstall')
     print('    framework endpoints')
     print('    cluster config [--file]')
@@ -80,6 +81,8 @@ HELP_DICT = {
     'framework': ('Displays configration for riak marathon app'),
     'framework uninstall':
     ('Removes the Riak Mesos Framework application from Marathon'),
+    'framework uninstall':
+    ('Issues a teardown command for each of the matching frameworkIds to the Mesos master'),
     'framework clean-metadata':
     ('Deletes all metadata for the selected Riak Mesos Framework instance'),
     'proxy':
@@ -782,6 +785,20 @@ def run(args):
             print(result)
         else:
             print("Unable to remove framework zookeeper data.")
+        return
+    except case('framework teardown'):
+        r = requests.get(config.get('master') + '/master/state.json')
+        debug_request(debug_flag, r)
+        if r.status_code != 200:
+            print('Failed to get state.json from master.')
+            return
+        js = json.loads(r.text)
+        for fw in js['frameworks']:
+            if fw['name'] == config.get('framework-name'):
+                r = requests.post(config.get('master') + '/master/teardown', data='frameworkId='+js['id'])
+                debug_request(debug_flag, r)
+
+        print('Finished teardown.')
         return
     except multicase('proxy config', 'proxy'):
         print(config.director_marathon_string(cluster))
