@@ -41,6 +41,7 @@ def usage():
     print('    config')
     print('    framework config')
     print('    framework install')
+    print('    framework clean-metadata')
     print('    framework uninstall')
     print('    framework endpoints')
     print('    cluster config [--file]')
@@ -74,132 +75,183 @@ def usage():
     print('')
 
 ##########################################################
+######################## Util ############################
+##########################################################
+
+def is_dcos():
+    return sys.argv[1] == 'riak'
+
+class case_selector(Exception):
+   def __init__(self, value): # overridden to ensure we've got a value argument
+      Exception.__init__(self, value)
+
+def switch(variable):
+   raise case_selector(variable)
+
+def case(value):
+   exclass, exobj, tb = sys.exc_info()
+   if exclass is case_selector and exobj.args[0] == value: return exclass
+   return None
+
+def multicase(*values):
+   exclass, exobj, tb = sys.exc_info()
+   if exclass is case_selector and exobj.args[0] in values: return exclass
+   return None
+
+class CliError(Exception):
+    pass
+
+##########################################################
 ######################## Config ##########################
 ##########################################################
 
-def _default_framework_config():
-    return {
-        'riak': {
-            'master': 'zk://leader.mesos:2181/mesos',
-            'zk': 'leader.mesos:2181',
-            'ip': '',
-            'hostname': 'riak.mesos',
-            'log': '',
-            'user': 'root',
-            'framework-name': 'riak',
-            'role': 'riak',
-            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_linux_amd64_0.3.0.tar.gz',
-            'auth-provider': '',
-            'auth-principal': 'riak',
-            'auth-secret-file': '',
-            'instances': 1,
-            'cpus': 0.5,
-            'mem': 2048,
-            'node': {
-                'cpus': 1.0,
-                'mem': 8000,
-                'disk': 20000
-            },
-            'flags': '-use_reservations',
-            'super-chroot': 'true',
-            'healthcheck-grace-period-seconds': 300,
-            'healthcheck-interval-seconds': 60,
-            'healthcheck-timeout-seconds': 20,
-            'healthcheck-max-consecutive-failures': 5
-        },
-        'director': {
-            'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_director_linux_amd64_0.3.0.tar.gz',
-            'cmd': './director/bin/ermf-director',
-            'use-public': False
-        },
-        'marathon': {
-            'url': 'http://marathon.mesos:8080'
-        }
-    }
-
-def _is_dcos():
-    # dcos riak vs riak-mesos incantation
-    return sys.argv[1] == 'riak'
-    #this_file = os.path.basename(__file__)
-    #return this_file == 'cli.py' or this_file == 'cli.pyc'
-
-def _dcos_api_url(client, framework):
-    tasks = client.get_tasks(framework)
-    if len(tasks) == 0:
-        usage()
-        print('\nTry running the following to verify that ' + framework + ' is the name \nof your service instance:\n')
-        print('    dcos service\n')
-        raise CliError('Riak Mesos Framework is not running, try creating a dcos-riak.json with your correct framework name and run with --config dcos-riak.json')
-    from dcos import util
-    return util.get_config().get('core.dcos_url').rstrip('/') + '/service/' + framework + '/'
-
 class Config(object):
     def __init__(self, override_file=None):
-        self._config = _default_framework_config()
+        self._config = self.default_framework_config()
         if override_file != None:
             with open(override_file) as data_file:
                 data = json.load(data_file)
                 self._merge(data)
 
-    def _kazoo_api_url(self):
+    def zktool_command(self, command, path):
+        tool = ''
+        command = ''
+        if _platform == 'linux' or _platform == 'linux2':
+            tool = os.path.dirname(__file__) + '/' + 'zktool_linux_amd64'
+        elif _platform == 'darwin':
+            tool = os.path.dirname(__file__) + '/' + 'zktool_darwin_amd64'
+        else:
+            return False
+        if command == 'get':
+            data = os.popen(tool + ' -zk=' + self.get('zk') + ' -name=' + path + ' -command=zk-get-data').read()
+            if data.strip() == 'zk: node does not exist':
+                return False
+            elif data.strip() == 'zk: could not connect to a server':
+                return False
+            return data
+        elif command == 'delete':
+            output = ''
+            output += os.popen(tool + ' -zk=' + self.get('zk') + ' -name=' + path + ' -command=zk-delete').read()
+            output += os.popen(tool + ' -zk=' + self.get('zk') + ' -name=' + path + ' -command=zk-delete').read()
+            output += os.popen(tool + ' -zk=' + self.get('zk') + ' -name=' + path + ' -command=zk-delete').read()
+            output += 'Successfully deleted ' + path
+            return output
+        else:
+            return False
+
+    def kazoo_command(self, command, path):
         from kazoo.client import KazooClient
         zk = KazooClient(hosts=self.get('zk'))
         zk.start()
-        node='/riak/frameworks/' + self.get('framework-name') + '/uri'
-        data, stat = zk.get(node)
-        zk.stop()
-        return data.decode("utf-8").strip() + '/'
-
-    def _zktool_api_url(self):
-        tool = ''
-        if _platform == 'linux' or _platform == 'linux2':
-            tool = 'zktool_linux_amd64'
-        elif _platform == 'darwin':
-            tool = 'zktool_darwin_amd64'
+        node=path
+        if command == 'get':
+            data, stat = zk.get(node)
+            return data.decode("utf-8")
+        elif command == 'delete':
+            zk.delete('/riak', recursive=True)
+            return 'Successfully deleted ' + path
         else:
-            raise CliError('Unsupported platform: ' + _platform + '. Only linux, linux2, and darwin are supported currently')
-        base_url = os.popen(os.path.dirname(__file__) + '/' + tool + ' -zk=' + self.get('zk') + ' -name=' + self.get('framework-name') + ' -command=get-url').read()
-        if base_url.strip() == 'zk: node does not exist':
-            raise CliError('Riak Mesos Framework is not running, try specifying a different <framework-name> in your json config file.')
-        elif base_url.strip() == 'zk: could not connect to a server':
-            raise CliError('Unable to connect to Zookeeper: ' + self.get('zk'))
-        return base_url.strip() + '/'
+            return False
+        zk.stop()
 
-    def api_url(self):
-        framework = self.get('framework-name')
-        client = create_client(self.get_any('marathon', 'url'))
-        dcos_url = False
+    def zk_command(self, command, path):
+        result = ''
+        if os.path.isfile(os.path.dirname(__file__) + '/zktool_linux_amd64'):
+            result = self.zktool_command(command, path)
+        if result: return result
+        return self.kazoo_command(command, path)
 
-        # Try DCOS First
-        if _is_dcos():
-            try:
-                service_url = _dcos_api_url(client, framework)
-                r = requests.get(dcos_url + 'healthcheck')
-                if r.status_code == 200:
-                    dcos_url = service_url
-            except:
-                dcos_url = False
+    def zk_api_url(self):
+        url = self.zk_command('get', '/riak/frameworks/' + self.get('framework-name') + '/uri')
+        if url:
+            return url.strip() + '/'
+        return False
 
-        if dcos_url != False:
-            return dcos_url
-
+    def marathon_api_url(self):
         try:
-            # Try Marathon
-            tasks = client.get_tasks(framework)
+            client = create_client(self.get_any('marathon', 'url'))
+            tasks = client.get_tasks(self.get('framework-name'))
             if len(tasks) != 0:
                 host = tasks[0]['host']
                 port = tasks[0]['ports'][0]
                 return 'http://' + host + ':' + str(port) + '/'
-            # Try zktool
-            return self._zktool_api_url()
-        except requests.exceptions.ConnectionError:
-            # Marathon isn't running, try zktool
-            if os.path.isfile(os.path.dirname(__file__) + '/zktool_linux_amd64'):
-                return self._zktool_api_url()
-            else:
-                return self._kazoo_api_url()
+            return False
+        except:
+            return False
+
+    def dcos_api_url(self):
+        if not is_dcos():
+            return False
+        try:
+            from dcos import util
+            framework = self.get('framework-name')
+            client = create_client(self.get_any('marathon', 'url'))
+            tasks = client.get_tasks(self.get('framework-name'))
+            if len(tasks) == 0:
+                usage()
+                print('\nTry running the following to verify that ' + framework + ' is the name \nof your service instance:\n')
+                print('    dcos service\n')
+                raise CliError('Riak Mesos Framework is not running, try creating a dcos-riak.json with your correct framework name and run with --config dcos-riak.json')
+            service_url = util.get_config().get('core.dcos_url').rstrip('/')
+            service_url += '/service/' + framework + '/'
+            r = requests.get(service_url + 'healthcheck')
+            if r.status_code == 200:
+                return service_url
+            return False
+        except:
+            return False
+
+    def api_url(self):
+        try:
+            service_url = self.dcos_api_url()
+            if service_url: return service_url
+            service_url = self.marathon_api_url()
+            if service_url: return service_url
+            service_url = self.zk_api_url()
+            if service_url: return service_url
+            raise CliError('Unable to connect to DCOS Server, Marathon, or Zookeeper.')
         except Exception as e:
-            raise CliError('Unable to get api url: ' + e.message)
+            raise CliError('Unable to find api url: ' + e.message)
+
+    def default_framework_config(self):
+        return {
+            'riak': {
+                'master': 'zk://leader.mesos:2181/mesos',
+                'zk': 'leader.mesos:2181',
+                'ip': '',
+                'hostname': 'riak.mesos',
+                'log': '',
+                'user': 'root',
+                'framework-name': 'riak',
+                'role': 'riak',
+                'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_linux_amd64_0.3.0.tar.gz',
+                'auth-provider': '',
+                'auth-principal': 'riak',
+                'auth-secret-file': '',
+                'instances': 1,
+                'cpus': 0.5,
+                'mem': 2048,
+                'node': {
+                    'cpus': 1.0,
+                    'mem': 8000,
+                    'disk': 20000
+                },
+                'flags': '-use_reservations',
+                'super-chroot': 'true',
+                'healthcheck-grace-period-seconds': 300,
+                'healthcheck-interval-seconds': 60,
+                'healthcheck-timeout-seconds': 20,
+                'healthcheck-max-consecutive-failures': 5
+            },
+            'director': {
+                'url': 'http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_director_linux_amd64_0.3.0.tar.gz',
+                'cmd': './director/bin/ermf-director',
+                'use-public': False
+            },
+            'marathon': {
+                'url': 'http://marathon.mesos:8080'
+            }
+        }
 
     def framework_marathon_json(self):
         framework_cmd = 'riak_mesos_framework/framework_linux_amd64'
@@ -422,7 +474,7 @@ class Client(object):
         return task
 
 def create_client(marathon_url):
-    if _is_dcos():
+    if is_dcos():
         from dcos import marathon
         return marathon.create_client()
     else:
@@ -546,36 +598,31 @@ def run(args):
         return
     elif cmd == 'framework uninstall':
         if help_flag:
-            print('Retrieves a list of cluster names')
+            print('Removes the Riak Mesos Framework application from Marathon')
             return 0
         else:
-            output = 'Uninstalling framework...'
+            print(output = 'Uninstalling framework...')
             try:
                 client = create_client(config.get_any('marathon', 'url'))
                 client.remove_app('/' + config.get('framework-name'))
                 print('Finished removing ' + '/' + config.get('framework-name') + ' from marathon')
             except Exception as e:
-                print(e.message)
-                output += '\nUnable to uninstall marathon app'
+                print('\nUnable to uninstall marathon app: ' + e.message)
+        return
+    elif cmd == 'framework clean-metadata':
+        if help_flag:
+            print('Deletes all metadata for the selected Riak Mesos Framework instance')
+            return 0
+        else:
             try:
-                output = '\nRemoving zookeeper information\n'
-                if os.path.isfile(os.path.dirname(__file__) + '/zktool_linux_amd64'):
-                    tool = ''
-                    if _platform == 'linux' or _platform == 'linux2':
-                        tool = 'zktool_linux_amd64'
-                    elif _platform == 'darwin':
-                        tool = 'zktool_darwin_amd64'
-                    output += os.popen(os.path.dirname(__file__) + '/' + tool + ' -zk=' + config.get('zk') + ' -name=/riak/frameworks/' + config.get('framework-name') + ' -command=zk-delete').read()
+                print('\nRemoving zookeeper information\n')
+                result = config.zk_command('delete', '/riak/frameworks/' + config.get('framework-name'))
+                if result:
+                    print(result)
                 else:
-                    from kazoo.client import KazooClient
-                    zk = KazooClient(hosts=config.get('zk'))
-                    zk.start()
-                    zk.delete('/riak', recursive=True)
-                    zk.stop()
+                    print("Unable to remove framework zookeeper data.")
             except Exception as e:
-                print(e.message)
-                output += '\nUnable to remove zookeeper metadata for framework'
-        print(output)
+                print('\nUnable to remove zookeeper metadata for framework: ' + print(e.message))
         return
     elif cmd == 'proxy config' or cmd == 'proxy':
         if help_flag:
@@ -885,12 +932,9 @@ def run(args):
     print('')
     return 0
 
-class CliError(Exception):
-    pass
-
 def main():
     args = sys.argv[1:] # remove script name
-    if _is_dcos():
+    if is_dcos():
         args = sys.argv[2:] # remove dcos riak
     if len(args) == 0:
         usage()
