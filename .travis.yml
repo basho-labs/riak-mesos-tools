@@ -2,7 +2,7 @@ language: python
 matrix:
   include:
     - python: "2.7"
-      env: SYNTAX=true
+    - python: "3.5"
     - python: "3.5"
       env: SYNTAX=true
 install:
