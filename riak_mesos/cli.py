@@ -1009,7 +1009,6 @@ def run(args):
         raise CliError('Unrecognized command: ' + cmd)
     except Exception as e:
         raise CliError('Error runing command: ' + e.message)
-    print('')
     return 0
 
 
@@ -1030,7 +1029,9 @@ def main():
         print('{}')
         return 0
     try:
-        return run(args)
+        return_code = run(args)
+        print('')
+        return return_code
     except requests.exceptions.ConnectionError as e:
         print('ConnectionError: ' + str(e.message))
         return 1
