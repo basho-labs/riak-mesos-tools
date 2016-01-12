@@ -71,59 +71,72 @@ def usage():
     print('    --version')
     print('')
 
+HELP_DICT = {
+    'config': ('Displays configuration'),
+    'framework': ('Displays configration for riak marathon app'),
+    'framework uninstall':
+    ('Removes the Riak Mesos Framework application from Marathon'),
+    'framework clean-metadata':
+    ('Deletes all metadata for the selected Riak Mesos Framework instance'),
+    'proxy':
+    ('Generates a marathon json config using --zookeeper (default is '
+     'leader.mesos:2181) and --cluster (default is default).'),
+    'proxy install':
+    ('Installs a riak-mesos-director marathon app on the public Mesos node '
+     'using --zookeeper (default is leader.mesos:2181) and --cluster (default '
+     'is default).'),
+    'proxy uninstall': ('Uninstalls the riak-mesos-director marathon app.'),
+    'proxy endpoints':
+    ('Lists the endpoints exposed by a riak-mesos-director marathon app '
+     '--public-dns (default is {{public-dns}}).'),
+    'framework install': ('Retrieves a list of cluster names'),
+    'framework endpoints': ('Retrieves useful endpoints for the framework'),
+    'cluster config':
+    ('Gets or sets the riak.conf configuration for a cluster, specify cluster '
+     'id with --cluster and config file location with --file'),
+    'cluster config advanced':
+    ('Gets or sets the advanced.config configuration for a cluster, specify '
+     'cluster id with --cluster and config file location with --file'),
+    'cluster': ('Retrieves a list of cluster names'),
+    'cluster create':
+    ('Creates a new cluster. Specify the name with --cluster (default is '
+     'default).'),
+    'cluster restart':
+    ('Performs a rolling restart on a cluster. Specify the name with '
+     '--cluster (default is default).'),
+    'cluster destroy':
+    ('Destroys a cluster. Specify the name with --cluster (default is '
+     'default).'),
+    'node':
+    ('Retrieves a list of node ids for a given --cluster (default is '
+     'default).'),
+    'node info':
+    ('Retrieves a list of node ids for a given --cluster (default is '
+     'default).'),
+    'node add':
+    ('Adds one or more (using --nodes) nodes to a --cluster (default is '
+     'default).'),
+    'node remove':
+    ('Removes a node from the cluster, specify node id with --node'),
+    'node aae-status':
+    ('Gets the active anti entropy status for a node, specify node id with '
+     '--node'),
+    'node status':
+    ('Gets the member-status of a node, specify node id with --node'),
+    'node ringready':
+    ('Gets the ringready value for a node, specify node id with --node'),
+    'node transfers':
+    ('Gets the transfers status for a node, specify node id with --node'),
+    'node bucket-type create':
+    ('Creates and activates a bucket type on a node, specify node id with '
+     '--node'),
+    'node bucket-type list':
+    ('Gets the bucket type list from a node, specify node id with --node')
+}
+
 
 def help_dict():
-    help = {
-        'config': 'Displays configration',
-        'framework': 'Displays configration for riak marathon app',
-        'framework uninstall': '''Removes the Riak Mesos Framework application
-from Marathon''',
-        'framework clean-metadata': '''Deletes all metadata for the selected
-Riak Mesos Framework instance''',
-        'proxy': '''Generates a marathon json config using --zookeeper
-(default is leader.mesos:2181) and --cluster (default is default).''',
-        'proxy install': '''Installs a riak-mesos-director marathon app on the
-public Mesos node using --zookeeper (default is leader.mesos:2181) and
---cluster (default is default).''',
-        'proxy uninstall': 'Uninstalls the riak-mesos-director marathon app.',
-        'proxy endpoints': '''Lists the endpoints exposed by a
-riak-mesos-director marathon app --public-dns (default is {{public-dns}}).''',
-        'framework install': 'Retrieves a list of cluster names',
-        'framework endpoints': 'Retrieves useful endpoints for the framework',
-        'cluster config': '''Gets or sets the riak.conf configuration for a
-cluster, specify cluster id with --cluster and config file location with
---file''',
-        'cluster config advanced': '''Gets or sets the advanced.config
-configuration for a cluster, specify cluster id with --cluster and config file
-location with --file''',
-        'cluster': 'Retrieves a list of cluster names',
-        'cluster create': '''Creates a new cluster. Specify the name with
---cluster (default is default).''',
-        'cluster restart': '''Performs a rolling restart on a cluster. Specify
-the name with --cluster (default is default).''',
-        'cluster destroy': '''Destroys a cluster. Specify the name with
---cluster (default is default).''',
-        'node': '''Retrieves a list of node ids for a given --cluster (default
-is default).''',
-        'node info': '''Retrieves a list of node ids for a given --cluster
-(default is default).''',
-        'node add': '''Adds one or more (using --nodes) nodes to a --cluster
-(default is default).''',
-        'node remove': '''Removes a node from the cluster, specify node id
-with --node''',
-        'node aae-status': '''Gets the active anti entropy status for a node,
-specify node id with --node''',
-        'node status': '''Gets the member-status of a node, specify node id
-with --node''',
-        'node ringready': '''Gets the ringready value for a node, specify node
-id with --node''',
-        'node transfers': '''Gets the transfers status for a node, specify
-node id with --node''',
-        'node bucket-type create': '''Creates and activates a bucket type on a
-node, specify node id with --node''',
-        'node bucket-type list': '''Gets the bucket type list from a node,
-specify node id with --node'''
-    }
+    help = HELP_DICT
     help['framework config'] = help['framework']
     help['proxy config'] = help['proxy']
     help['cluster list'] = help['cluster']
@@ -390,7 +403,7 @@ class Config(object):
 
     def framework_marathon_json(self):
         cmd = 'riak_mesos_framework/framework_linux_amd64'
-        cmd += self._fw_arg('master')
+        cmd += self._fw_arg('master', 'master')
         cmd += self._fw_arg('zk', 'zk')
         cmd += self._fw_arg('name', 'framework-name')
         cmd += self._fw_arg('user', 'user')
@@ -402,9 +415,9 @@ class Config(object):
         cmd += self._fw_arg(ma_pref + 'provider', 'auth-provider')
         cmd += self._fw_arg(ma_pref + 'principal', 'auth-principal')
         cmd += self._fw_arg(ma_pref + 'secret_file', 'auth-secret-file')
-        cmd += self._fw_arg('node_cpus', self.get('node', 'cpus'))
-        cmd += self._fw_arg('node_mem=', self.get('node', 'mem'))
-        cmd += self._fw_arg('node_disk=', self.get('node', 'disk'))
+        cmd += self._fw_arg_val('node_cpus', self.get('node', 'cpus'))
+        cmd += self._fw_arg_val('node_mem=', self.get('node', 'mem'))
+        cmd += self._fw_arg_val('node_disk=', self.get('node', 'disk'))
         cmd += ' ' + self.get('flags') if self.get('flags') != '' else ''
         healthcheck = {
             'path': '/healthcheck',
@@ -688,7 +701,10 @@ def run(args):
 
     cmd_desc = help(cmd)
 
-    if help_flag:
+    if help_flag and not cmd_desc:
+        usage()
+        return 0
+    elif help_flag:
         print(cmd_desc)
         return 0
 
@@ -722,7 +738,10 @@ def run(args):
             ppobj('Marathon: ', config.string(), 'marathon', '[]')
     except multicase('framework config', 'framework'):
         obj = config.framework_marathon_string()
-        ppobj('Marathon Config: ', obj, '', '[]')
+        if json_flag:
+            ppobj('', obj, '', '{}')
+        else:
+            ppobj('Marathon Config: ', obj, '', '{}')
     except case('framework uninstall'):
         print('Uninstalling framework...')
         fn = config.get('framework-name')
@@ -956,8 +975,6 @@ def run(args):
                       str(r.status_code))
             else:
                 ppobj('', r.text, 'bucket_types', '{}')
-    except CliError as e:
-        raise e
     except CaseException as e:
         raise CliError('Unrecognized command: ' + cmd)
     except Exception as e:
@@ -984,8 +1001,14 @@ def main():
         return 0
     try:
         return run(args)
+    except requests.exceptions.ConnectionError as e:
+        print('ConnectionError: ' + str(e.message))
+        return 1
     except CliError as e:
-        print('Error: ' + str(e))
+        print('CliError: ' + str(e.message))
+        return 1
+    except Exception as e:
+        print('Exception: ' + str(e.message))
         return 1
 
 if __name__ == '__main__':
