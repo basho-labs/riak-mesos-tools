@@ -18,6 +18,7 @@ Installation
 Quick Install
 -------------
 .. code::
+
    curl -s -L https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/master/install.sh | sh
    export PATH=$HOME/bin/riak-mesos-tools/bin:$PATH
    sudo mkdir -p /etc/riak-mesos
@@ -32,6 +33,7 @@ Create a Configuration File
 If your environment differs from the required the default parameters, you may need to create a custom configuration file. Export the default config using this command:
 
 .. code::
+
    riak-mesos config --json | python -m json.tool > config.json
    mv config.json /etc/riak-mesos/config.json
 
@@ -103,11 +105,13 @@ Install the RMF
 Run the following command to create a Marathon application with the id `riak`:
 
 .. code::
+
    riak-mesos framework install
 
 You can check the status of the Marathon app deployment by navigating to [http://marathon.mesos:8080](http://marathon.mesos:8080) directly, or with this snippet:
 
 .. code::
+
    curl --silent http://marathon.mesos:8080/v2/apps/riak | python -m json.tool | grep alive
 
 Create a cluster
@@ -121,11 +125,13 @@ Let's start with a 3 node cluster. Execute the following to get started:
 After a few moments, we can check the status of our nodes:
 
 .. code::
+
    riak-mesos node list --json | python -m json.tool | grep CurrentState
 
 A status of `3` means that the nodes are in the `Started` state, so a healthy cluster would look like this:
 
 .. code::
+
    "CurrentState": 3,
    "CurrentState": 3,
    "CurrentState": 3,
@@ -135,11 +141,13 @@ Inspecting Nodes
 Now that the cluster is running, let's perform some checks on individual nodes.
 
 .. code::
+
    riak-mesos node status --node riak-default-1 | python -m json.tool
 
 The output of that command should yield results similar to the following if everything went well:
 
 .. code::
+
     "nodes": [
         {
             "id": "riak-default-1@ip-172-31-51-148.ec2.internal",
@@ -165,6 +173,7 @@ The output of that command should yield results similar to the following if ever
 Other useful information can be found by executing these commands:
 
 .. code::
+
    riak-mesos node aae-status --node riak-default-1
    riak-mesos node ringready --node riak-default-1
    riak-mesos node transfers --node riak-default-1
@@ -178,11 +187,13 @@ Once you have created your customized versions of these files, you can save them
 Update riak.conf
 ----------------
 .. code::
+
    riak-mesos cluster config --file /path/to/your/riak.conf
 
 Update advanced.config
 ----------------------
 .. code::
+
    riak-mesos cluster config advanced --file /path/to/your/advanced.config
 
 **Note:** If you already have nodes running in a cluster, you'll need to perform a `riak-mesos cluster restart` to force the cluster to pick up the new changes.
@@ -192,6 +203,7 @@ Restart the Cluster
 If your Riak cluster is in a stable state (no active transfers, ringready is true), there are certain situations where you might want to perform a rolling restart on your cluster. Execute the following to restart your cluster:
 
 .. code::
+
    riak-mesos cluster restart
 
 Situations where a cluster restart is required include:
@@ -209,6 +221,7 @@ To account for this difficulty, we've created a smart proxy called `riak mesos d
 To install the proxy, simply run:
 
 .. code::
+
    riak-mesos proxy install
 
 Add Some Data
@@ -216,11 +229,13 @@ Add Some Data
 Assuming that the proxy is now running, we can now find an endpoint to talk to Riak with this command:
 
 .. code::
+
    riak-mesos proxy endpoints
 
 The output should look similar to this:
 
 .. code::
+
    Load Balanced Riak Cluster (HTTP)
        http://SOME_AGENT_HOSTNAME:31026
    Load Balanced Riak Cluster (Protobuf)
@@ -231,6 +246,7 @@ The output should look similar to this:
 Let's write a few keys to the cluster using the proxy:
 
 .. code::
+
    RIAK_HTTP=http://SOME_AGENT_HOSTNAME:31026
    curl -XPUT $RIAK_HTTP/buckets/test/keys/one -d "this is data"
    curl -XPUT $RIAK_HTTP/buckets/test/keys/two -d "this is data too"
@@ -240,11 +256,13 @@ Scale up
 When scaling a cluster up, you should attempt to do so days or even weeks before the additional load is expected to allow the cluster some time to transfer partitions around and stabilize. When you are ready to increase the node count, you can just run the `node add` command like so:
 
 .. code::
+
    riak-mesos node add
 
 Check the status of the node and make sure it was successfully joined to the cluster using:
 
 .. code::
+
    riak-mesos node status --node riak-default-4
 
 Scale down
@@ -254,6 +272,7 @@ Scaling down requires the same patience as scaling up in that you should be wait
 Let's remove all but one of the nodes by performing a remove on `riak-default-2`, `riak-default-3`, and `riak-default-4`
 
 .. code::
+
    riak-mesos node remove --node riak-default-2
    riak-mesos node remove --node riak-default-3
    riak-mesos node remove --node riak-default-4
@@ -263,6 +282,7 @@ Verify the Data
 Now that the cluster has undergone some changes, lets verify the data that was written previously with:
 
 .. code::
+
    curl $RIAK_HTTP/buckets/test/keys/one
    curl $RIAK_HTTP/buckets/test/keys/two
 
@@ -272,6 +292,7 @@ Destroy a Cluster
 To kill all of the Riak nodes in a cluster:
 
 .. code::
+
    riak-mesos cluster destroy
 
 Uninstall the Proxy
@@ -279,6 +300,7 @@ Uninstall the Proxy
 To remove a RMF Director application instance from Marathon:
 
 .. code::
+
    riak-mesos proxy uninstall
 
 Remove Zookeeper Metadata
@@ -286,6 +308,7 @@ Remove Zookeeper Metadata
 To remove the `/riak/frameworks/FRAMEWORK_NAME` from Zookeeper:
 
 .. code::
+
    riak-mesos framework clean-metadata
 
 **Note:** This is necessary if you intend to uninstall the framework and reinstall it.
@@ -295,4 +318,5 @@ Uninstall a framework instance
 To remove a RMF application instance from Marathon:
 
 .. code::
+
    riak-mesos framework uninstall
