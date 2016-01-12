@@ -719,13 +719,6 @@ def run(args):
     if os.path.isfile(config_file):
         config = Config(config_file)
 
-    service_url = False
-    try:
-        service_url = config.api_url() + 'api/v1/'
-        debug(debug_flag, 'Service URL: ' + service_url)
-    except:
-        pass
-
     try:
         switch(cmd)
     except case('config'):
@@ -787,6 +780,18 @@ def run(args):
     except case('framework endpoints'):
         print('Not yet implemented.')
         # TODO impl
+    except:
+        pass
+
+    service_url = False
+    try:
+        service_url = config.api_url() + 'api/v1/'
+        debug(debug_flag, 'Service URL: ' + service_url)
+    except:
+        raise CliError("Riak Mesos Framework is not running.")
+
+    try:
+        switch(cmd)
     except case('cluster config'):
         if riak_file == '':
             r = requests.get(service_url + 'clusters/' + cluster)

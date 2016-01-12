@@ -16,6 +16,8 @@ def test_cluster_create():
     assert o == expect1 or o == expect2
     assert c == 0
     assert e == b''
+    if o == expect1:
+        
 
 
 def test_cluster_list():
