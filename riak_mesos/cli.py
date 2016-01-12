@@ -411,13 +411,12 @@ class Config(object):
         cmd += self._fw_arg('hostname', 'hostname')
         cmd += self._fw_arg('log', 'log')
         cmd += self._fw_arg('role', 'role')
-        ma_pref = 'mesos_authentication_'
-        cmd += self._fw_arg(ma_pref + 'provider', 'auth-provider')
-        cmd += self._fw_arg(ma_pref + 'principal', 'auth-principal')
-        cmd += self._fw_arg(ma_pref + 'secret_file', 'auth-secret-file')
+        cmd += self._fw_arg('mesos_authentication_provider', 'auth-provider')
+        cmd += self._fw_arg('mesos_authentication_principal', 'auth-principal')
+        cmd += self._fw_arg('mesos_authentication_secret_file', 'auth-secret-file')
         cmd += self._fw_arg_val('node_cpus', self.get('node', 'cpus'))
-        cmd += self._fw_arg_val('node_mem=', self.get('node', 'mem'))
-        cmd += self._fw_arg_val('node_disk=', self.get('node', 'disk'))
+        cmd += self._fw_arg_val('node_mem', self.get('node', 'mem'))
+        cmd += self._fw_arg_val('node_disk', self.get('node', 'disk'))
         cmd += ' ' + self.get('flags') if self.get('flags') != '' else ''
         healthcheck = {
             'path': '/healthcheck',
