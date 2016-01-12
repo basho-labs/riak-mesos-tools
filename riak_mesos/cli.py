@@ -695,7 +695,7 @@ def wait_for_url(url, seconds):
     except:
         pass
     time.sleep(1)
-    return wait_for_url(config, seconds - 1)
+    return wait_for_url(url, seconds - 1)
 
 def wait_for_framework(config, seconds):
     if seconds == 0:
