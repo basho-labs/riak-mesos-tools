@@ -81,7 +81,7 @@ HELP_DICT = {
     'framework': ('Displays configration for riak marathon app'),
     'framework uninstall':
     ('Removes the Riak Mesos Framework application from Marathon'),
-    'framework uninstall':
+    'framework teardown':
     ('Issues a teardown command for each of the matching frameworkIds to the Mesos master'),
     'framework clean-metadata':
     ('Deletes all metadata for the selected Riak Mesos Framework instance'),
@@ -797,7 +797,6 @@ def run(args):
             if fw['name'] == config.get('framework-name'):
                 r = requests.post(config.get('master') + '/master/teardown', data='frameworkId='+js['id'])
                 debug_request(debug_flag, r)
-
         print('Finished teardown.')
         return
     except multicase('proxy config', 'proxy'):
