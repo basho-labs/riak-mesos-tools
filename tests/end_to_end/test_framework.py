@@ -35,6 +35,6 @@ def test_node_list_add():
         assert e == b''
     else:
         c, o, e = _fc(['node', 'list'])
-        assert o == b'''Nodes: ["riak-default-1"]\n\n'''
+        assert o == b'''Nodes: [\"riak-default-1\"]\n\n'''
         assert c == 0
         assert e == b''
