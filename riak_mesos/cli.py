@@ -393,12 +393,12 @@ class Config(object):
 
     def _fw_arg(self, name, var_name):
         if self.get(var_name) != '':
-            return '-' + name + '=' + self.get(var_name)
+            return ' -' + name + '=' + self.get(var_name)
         return ''
 
     def _fw_arg_val(self, name, val):
         if val != '':
-            return '-' + name + '=' + str(val)
+            return ' -' + name + '=' + str(val)
         return ''
 
     def framework_marathon_json(self):
