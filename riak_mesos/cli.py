@@ -21,6 +21,7 @@
 import json
 import os
 import sys
+import time
 from sys import platform as _platform
 
 import requests
@@ -678,6 +679,20 @@ def debug(debug_flag, debug_string):
     if debug_flag:
         print('[DEBUG]' + debug_string + '[/DEBUG]')
 
+def wait_for_framework(config, seconds):
+    if seconds == 0:
+        return False
+    try:
+        healthcheck_url = config.api_url() + 'healthcheck'
+        r = requests.get(healthcheck_url)
+        if r.status_code == 200:
+            return True
+    except:
+        pass
+
+    time.sleep(1)
+    return wait_for_framework(config, seconds - 1)
+
 
 def run(args):
     def_conf = '/etc/riak-mesos/config.json'
@@ -776,6 +791,7 @@ def run(args):
         framework_json = config.framework_marathon_json()
         client = create_client(config.get_any('marathon', 'url'))
         client.add_app(framework_json)
+        wait_for_framework(config, 60)
         print('Finished adding ' + framework_json['id'] + ' to marathon')
     except case('framework endpoints'):
         print('Not yet implemented.')
