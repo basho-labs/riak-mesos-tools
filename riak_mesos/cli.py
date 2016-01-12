@@ -743,18 +743,21 @@ def run(args):
             ppobj('Framework: ', config.string(), 'riak', '[]')
             ppobj('Director: ', config.string(), 'director', '[]')
             ppobj('Marathon: ', config.string(), 'marathon', '[]')
+        return
     except multicase('framework config', 'framework'):
         obj = config.framework_marathon_string()
         if json_flag:
             ppobj('', obj, '', '{}')
         else:
             ppobj('Marathon Config: ', obj, '', '{}')
+        return
     except case('framework uninstall'):
         print('Uninstalling framework...')
         fn = config.get('framework-name')
         client = create_client(config.get_any('marathon', 'url'))
         client.remove_app('/' + fn)
         print('Finished removing ' + '/' + fn + ' from marathon')
+        return
     except case('framework clean-metadata'):
         fn = config.get('framework-name')
         print('\nRemoving zookeeper information\n')
@@ -763,18 +766,22 @@ def run(args):
             print(result)
         else:
             print("Unable to remove framework zookeeper data.")
+        return
     except multicase('proxy config', 'proxy'):
         print(config.director_marathon_string(cluster))
+        return
     except case('proxy install'):
         director_json = config.director_marathon_json(cluster)
         client = create_client(config.get_any('marathon', 'url'))
         client.add_app(director_json)
         print('Finished adding ' + director_json['id'] + ' to marathon')
+        return
     except case('proxy uninstall'):
         client = create_client(config.get_any('marathon', 'url'))
         fn = config.get('framework-name')
         client.remove_app('/' + fn + '-director')
         print('Finished removing ' + '/' + fn + '-director' + ' from marathon')
+        return
     except case('proxy endpoints'):
         client = create_client(config.get_any('marathon', 'url'))
         app = client.get_app(config.get('framework-name') + '-director')
@@ -787,15 +794,18 @@ def run(args):
         print('    http://' + hostname + ':' + str(ports[1]))
         print('Riak Mesos Director API (HTTP)')
         print('    http://' + hostname + ':' + str(ports[2]))
+        return
     except case('framework install'):
         framework_json = config.framework_marathon_json()
         client = create_client(config.get_any('marathon', 'url'))
         client.add_app(framework_json)
         wait_for_framework(config, 60)
         print('Finished adding ' + framework_json['id'] + ' to marathon')
+        return
     except case('framework endpoints'):
         print('Not yet implemented.')
         # TODO impl
+        return
     except:
         pass
 
