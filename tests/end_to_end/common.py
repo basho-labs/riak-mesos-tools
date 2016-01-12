@@ -3,7 +3,7 @@ import os
 
 
 def exec_framework_command(cmd, env=None, stdin=None):
-    config = os.path.dirname(__file__) + '/../../config/config.dev.json'
+    config = os.path.dirname(__file__) + '/../../config/config.test.json'
     cmd = ['riak-mesos', '--config', config] + cmd
     return exec_command(cmd, env, stdin)
 
