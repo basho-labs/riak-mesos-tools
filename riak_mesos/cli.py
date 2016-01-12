@@ -38,6 +38,7 @@ def usage():
     print('    config')
     print('    framework config')
     print('    framework install')
+    print('    framework wait-for-service')
     print('    framework clean-metadata')
     print('    framework uninstall')
     print('    framework endpoints')
@@ -58,10 +59,12 @@ def usage():
     print('    node list [--json]')
     print('    node remove --node <name>')
     print('    node add [--nodes <number>]')
+    print('    node wait-for-service [--node <name>]')
     print('    proxy config')
     print('    proxy install')
     print('    proxy uninstall')
     print('    proxy endpoints')
+    print('    proxy wait-for-service')
     print('')
     print('Options (available on most commands): ')
     print('    --config <json-file> (/etc/riak-mesos/config.json)')
@@ -86,11 +89,13 @@ HELP_DICT = {
     ('Installs a riak-mesos-director marathon app on the public Mesos node '
      'using --zookeeper (default is leader.mesos:2181) and --cluster (default '
      'is default).'),
+    'proxy wait-for-service': ('Waits 20 seconds or until proxy is running'),
     'proxy uninstall': ('Uninstalls the riak-mesos-director marathon app.'),
     'proxy endpoints':
     ('Lists the endpoints exposed by a riak-mesos-director marathon app '
      '--public-dns (default is {{public-dns}}).'),
     'framework install': ('Retrieves a list of cluster names'),
+    'framework wait-for-service': ('Waits 60 seconds or until Framework is running'),
     'framework endpoints': ('Retrieves useful endpoints for the framework'),
     'cluster config':
     ('Gets or sets the riak.conf configuration for a cluster, specify cluster '
@@ -117,6 +122,7 @@ HELP_DICT = {
     'node add':
     ('Adds one or more (using --nodes) nodes to a --cluster (default is '
      'default).'),
+    'node wait-for-service': ('Waits 20 seconds or until node is running'),
     'node remove':
     ('Removes a node from the cluster, specify node id with --node'),
     'node aae-status':
@@ -679,17 +685,27 @@ def debug(debug_flag, debug_string):
     if debug_flag:
         print('[DEBUG]' + debug_string + '[/DEBUG]')
 
+def wait_for_url(url, seconds):
+    if seconds == 0:
+        return False
+    try:
+        r = requests.get(url)
+        if r.status_code == 200:
+            return True
+    except:
+        pass
+    time.sleep(1)
+    return wait_for_url(config, seconds - 1)
+
 def wait_for_framework(config, seconds):
     if seconds == 0:
         return False
     try:
         healthcheck_url = config.api_url() + 'healthcheck'
-        r = requests.get(healthcheck_url)
-        if r.status_code == 200:
+        if wait_for_url(healthcheck_url, 1):
             return True
     except:
         pass
-
     time.sleep(1)
     return wait_for_framework(config, seconds - 1)
 
@@ -801,6 +817,43 @@ def run(args):
         client.add_app(framework_json)
         wait_for_framework(config, 60)
         print('Finished adding ' + framework_json['id'] + ' to marathon')
+        return
+    except case('framework wait-for-service'):
+        if wait_for_framework(config, 60):
+            print('Riak Mesos Framework is ready.')
+            return
+        print('Riak Mesos Framework did not respond within 60 seconds.')
+        return
+    except case('node wait-for-service'):
+        if wait_for_framework(config, 60):
+            service_url = config.api_url() + 'api/v1/'
+            r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
+            debug_request(debug_flag, r)
+            node_json = json.loads(r.text)
+            if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
+                            str(node_json[node]['TaskData']['HTTPPort']), 20):
+                print("Node is ready.")
+                return
+            print("Node did not respond in 20 seconds.")
+            return
+        print('Riak Mesos Framework did not respond within 60 seconds.')
+        return
+    except case('proxy wait-for-service'):
+        if wait_for_framework(config, 60):
+            client = create_client(config.get_any('marathon', 'url'))
+            app = client.get_app(config.get('framework-name') + '-director')
+            if(len(app['tasks'] == 0)):
+                print("Proxy is not installed.")
+                return
+            task = app['tasks'][0]
+            ports = task['ports']
+            hostname = task['host']
+            if wait_for_url('http://' + hostname + ':' + str(ports[0]), 20):
+                print("Proxy is ready.")
+                return
+            print("Proxy did not respond in 20 seconds.")
+            return
+        print('Riak Mesos Framework did not respond within 60 seconds.')
         return
     except case('framework endpoints'):
         print('Not yet implemented.')

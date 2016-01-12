@@ -1,5 +1,7 @@
 from common import exec_framework_command as _fc
 import json
+import requests
+import time
 
 
 def test_framework_install():
@@ -38,3 +40,7 @@ def test_node_list_add():
         assert o == b'''Nodes: [riak-default-1]\n\n'''
         assert c == 0
         assert e == b''
+
+
+def test_node_status():
+    c, o, e = _fc(['node', 'list'])
