@@ -15,6 +15,13 @@ Before getting started with the RMF, there are a few environment and system rela
 
 Installation
 ============
+
+Pip Install
+-----------
+.. code::
+
+   pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git#egg=riak_mesos
+
 Quick Install
 -------------
 .. code::

@@ -137,7 +137,9 @@ def help(cmd):
 
 # Util
 def is_dcos():
-    return sys.argv[1] == 'riak'
+    if len(sys.argv >= 2):
+        return sys.argv[1] == 'riak'
+    return False
 
 
 class CliError(Exception):
