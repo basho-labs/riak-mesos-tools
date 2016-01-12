@@ -9,6 +9,10 @@ def test_framework_install():
     assert o == b'''Finished adding riak to marathon\n\n'''
     assert c == 0
     assert e == b''
+    c, o, e = _fc(['framework', 'wait-for-service'])
+    assert o == b'''Riak Mesos Framework is ready.\n\n'''
+    assert c == 0
+    assert e == b''
 
 
 def test_cluster_create():
@@ -40,6 +44,11 @@ def test_node_list_add():
         assert o == b'''Nodes: [riak-default-1]\n\n'''
         assert c == 0
         assert e == b''
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
+    assert o == b'''Node is ready.\n\n'''
+    assert c == 0
+    assert e == b''
+
 
 
 def test_node_status():
