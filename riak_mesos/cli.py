@@ -787,7 +787,7 @@ def run(args):
             print("Unable to remove framework zookeeper data.")
         return
     except case('framework teardown'):
-        r = requests.get(config.get('master') + '/master/state.json')
+        r = requests.get('http://leader.mesos:5050/master/state.json')
         debug_request(debug_flag, r)
         if r.status_code != 200:
             print('Failed to get state.json from master.')
@@ -795,7 +795,7 @@ def run(args):
         js = json.loads(r.text)
         for fw in js['frameworks']:
             if fw['name'] == config.get('framework-name'):
-                r = requests.post(config.get('master') + '/master/teardown', data='frameworkId='+js['id'])
+                r = requests.post('http://leader.mesos/master/teardown', data='frameworkId='+js['id'])
                 debug_request(debug_flag, r)
         print('Finished teardown.')
         return
