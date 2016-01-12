@@ -18,12 +18,13 @@
 
 # TODO: Add "wait for" commands to make command chaining and testing easier
 
-from __future__ import print_function
+import json
 import os
 import sys
-import requests
-import json
 from sys import platform as _platform
+
+import requests
+
 
 def usage():
     print('Command line utility for the Riak Mesos Framework / DCOS Service.')
@@ -73,32 +74,55 @@ def usage():
 
 def help_dict():
     help = {
-    	'config': 'Displays configration',
-    	'framework': 'Displays configration for riak marathon app',
-    	'framework uninstall': 'Removes the Riak Mesos Framework application from Marathon',
-    	'framework clean-metadata': 'Deletes all metadata for the selected Riak Mesos Framework instance',
-    	'proxy': 'Generates a marathon json config using --zookeeper (default is leader.mesos:2181) and --cluster (default is default).',
-    	'proxy install': 'Installs a riak-mesos-director marathon app on the public Mesos node using --zookeeper (default is leader.mesos:2181) and --cluster (default is default).',
-    	'proxy uninstall': 'Uninstalls the riak-mesos-director marathon app.',
-    	'proxy endpoints': 'Lists the endpoints exposed by a riak-mesos-director marathon app --public-dns (default is {{public-dns}}).',
-    	'framework install': 'Retrieves a list of cluster names',
-    	'framework endpoints': 'Retrieves useful endpoints for the framework',
-    	'cluster config': 'Gets or sets the riak.conf configuration for a cluster, specify cluster id with --cluster and config file location with --file',
-    	'cluster config advanced': 'Gets or sets the advanced.config configuration for a cluster, specify cluster id with --cluster and config file location with --file',
-    	'cluster': 'Retrieves a list of cluster names',
-    	'cluster create': 'Creates a new cluster. Specify the name with --cluster (default is default).',
-    	'cluster restart': 'Performs a rolling restart on a cluster. Specify the name with --cluster (default is default).',
-    	'cluster destroy': 'Destroys a cluster. Specify the name with --cluster (default is default).',
-    	'node': 'Retrieves a list of node ids for a given --cluster (default is default).',
-    	'node info': 'Retrieves a list of node ids for a given --cluster (default is default).',
-    	'node add': 'Adds one or more (using --nodes) nodes to a --cluster (default is default).',
-    	'node remove': 'Removes a node from the cluster, specify node id with --node',
-    	'node aae-status': 'Gets the active anti entropy status for a node, specify node id with --node',
-    	'node status': 'Gets the member-status of a node, specify node id with --node',
-    	'node ringready': 'Gets the ringready value for a node, specify node id with --node',
-    	'node transfers': 'Gets the transfers status for a node, specify node id with --node',
-    	'node bucket-type create': 'Creates and activates a bucket type on a node, specify node id with --node',
-    	'node bucket-type list': 'Gets the bucket type list from a node, specify node id with --node'
+        'config': 'Displays configration',
+        'framework': 'Displays configration for riak marathon app',
+        'framework uninstall': '''Removes the Riak Mesos Framework application
+from Marathon''',
+        'framework clean-metadata': '''Deletes all metadata for the selected
+Riak Mesos Framework instance''',
+        'proxy': '''Generates a marathon json config using --zookeeper
+(default is leader.mesos:2181) and --cluster (default is default).''',
+        'proxy install': '''Installs a riak-mesos-director marathon app on the
+public Mesos node using --zookeeper (default is leader.mesos:2181) and
+--cluster (default is default).''',
+        'proxy uninstall': 'Uninstalls the riak-mesos-director marathon app.',
+        'proxy endpoints': '''Lists the endpoints exposed by a
+riak-mesos-director marathon app --public-dns (default is {{public-dns}}).''',
+        'framework install': 'Retrieves a list of cluster names',
+        'framework endpoints': 'Retrieves useful endpoints for the framework',
+        'cluster config': '''Gets or sets the riak.conf configuration for a
+cluster, specify cluster id with --cluster and config file location with
+--file''',
+        'cluster config advanced': '''Gets or sets the advanced.config
+configuration for a cluster, specify cluster id with --cluster and config file
+location with --file''',
+        'cluster': 'Retrieves a list of cluster names',
+        'cluster create': '''Creates a new cluster. Specify the name with
+--cluster (default is default).''',
+        'cluster restart': '''Performs a rolling restart on a cluster. Specify
+the name with --cluster (default is default).''',
+        'cluster destroy': '''Destroys a cluster. Specify the name with
+--cluster (default is default).''',
+        'node': '''Retrieves a list of node ids for a given --cluster (default
+is default).''',
+        'node info': '''Retrieves a list of node ids for a given --cluster
+(default is default).''',
+        'node add': '''Adds one or more (using --nodes) nodes to a --cluster
+(default is default).''',
+        'node remove': '''Removes a node from the cluster, specify node id
+with --node''',
+        'node aae-status': '''Gets the active anti entropy status for a node,
+specify node id with --node''',
+        'node status': '''Gets the member-status of a node, specify node id
+with --node''',
+        'node ringready': '''Gets the ringready value for a node, specify node
+id with --node''',
+        'node transfers': '''Gets the transfers status for a node, specify
+node id with --node''',
+        'node bucket-type create': '''Creates and activates a bucket type on a
+node, specify node id with --node''',
+        'node bucket-type list': '''Gets the bucket type list from a node,
+specify node id with --node'''
     }
     help['framework config'] = help['framework']
     help['proxy config'] = help['proxy']
@@ -748,15 +772,18 @@ def run(args):
             r = requests.get(service_url + 'clusters/' + cluster)
             debug_request(debug_flag, r)
             if r.status_code == 200:
-                ppfact('riak.conf: ', r.text, 'RiakConfig', 'Error getting cluster.')
+                ppfact('riak.conf: ', r.text, 'RiakConfig',
+                       'Error getting cluster.')
             else:
                 print('Cluster not created.')
             return
         with open(riak_file) as data_file:
-            r = requests.post(service_url + 'clusters/' + cluster + '/config', data=data_file)
+            r = requests.post(service_url + 'clusters/' + cluster + '/config',
+                              data=data_file)
             debug_request(debug_flag, r)
             if r.status_code != 200:
-                print('Failed to set riak.conf, status_code: ' + str(r.status_code))
+                print('Failed to set riak.conf, status_code: ' +
+                      str(r.status_code))
             else:
                 print('riak.conf updated')
     except case('cluster config advanced'):
@@ -764,15 +791,18 @@ def run(args):
             r = requests.get(service_url + 'clusters/' + cluster)
             debug_request(debug_flag, r)
             if r.status_code == 200:
-                ppfact('advanced.config: ', r.text, 'AdvancedConfig', 'Error getting cluster.')
+                ppfact('advanced.config: ', r.text, 'AdvancedConfig',
+                       'Error getting cluster.')
             else:
                 print('Cluster not created.')
             return
         with open(riak_file) as data_file:
-            r = requests.post(service_url + 'clusters/' + cluster + '/advancedConfig', data=data_file)
+            r = requests.post(service_url + 'clusters/' + cluster +
+                              '/advancedConfig', data=data_file)
             debug_request(debug_flag, r)
             if r.status_code != 200:
-                print('Failed to set advanced.config, status_code: ' + str(r.status_code))
+                print('Failed to set advanced.config, status_code: ' +
+                      str(r.status_code))
             else:
                 print('advanced.config updated')
     except multicase('cluster list', 'cluster'):
@@ -791,21 +821,25 @@ def run(args):
         if r.text == '' or r.status_code != 200:
             print('Cluster already exists')
         else:
-            ppfact('Added cluster: ', r.text, 'Name', 'Error creating cluster.')
+            ppfact('Added cluster: ', r.text, 'Name',
+                   'Error creating cluster.')
     except case('cluster restart'):
-        r = requests.post(service_url + 'clusters/' + cluster + '/restart', data='')
+        r = requests.post(service_url + 'clusters/' + cluster + '/restart',
+                          data='')
         debug_request(debug_flag, r)
         if r.status_code == 404:
             print('Cluster does not exist')
         elif r.status_code != 202:
-            print('Failed to restart cluster, status code: ' + str(r.status_code))
+            print('Failed to restart cluster, status code: ' +
+                  str(r.status_code))
         else:
             print('Cluster restart initiated')
     except case('cluster destroy'):
         r = requests.delete(service_url + 'clusters/' + cluster, data='')
         debug_request(debug_flag, r)
         if r.status_code != 202:
-            print('Failed to destroy cluster, status_code: ' + str(r.status_code))
+            print('Failed to destroy cluster, status_code: ' +
+                  str(r.status_code))
         else:
             print('Destroyed cluster: ' + cluster)
     except multicase('node list', 'node'):
@@ -819,76 +853,92 @@ def run(args):
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
         debug_request(debug_flag, r)
         node_json = json.loads(r.text)
-        print('HTTP: http://' + node_json[node]['Hostname'] + ':' + str(node_json[node]['TaskData']['HTTPPort']))
-        print('PB  : ' + node_json[node]['Hostname'] + ':' + str(node_json[node]['TaskData']['PBPort']))
+        print('HTTP: http://' + node_json[node]['Hostname'] + ':' +
+              str(node_json[node]['TaskData']['HTTPPort']))
+        print('PB  : ' + node_json[node]['Hostname'] + ':' +
+              str(node_json[node]['TaskData']['PBPort']))
         ppobj('Node: ', r.text, node, '{}')
     except case('node add'):
         for x in range(0, num_nodes):
-            r = requests.post(service_url + 'clusters/' + cluster + '/nodes', data='')
+            r = requests.post(service_url + 'clusters/' + cluster + '/nodes',
+                              data='')
             debug_request(debug_flag, r)
             if r.status_code != 200:
                 print(r.text)
             else:
-                ppfact('New node: ' + config.get('framework-name') + '-' + cluster + '-', r.text, 'SimpleId', 'Error adding node')
+                ppfact('New node: ' + config.get('framework-name') + '-' +
+                       cluster + '-', r.text, 'SimpleId', 'Error adding node')
             print('')
     except case('node remove'):
         if node == '':
             raise CliError('Node name must be specified')
         else:
-            r = requests.delete(service_url + 'clusters/' + cluster + '/nodes/' + node, data='')
+            r = requests.delete(service_url + 'clusters/' + cluster +
+                                '/nodes/' + node, data='')
             debug_request(debug_flag, r)
             if r.status_code != 202:
-                print('Failed to remove node, status_code: ' + str(r.status_code))
+                print('Failed to remove node, status_code: ' +
+                      str(r.status_code))
             else:
                 print('Removed node')
     except case('node aae-status'):
         if node == '':
             raise CliError('Node name must be specified')
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node + '/aae')
+            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                             node + '/aae')
             debug_request(debug_flag, r)
             if r.status_code != 200:
-                print('Failed to get aae-status, status_code: ' + str(r.status_code))
+                print('Failed to get aae-status, status_code: ' +
+                      str(r.status_code))
             else:
                 ppobj('', r.text, 'aae-status', '{}')
     except case('node status'):
         if node == '':
             raise CliError('Node name must be specified')
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node + '/status')
+            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                             node + '/status')
             debug_request(debug_flag, r)
             if r.status_code != 200:
-                print('Failed to get status, status_code: ' + str(r.status_code))
+                print('Failed to get status, status_code: ' +
+                      str(r.status_code))
             else:
                 ppobj('', r.text, 'status', '{}')
     except case('node ringready'):
         if node == '':
             raise CliError('Node name must be specified')
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node + '/ringready')
+            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                             node + '/ringready')
             debug_request(debug_flag, r)
             if r.status_code != 200:
-                print('Failed to get ringready, status_code: ' + str(r.status_code))
+                print('Failed to get ringready, status_code: ' +
+                      str(r.status_code))
             else:
                 ppobj('', r.text, 'ringready', '{}')
     except case('node transfers'):
         if node == '':
             raise CliError('Node name must be specified')
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node + '/transfers')
+            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                             node + '/transfers')
             debug_request(debug_flag, r)
             if r.status_code != 200:
-                print('Failed to get transfers, status_code: ' + str(r.status_code))
+                print('Failed to get transfers, status_code: ' +
+                      str(r.status_code))
             else:
                 ppobj('', r.text, 'transfers', '{}')
     except case('node bucket-type create'):
         if node == '' or bucket_type == '' or props == '':
             raise CliError('Node name, bucket-type, props must be specified')
         else:
-            r = requests.post(service_url + 'clusters/' + cluster + '/nodes/' + node + '/types/' + bucket_type, data=props)
+            r = requests.post(service_url + 'clusters/' + cluster + '/nodes/' +
+                              node + '/types/' + bucket_type, data=props)
             debug_request(debug_flag, r)
             if r.status_code != 200:
-                print('Failed to create bucket-type, status_code: ' + str(r.status_code))
+                print('Failed to create bucket-type, status_code: ' +
+                      str(r.status_code))
                 ppobj('', r.text, '', '{}')
             else:
                 ppobj('', r.text, '', '{}')
@@ -896,10 +946,12 @@ def run(args):
         if node == '':
             raise CliError('Node name must be specified')
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node + '/types')
+            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                             node + '/types')
             debug_request(debug_flag, r)
             if r.status_code != 200:
-                print('Failed to get bucket types, status_code: ' + str(r.status_code))
+                print('Failed to get bucket types, status_code: ' +
+                      str(r.status_code))
             else:
                 ppobj('', r.text, 'bucket_types', '{}')
     except CliError as e:
