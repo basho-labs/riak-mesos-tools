@@ -5,7 +5,7 @@
         "cmd": "./director/bin/ermf-director"
     },
     "marathon": {
-        "url": "http://localhost:8080"
+        "url": "http://marathon.mesos:8080"
     },
     "riak": {
         "auth-principal": "riak",
@@ -18,11 +18,11 @@
         "healthcheck-interval-seconds": 60,
         "healthcheck-max-consecutive-failures": 5,
         "healthcheck-timeout-seconds": 20,
-        "hostname": "localhost",
+        "hostname": "riak.mesos",
         "instances": 1,
         "ip": "",
         "log": "",
-        "master": "zk://localhost:2181/mesos",
+        "master": "zk://leader.mesos:2181/mesos",
         "mem": 2048,
         "node": {
             "cpus": 1.0,
@@ -33,6 +33,6 @@
         "super-chroot": "true",
         "url": "http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_linux_amd64_0.3.0.tar.gz",
         "user": "root",
-        "zk": "localhost:2181"
+        "zk": "leader.mesos:2181"
     }
 }

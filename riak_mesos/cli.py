@@ -867,7 +867,7 @@ def run(args):
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
         debug_request(debug_flag, r)
         if json_flag:
-            print(r.text)
+            pparr('', r.text, '[]')
         else:
             pparr('Nodes: ', r.text, '[]')
     except case('node info'):
