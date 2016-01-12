@@ -972,7 +972,6 @@ def run(args):
             else:
                 ppfact('New node: ' + config.get('framework-name') + '-' +
                        cluster + '-', r.text, 'SimpleId', 'Error adding node')
-            print('')
     except case('node remove'):
         if node == '':
             raise CliError('Node name must be specified')
