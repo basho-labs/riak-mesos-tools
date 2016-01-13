@@ -167,9 +167,12 @@ def is_dcos():
         return sys.argv[1] == 'riak'
     return False
 
-
 class CliError(Exception):
-    pass
+    def __init__(self,value):
+        self.value=value
+
+    def __str__(self):
+        return repr(self.value)
 
 
 class case_selector(BaseException):
@@ -893,7 +896,7 @@ def run(args):
         print('Not yet implemented.')
         # TODO impl
         return
-    except:
+    except Exception as e:
         pass
 
     service_url = False
@@ -1110,10 +1113,10 @@ def main():
         print('')
         return return_code
     except requests.exceptions.ConnectionError as e:
-        print('ConnectionError: ' + str(e.message))
+        print('ConnectionError: ' + str(e))
         return 1
     except CliError as e:
-        print('CliError: ' + str(e.message))
+        print('CliError: ' + str(e))
         return 1
     except Exception as e:
         print('Exception: ' + str(e))
