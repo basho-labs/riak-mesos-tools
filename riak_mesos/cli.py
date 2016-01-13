@@ -175,9 +175,12 @@ class CliError(Exception):
         return repr(self.value)
 
 
-class case_selector(BaseException):
-    def __init__(self, value):
-        BaseException.__init__(self, value)
+class case_selector(Exception):
+    def __init__(self,value):
+        self.value=value
+
+    def __str__(self):
+        return repr(self.value)
 
 
 def switch(variable):
@@ -896,7 +899,7 @@ def run(args):
         print('Not yet implemented.')
         # TODO impl
         return
-    except Exception as e:
+    except Exception:
         pass
 
     service_url = False
