@@ -346,13 +346,13 @@ class Config(object):
         try:
             service_url = self.dcos_api_url()
             if service_url:
-                return service_url
+                return service_url + 'api/v1/'
             service_url = self.marathon_api_url()
             if service_url:
-                return service_url
+                return service_url + 'api/v1/'
             service_url = self.zk_api_url()
             if service_url:
-                return service_url
+                return service_url + 'api/v1/'
             error = 'Unable to connect to DCOS Server, Marathon, or Zookeeper.'
             raise CliError(error)
         except Exception as e:
@@ -724,7 +724,7 @@ def wait_for_framework(config, seconds):
 
 def wait_for_node(config, cluster, node):
     if wait_for_framework(config, 60):
-        service_url = config.api_url() + 'api/v1/'
+        service_url = config.api_url()
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
         node_json = json.loads(r.text)
         if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
@@ -776,13 +776,6 @@ def run(args):
     config = Config(None)
     if os.path.isfile(config_file):
         config = Config(config_file)
-
-    service_url = False
-    try:
-        service_url = config.api_url() + 'api/v1/'
-        debug(debug_flag, 'Service URL: ' + service_url)
-    except:
-        service_url = False
 
     for case in switch(cmd):
         if case('config'):
@@ -880,7 +873,7 @@ def run(args):
             break
         if case('cluster wait-for-service'):
             if wait_for_framework(config, 60):
-                service_url = config.api_url() + 'api/v1/'
+                service_url = config.api_url()
                 r = requests.get(service_url + 'clusters/' + cluster +
                                  '/nodes')
                 debug_request(debug_flag, r)
@@ -915,6 +908,7 @@ def run(args):
             # TODO impl
             break
         if case('cluster config'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if riak_file == '':
@@ -937,6 +931,7 @@ def run(args):
                     print('riak.conf updated')
             break
         if case('cluster config advanced'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if riak_file == '':
@@ -959,6 +954,7 @@ def run(args):
                     print('advanced.config updated')
             break
         if case('cluster list', 'cluster'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             r = requests.get(service_url + 'clusters')
@@ -972,6 +968,7 @@ def run(args):
                 print('No clusters created')
             break
         if case('cluster create'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             r = requests.post(service_url + 'clusters/' + cluster, data='')
@@ -983,6 +980,7 @@ def run(args):
                        'Error creating cluster.')
             break
         if case('cluster restart'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             r = requests.post(service_url + 'clusters/' + cluster + '/restart',
@@ -997,6 +995,7 @@ def run(args):
                 print('Cluster restart initiated.')
             break
         if case('cluster destroy'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             r = requests.delete(service_url + 'clusters/' + cluster, data='')
@@ -1008,6 +1007,7 @@ def run(args):
                 print('Destroyed cluster: ' + cluster)
             break
         if case('node list', 'node'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
@@ -1018,6 +1018,7 @@ def run(args):
                 pparr('Nodes: ', r.text, '[]')
             break
         if case('node info'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
@@ -1030,6 +1031,7 @@ def run(args):
             ppobj('Node: ', r.text, node, '{}')
             break
         if case('node add'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             for x in range(0, num_nodes):
@@ -1044,6 +1046,7 @@ def run(args):
                            'node')
             break
         if case('node remove'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if node == '':
@@ -1058,6 +1061,7 @@ def run(args):
                 print('Removed node')
             break
         if case('node aae-status'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if node == '':
@@ -1072,6 +1076,7 @@ def run(args):
                 ppobj('', r.text, 'aae-status', '{}')
                 break
         if case('node status'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if node == '':
@@ -1086,6 +1091,7 @@ def run(args):
                 ppobj('', r.text, 'status', '{}')
             break
         if case('node ringready'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if node == '':
@@ -1100,6 +1106,7 @@ def run(args):
                 ppobj('', r.text, 'ringready', '{}')
             break
         if case('node transfers'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if node == '':
@@ -1114,6 +1121,7 @@ def run(args):
                 ppobj('', r.text, 'transfers', '{}')
             break
         if case('node bucket-type create'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if node == '' or bucket_type == '' or props == '':
@@ -1130,6 +1138,7 @@ def run(args):
                 ppobj('', r.text, '', '{}')
             break
         if case('node bucket-type list'):
+            service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
             if node == '':
