@@ -325,8 +325,6 @@ Follow these steps to cleanly remove riak from a DCOS cluster:
 
    dcos riak proxy uninstall
    dcos riak cluster destroy
-   dcos riak framework uninstall
-   dcos riak framework teardown
    dcos riak framework clean-metadata
    dcos package uninstall riak
 
