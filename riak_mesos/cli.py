@@ -786,7 +786,7 @@ def run(args):
     except multicase('framework config', 'framework'):
         obj = config.framework_marathon_string()
         if json_flag:
-            ppobj('', obj, '', '{}')
+            print(obj)
         else:
             ppobj('Marathon Config: ', obj, '', '{}')
         return
