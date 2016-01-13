@@ -1,5 +1,5 @@
-import subprocess
 import os
+import subprocess
 
 
 def exec_framework_command(cmd, env=None, stdin=None):

@@ -1,5 +1,6 @@
-from common import exec_framework_command as _fc
 import json
+
+from common import exec_framework_command as _fc
 
 
 def test_framework_install():

@@ -1,5 +1,6 @@
-from common import exec_command as _c
 import json
+
+from common import exec_command as _c
 
 
 def test_version():
