@@ -176,9 +176,9 @@ class CaseException(Exception):
     pass
 
 
-class case_selector(CaseException):
+class case_selector(Exception):
     def __init__(self, value):
-        CaseException.__init__(self, value)
+        Exception.__init__(self, value)
 
 
 def switch(variable):
@@ -1093,10 +1093,8 @@ def run(args):
                       str(r.status_code))
             else:
                 ppobj('', r.text, 'bucket_types', '{}')
-    except CaseException as e:
-        raise CliError('Unrecognized command: ' + cmd)
     except Exception as e:
-        raise CliError('Error runing command: ' + e.message)
+        raise CliError('Unrecognized command ' + cmd + ': ' + str(e))
     return 0
 
 
@@ -1127,7 +1125,7 @@ def main():
         print('CliError: ' + str(e.message))
         return 1
     except Exception as e:
-        print('Exception: ' + str(e.message))
+        print('Exception: ' + str(e))
         return 1
 
 if __name__ == '__main__':
