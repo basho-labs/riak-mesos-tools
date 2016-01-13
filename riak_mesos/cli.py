@@ -867,7 +867,7 @@ def run(args):
             r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
             debug_request(debug_flag, r)
             js = json.loads(r.text)
-            for k in obj_arr.keys():
+            for k in js.keys():
                 wait_for_node(config, k)
             return
         print('Riak Mesos Framework did not respond within 60 seconds.')
