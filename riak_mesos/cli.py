@@ -772,6 +772,13 @@ def run(args):
     if os.path.isfile(config_file):
         config = Config(config_file)
 
+    service_url = False
+    try:
+        service_url = config.api_url() + 'api/v1/'
+        debug(debug_flag, 'Service URL: ' + service_url)
+    except:
+        service_url = False
+
     try:
         switch(cmd)
     except case('config'):
@@ -781,21 +788,18 @@ def run(args):
             ppobj('Framework: ', config.string(), 'riak', '[]')
             ppobj('Director: ', config.string(), 'director', '[]')
             ppobj('Marathon: ', config.string(), 'marathon', '[]')
-        return
     except multicase('framework config', 'framework'):
         obj = config.framework_marathon_string()
         if json_flag:
             print(obj)
         else:
             ppobj('Marathon Config: ', obj, '', '{}')
-        return
     except case('framework uninstall'):
         print('Uninstalling framework...')
         fn = config.get('framework-name')
         client = create_client(config.get_any('marathon', 'url'))
         client.remove_app('/' + fn)
         print('Finished removing ' + '/' + fn + ' from marathon')
-        return
     except case('framework clean-metadata'):
         fn = config.get('framework-name')
         print('\nRemoving zookeeper information\n')
@@ -804,7 +808,6 @@ def run(args):
             print(result)
         else:
             print("Unable to remove framework zookeeper data.")
-        return
     except case('framework teardown'):
         r = requests.get('http://leader.mesos:5050/master/state.json')
         debug_request(debug_flag, r)
@@ -817,22 +820,18 @@ def run(args):
                 r = requests.post('http://leader.mesos:5050/master/teardown', data='frameworkId='+fw['id'])
                 debug_request(debug_flag, r)
         print('Finished teardown.')
-        return
     except multicase('proxy config', 'proxy'):
         print(config.director_marathon_string(cluster))
-        return
     except case('proxy install'):
         director_json = config.director_marathon_json(cluster)
         client = create_client(config.get_any('marathon', 'url'))
         client.add_app(director_json)
         print('Finished adding ' + director_json['id'] + ' to marathon.')
-        return
     except case('proxy uninstall'):
         client = create_client(config.get_any('marathon', 'url'))
         fn = config.get('framework-name')
         client.remove_app('/' + fn + '-director')
         print('Finished removing ' + '/' + fn + '-director' + ' from marathon')
-        return
     except case('proxy endpoints'):
         client = create_client(config.get_any('marathon', 'url'))
         app = client.get_app(config.get('framework-name') + '-director')
@@ -845,25 +844,21 @@ def run(args):
         print('    http://' + hostname + ':' + str(ports[1]))
         print('Riak Mesos Director API (HTTP)')
         print('    http://' + hostname + ':' + str(ports[2]))
-        return
     except case('framework install'):
         framework_json = config.framework_marathon_json()
         client = create_client(config.get_any('marathon', 'url'))
         client.add_app(framework_json)
         wait_for_framework(config, 60)
         print('Finished adding ' + framework_json['id'] + ' to marathon.')
-        return
     except case('framework wait-for-service'):
         if wait_for_framework(config, 60):
             print('Riak Mesos Framework is ready.')
             return
         print('Riak Mesos Framework did not respond within 60 seconds.')
-        return
     except case('node wait-for-service'):
         if node == '':
             raise CliError('Node name must be specified')
         wait_for_node(config, cluster, node)
-        return
     except case('cluster wait-for-service'):
         if wait_for_framework(config, 60):
             service_url = config.api_url() + 'api/v1/'
@@ -874,7 +869,6 @@ def run(args):
                 wait_for_node(config, cluster, k)
             return
         print('Riak Mesos Framework did not respond within 60 seconds.')
-        return
     except case('proxy wait-for-service'):
         if wait_for_framework(config, 60):
             client = create_client(config.get_any('marathon', 'url'))
@@ -891,24 +885,12 @@ def run(args):
             print("Proxy did not respond in 20 seconds.")
             return
         print('Riak Mesos Framework did not respond within 60 seconds.')
-        return
     except case('framework endpoints'):
         print('Not yet implemented.')
         # TODO impl
-        return
-    except Exception:
-        pass
-
-    service_url = False
-    try:
-        service_url = config.api_url() + 'api/v1/'
-        debug(debug_flag, 'Service URL: ' + service_url)
-    except:
-        raise CliError("Riak Mesos Framework is not running.")
-
-    try:
-        switch(cmd)
     except case('cluster config'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if riak_file == '':
             r = requests.get(service_url + 'clusters/' + cluster)
             debug_request(debug_flag, r)
@@ -928,6 +910,8 @@ def run(args):
             else:
                 print('riak.conf updated')
     except case('cluster config advanced'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if riak_file == '':
             r = requests.get(service_url + 'clusters/' + cluster)
             debug_request(debug_flag, r)
@@ -947,6 +931,8 @@ def run(args):
             else:
                 print('advanced.config updated')
     except multicase('cluster list', 'cluster'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         r = requests.get(service_url + 'clusters')
         debug_request(debug_flag, r)
         if r.status_code == 200:
@@ -957,6 +943,8 @@ def run(args):
         else:
             print('No clusters created')
     except case('cluster create'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         r = requests.post(service_url + 'clusters/' + cluster, data='')
         debug_request(debug_flag, r)
         if r.text == '' or r.status_code != 200:
@@ -965,6 +953,8 @@ def run(args):
             ppfact('Added cluster: ', r.text, 'Name',
                    'Error creating cluster.')
     except case('cluster restart'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         r = requests.post(service_url + 'clusters/' + cluster + '/restart',
                           data='')
         debug_request(debug_flag, r)
@@ -976,6 +966,8 @@ def run(args):
         else:
             print('Cluster restart initiated.')
     except case('cluster destroy'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         r = requests.delete(service_url + 'clusters/' + cluster, data='')
         debug_request(debug_flag, r)
         if r.status_code != 202:
@@ -984,6 +976,8 @@ def run(args):
         else:
             print('Destroyed cluster: ' + cluster)
     except multicase('node list', 'node'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
         debug_request(debug_flag, r)
         if json_flag:
@@ -991,6 +985,8 @@ def run(args):
         else:
             pparr('Nodes: ', r.text, '[]')
     except case('node info'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
         debug_request(debug_flag, r)
         node_json = json.loads(r.text)
@@ -1000,6 +996,8 @@ def run(args):
               str(node_json[node]['TaskData']['PBPort']))
         ppobj('Node: ', r.text, node, '{}')
     except case('node add'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         for x in range(0, num_nodes):
             r = requests.post(service_url + 'clusters/' + cluster + '/nodes',
                               data='')
@@ -1010,6 +1008,8 @@ def run(args):
                 ppfact('New node: ' + config.get('framework-name') + '-' +
                        cluster + '-', r.text, 'SimpleId', 'Error adding node')
     except case('node remove'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if node == '':
             raise CliError('Node name must be specified')
         r = requests.delete(service_url + 'clusters/' + cluster +
@@ -1021,6 +1021,8 @@ def run(args):
         else:
             print('Removed node')
     except case('node aae-status'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if node == '':
             raise CliError('Node name must be specified')
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
@@ -1032,6 +1034,8 @@ def run(args):
         else:
             ppobj('', r.text, 'aae-status', '{}')
     except case('node status'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if node == '':
             raise CliError('Node name must be specified')
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
@@ -1043,6 +1047,8 @@ def run(args):
         else:
             ppobj('', r.text, 'status', '{}')
     except case('node ringready'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if node == '':
             raise CliError('Node name must be specified')
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
@@ -1054,6 +1060,8 @@ def run(args):
         else:
             ppobj('', r.text, 'ringready', '{}')
     except case('node transfers'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if node == '':
             raise CliError('Node name must be specified')
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
@@ -1065,6 +1073,8 @@ def run(args):
         else:
             ppobj('', r.text, 'transfers', '{}')
     except case('node bucket-type create'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if node == '' or bucket_type == '' or props == '':
             raise CliError('Node name, bucket-type, props must be specified')
         r = requests.post(service_url + 'clusters/' + cluster + '/nodes/' +
@@ -1077,6 +1087,8 @@ def run(args):
         else:
             ppobj('', r.text, '', '{}')
     except case('node bucket-type list'):
+        if service_url is False:
+            raise CliError("Riak Mesos Framework is not running.")
         if node == '':
             raise CliError('Node name must be specified')
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
@@ -1087,7 +1099,7 @@ def run(args):
                   str(r.status_code))
         else:
             ppobj('', r.text, 'bucket_types', '{}')
-    except Exception:
+    except:
         raise CliError('Unrecognized command: ' + cmd)
     return 0
 
@@ -1117,6 +1129,9 @@ def main():
         return 1
     except CliError as e:
         print('CliError: ' + str(e))
+        return 1
+    except Exception as e:
+        print(e)
         return 1
 
 if __name__ == '__main__':
