@@ -715,7 +715,7 @@ def wait_for_framework(config, seconds):
     time.sleep(1)
     return wait_for_framework(config, seconds - 1)
 
-def wait_for_node(config, node):
+def wait_for_node(config, cluster, node):
     if wait_for_framework(config, 60):
         service_url = config.api_url() + 'api/v1/'
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
@@ -859,7 +859,7 @@ def run(args):
         print('Riak Mesos Framework did not respond within 60 seconds.')
         return
     except case('node wait-for-service'):
-        wait_for_node(config, node)
+        wait_for_node(config, cluster, node)
         return
     except case('cluster wait-for-service'):
         if wait_for_framework(config, 60):
@@ -868,7 +868,7 @@ def run(args):
             debug_request(debug_flag, r)
             js = json.loads(r.text)
             for k in js.keys():
-                wait_for_node(config, k)
+                wait_for_node(config, cluster, k)
             return
         print('Riak Mesos Framework did not respond within 60 seconds.')
         return
