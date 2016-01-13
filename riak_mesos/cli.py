@@ -1119,7 +1119,7 @@ def main():
         print('CliError: ' + str(e))
         return 1
     except Exception as e:
-        print('Exception: ' + str(e))
+        raise e
         return 1
 
 if __name__ == '__main__':
