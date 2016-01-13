@@ -849,7 +849,7 @@ def run(args):
         client = create_client(config.get_any('marathon', 'url'))
         client.add_app(framework_json)
         wait_for_framework(config, 60)
-        print('Finished adding ' + framework_json['id'] + ' to marathon')
+        print('Finished adding ' + framework_json['id'] + ' to marathon.')
         return
     except case('framework wait-for-service'):
         if wait_for_framework(config, 60):

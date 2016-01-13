@@ -46,7 +46,7 @@ def test_node_list_add():
     assert c == 0
     assert e == ''
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
-    assert o.strip() == 'Node is ready.'
+    assert o.strip() == 'Node riak-default-1 is ready.'
     assert c == 0
     assert e == ''
 
