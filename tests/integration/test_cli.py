@@ -19,7 +19,7 @@ def test_help():
     c, o, e = _c(['riak-mesos', 'config', '--help'])
     assert c == 0
     assert e == b''
-    assert o.strip() == 'Displays configuration'
+    assert o.strip() == b'Displays configuration'
 
 
 def test_config():
@@ -27,7 +27,7 @@ def test_config():
     js = json.loads(o)
     assert js['director']['use-public'] is False
     assert c == 0
-    assert e == ''
+    assert e == b''
 
 
 def test_framework_config():
@@ -35,4 +35,4 @@ def test_framework_config():
     js = json.loads(o)
     assert js['id'] == 'riak'
     assert c == 0
-    assert e == ''
+    assert e == b''

@@ -13,27 +13,45 @@ Before getting started with the RMF, there are a few environment and system rela
 * Python version 2.7 or above.
 * Operating system is one of: Ubuntu 14.04+, CentOS 7.0+.
 
+Note to DCOS Users
+==================
+All of the below instructions will work for the `dcos riak` command, just replace `riak-mesos` with `dcos riak`. Some other differences will be pointed out in the corresponding sections.
+
 Installation
 ============
 
+DCOS Install
+------------
+* Create a file at `/etc/riak-mesos/config.json` and use this `config.json <config/config.example.json>`_ as a template. More information on configuration values can be found below.
+* Append the DCOS Riak package repo to your DCOS repo sources::
+
+    dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/0.3.0.zip
+
+* Update packages::
+
+    dcos package update
+
+* Install the dcos riak subcommand::
+
+    dcos package install riak --options /etc/riak-mesos/config.json
+
+
 Pip Install
 -----------
+**Note:** You may need to run `pip uninstall riak-mesos` first to ensure the latest version.
+
 .. code::
 
    pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git#egg=riak_mesos
+   pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@0.3.0#egg=riak_mesos
 
 Quick Install
 -------------
+The included install.sh script will download and extract this package into $HOME/bin/riak-mesos-tools. Using this method does not require DCOS or pip or any of the other dependencies, and should work with most basic Python 2.7+ installations.
+
 .. code::
 
    curl -s -L https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/master/install.sh | sh
-   export PATH=$HOME/bin/riak-mesos-tools/bin:$PATH
-   sudo mkdir -p /etc/riak-mesos
-   sudo cp $HOME/bin/riak-mesos-tools/config/config.example.json /etc/riak-mesos/config.json
-
-Manual Install
---------------
-Download and extract [https://github.com/basho-labs/riak-mesos-tools/archive/0.3.0.tar.gz](https://github.com/basho-labs/riak-mesos-tools/archive/0.3.0.tar.gz).
 
 Create a Configuration File
 ---------------------------
@@ -293,14 +311,24 @@ Now that the cluster has undergone some changes, lets verify the data that was w
    curl $RIAK_HTTP/buckets/test/keys/one
    curl $RIAK_HTTP/buckets/test/keys/two
 
+Uninstall RMF
+=============
 
-Destroy a Cluster
------------------
-To kill all of the Riak nodes in a cluster:
+The following tasks can be used depending on the end goal.
+
+DCOS Riak Uninstall
+-------------------
+
+Follow these steps to cleanly remove riak from a DCOS cluster:
 
 .. code::
 
-   riak-mesos cluster destroy
+   dcos riak proxy uninstall
+   dcos riak cluster destroy
+   dcos riak framework uninstall
+   dcos riak framework teardown
+   dcos riak framework clean-metadata
+   dcos package uninstall riak
 
 Uninstall the Proxy
 -------------------
@@ -310,15 +338,13 @@ To remove a RMF Director application instance from Marathon:
 
    riak-mesos proxy uninstall
 
-Remove Zookeeper Metadata
--------------------------
-To remove the `/riak/frameworks/FRAMEWORK_NAME` from Zookeeper:
+Destroy a Cluster
+-----------------
+To kill all of the Riak nodes in a cluster:
 
 .. code::
 
-   riak-mesos framework clean-metadata
-
-**Note:** This is necessary if you intend to uninstall the framework and reinstall it.
+   riak-mesos cluster destroy
 
 Uninstall a framework instance
 ------------------------------
@@ -327,3 +353,25 @@ To remove a RMF application instance from Marathon:
 .. code::
 
    riak-mesos framework uninstall
+
+Kill all RMF Instances and Tasks
+--------------------------------
+.. code::
+
+   riak-mesos framework teardown
+
+Remove Zookeeper Metadata
+-------------------------
+To remove the `/riak/frameworks/FRAMEWORK_NAME` from Zookeeper:
+
+.. code::
+
+   riak-mesos framework clean-metadata
+
+Remove the pip package
+----------------------
+To remove the riak-mesos pip package:
+
+.. code::
+
+   pip uninstall riak-mesos
