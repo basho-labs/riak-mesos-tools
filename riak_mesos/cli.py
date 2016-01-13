@@ -685,7 +685,7 @@ def extract_option(args, name, default, arg_type='string'):
 def debug_request(debug_flag, r):
     debug(debug_flag, 'HTTP URL: ' + r.url)
     debug(debug_flag, 'HTTP Method: ' + r.request.method)
-    debug(debug_flag, 'HTTP Body: ' + r.request.body)
+    debug(debug_flag, 'HTTP Body: ' + str(r.request.body))
     debug(debug_flag, 'HTTP Status: ' + str(r.status_code))
     debug(debug_flag, 'HTTP Response Text: ' + r.text)
 
