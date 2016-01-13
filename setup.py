@@ -113,6 +113,7 @@ setup(
     entry_points={
         'console_scripts': [
             'riak-mesos=riak_mesos.cli:main',
+            'dcos-riak=riak_mesos.cli:main'
         ],
     },
 )
