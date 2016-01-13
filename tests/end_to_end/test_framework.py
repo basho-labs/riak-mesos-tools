@@ -24,7 +24,7 @@ def test_cluster_create():
 
 def test_cluster_list():
     c, o, e = _fc(['cluster', 'list', '--json'])
-    js = json.loads(o)
+    js = json.loads(o.decode("utf-8"))
     assert js["default"]["Name"] == 'default'
     assert c == 0
     assert e == b''

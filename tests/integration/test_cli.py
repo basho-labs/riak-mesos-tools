@@ -24,7 +24,7 @@ def test_help():
 
 def test_config():
     c, o, e = _c(['riak-mesos', 'config', '--json'])
-    js = json.loads(o)
+    js = json.loads(o.decode("utf-8"))
     assert js['director']['use-public'] is False
     assert c == 0
     assert e == b''
@@ -32,7 +32,7 @@ def test_config():
 
 def test_framework_config():
     c, o, e = _c(['riak-mesos', 'framework', 'config', '--json'])
-    js = json.loads(o)
+    js = json.loads(o.decode("utf-8"))
     assert js['id'] == 'riak'
     assert c == 0
     assert e == b''
