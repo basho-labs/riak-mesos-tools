@@ -1,25 +1,23 @@
 from common import exec_framework_command as _fc
 import json
-import requests
-import time
 
 
 def test_framework_install():
     c, o, e = _fc(['framework', 'install'])
-    assert o == b'''Finished adding riak to marathon\n\n'''
+    assert o.strip() == 'Finished adding riak to marathon.'
     assert c == 0
-    assert e == b''
+    assert e == ''
     c, o, e = _fc(['framework', 'wait-for-service'])
-    assert o == b'''Riak Mesos Framework is ready.\n\n'''
+    assert o.strip() == 'Riak Mesos Framework is ready.'
     assert c == 0
-    assert e == b''
+    assert e == ''
 
 
 def test_cluster_create():
     c, o, e = _fc(['cluster', 'create'])
-    expect1 = b'''Added cluster: "default"\n\n'''
-    expect2 = b'''Cluster already exists\n\n'''
-    assert o == expect1 or o == expect2
+    expect1 = 'Added cluster: "default"'
+    expect2 = 'Cluster already exists.'
+    assert o.strip() == expect1 or o.strip() == expect2
     assert c == 0
     assert e == b''
 
@@ -27,7 +25,7 @@ def test_cluster_create():
 def test_cluster_list():
     c, o, e = _fc(['cluster', 'list', '--json'])
     js = json.loads(o)
-    assert js["default"]["Name"] == b'default'
+    assert js["default"]["Name"] == 'default'
     assert c == 0
     assert e == b''
 
@@ -35,20 +33,22 @@ def test_cluster_list():
 def test_node_list_add():
     c, o, e = _fc(['node', 'list'])
     if o == b'''Nodes: []\n\n''':
-        c, o, e = _fc(['node', 'add'])
-        assert o == b'New node: riak-default-1\n\n'
+        c, o, e = _fc(['node', 'add', '--nodes', '2'])
+        assert o.strip() == 'New node: riak-default-1'
         assert c == 0
-        assert e == b''
+        assert e == ''
     else:
         c, o, e = _fc(['node', 'list'])
-        assert o == b'''Nodes: [riak-default-1]\n\n'''
+        assert o.strip() == 'Nodes: [riak-default-1]'
         assert c == 0
-        assert e == b''
-    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
-    assert o == b'''Node is ready.\n\n'''
+        assert e == ''
+    c, o, e = _fc(['cluster', 'wait-for-service'])
     assert c == 0
-    assert e == b''
-
+    assert e == ''
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
+    assert o.strip() == 'Node is ready.'
+    assert c == 0
+    assert e == ''
 
 
 def test_node_status():

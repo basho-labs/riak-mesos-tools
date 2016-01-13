@@ -47,6 +47,7 @@ def usage():
     print('    cluster config advanced [--file]')
     print('    cluster list [--json]')
     print('    cluster create')
+    print('    cluster wait-for-service')
     print('    cluster restart')
     print('    cluster destroy')
     print('    node info --node <name>')
@@ -110,6 +111,8 @@ HELP_DICT = {
     'cluster create':
     ('Creates a new cluster. Specify the name with --cluster (default is '
      'default).'),
+    'cluster wait-for-service':
+    ('Iterates over all nodes in cluster and executes node wait-for-service.'),
     'cluster restart':
     ('Performs a rolling restart on a cluster. Specify the name with '
      '--cluster (default is default).'),
@@ -712,6 +715,21 @@ def wait_for_framework(config, seconds):
     time.sleep(1)
     return wait_for_framework(config, seconds - 1)
 
+def wait_for_node(config, node):
+    if wait_for_framework(config, 60):
+        service_url = config.api_url() + 'api/v1/'
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
+        debug_request(debug_flag, r)
+        node_json = json.loads(r.text)
+        if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
+                        str(node_json[node]['TaskData']['HTTPPort']), 20):
+            print('Node ' + node + ' is ready.')
+            return
+        print('Node ' + node + ' did not respond in 20 seconds.')
+        return
+    print('Riak Mesos Framework did not respond within 60 seconds.')
+    return
+
 
 def run(args):
     def_conf = '/etc/riak-mesos/config.json'
@@ -806,7 +824,7 @@ def run(args):
         director_json = config.director_marathon_json(cluster)
         client = create_client(config.get_any('marathon', 'url'))
         client.add_app(director_json)
-        print('Finished adding ' + director_json['id'] + ' to marathon')
+        print('Finished adding ' + director_json['id'] + ' to marathon.')
         return
     except case('proxy uninstall'):
         client = create_client(config.get_any('marathon', 'url'))
@@ -841,16 +859,16 @@ def run(args):
         print('Riak Mesos Framework did not respond within 60 seconds.')
         return
     except case('node wait-for-service'):
+        wait_for_node(config, node)
+        return
+    except case('cluster wait-for-service'):
         if wait_for_framework(config, 60):
             service_url = config.api_url() + 'api/v1/'
             r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
             debug_request(debug_flag, r)
-            node_json = json.loads(r.text)
-            if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
-                            str(node_json[node]['TaskData']['HTTPPort']), 20):
-                print("Node is ready.")
-                return
-            print("Node did not respond in 20 seconds.")
+            js = json.loads(r.text)
+            for k in obj_arr.keys():
+                wait_for_node(config, k)
             return
         print('Riak Mesos Framework did not respond within 60 seconds.')
         return
@@ -939,7 +957,7 @@ def run(args):
         r = requests.post(service_url + 'clusters/' + cluster, data='')
         debug_request(debug_flag, r)
         if r.text == '' or r.status_code != 200:
-            print('Cluster already exists')
+            print('Cluster already exists.')
         else:
             ppfact('Added cluster: ', r.text, 'Name',
                    'Error creating cluster.')
@@ -948,12 +966,12 @@ def run(args):
                           data='')
         debug_request(debug_flag, r)
         if r.status_code == 404:
-            print('Cluster does not exist')
+            print('Cluster does not exist.')
         elif r.status_code != 202:
             print('Failed to restart cluster, status code: ' +
                   str(r.status_code))
         else:
-            print('Cluster restart initiated')
+            print('Cluster restart initiated.')
     except case('cluster destroy'):
         r = requests.delete(service_url + 'clusters/' + cluster, data='')
         debug_request(debug_flag, r)
@@ -966,7 +984,7 @@ def run(args):
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
         debug_request(debug_flag, r)
         if json_flag:
-            pparr('', r.text, '[]')
+            print(r.text)
         else:
             pparr('Nodes: ', r.text, '[]')
     except case('node info'):
