@@ -172,10 +172,6 @@ class CliError(Exception):
     pass
 
 
-class CaseException(Exception):
-    pass
-
-
 class case_selector(Exception):
     def __init__(self, value):
         Exception.__init__(self, value)
