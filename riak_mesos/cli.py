@@ -172,9 +172,9 @@ class CliError(Exception):
     pass
 
 
-class case_selector(Exception):
+class case_selector(BaseException):
     def __init__(self, value):
-        Exception.__init__(self, value)
+        BaseException.__init__(self, value)
 
 
 def switch(variable):
@@ -857,6 +857,8 @@ def run(args):
         print('Riak Mesos Framework did not respond within 60 seconds.')
         return
     except case('node wait-for-service'):
+        if node == '':
+            raise CliError('Node name must be specified')
         wait_for_node(config, cluster, node)
         return
     except case('cluster wait-for-service'):
@@ -1007,90 +1009,83 @@ def run(args):
     except case('node remove'):
         if node == '':
             raise CliError('Node name must be specified')
+        r = requests.delete(service_url + 'clusters/' + cluster +
+                            '/nodes/' + node, data='')
+        debug_request(debug_flag, r)
+        if r.status_code != 202:
+            print('Failed to remove node, status_code: ' +
+                  str(r.status_code))
         else:
-            r = requests.delete(service_url + 'clusters/' + cluster +
-                                '/nodes/' + node, data='')
-            debug_request(debug_flag, r)
-            if r.status_code != 202:
-                print('Failed to remove node, status_code: ' +
-                      str(r.status_code))
-            else:
-                print('Removed node')
+            print('Removed node')
     except case('node aae-status'):
         if node == '':
             raise CliError('Node name must be specified')
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                         node + '/aae')
+        debug_request(debug_flag, r)
+        if r.status_code != 200:
+            print('Failed to get aae-status, status_code: ' +
+                  str(r.status_code))
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
-                             node + '/aae')
-            debug_request(debug_flag, r)
-            if r.status_code != 200:
-                print('Failed to get aae-status, status_code: ' +
-                      str(r.status_code))
-            else:
-                ppobj('', r.text, 'aae-status', '{}')
+            ppobj('', r.text, 'aae-status', '{}')
     except case('node status'):
         if node == '':
             raise CliError('Node name must be specified')
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                         node + '/status')
+        debug_request(debug_flag, r)
+        if r.status_code != 200:
+            print('Failed to get status, status_code: ' +
+                  str(r.status_code))
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
-                             node + '/status')
-            debug_request(debug_flag, r)
-            if r.status_code != 200:
-                print('Failed to get status, status_code: ' +
-                      str(r.status_code))
-            else:
-                ppobj('', r.text, 'status', '{}')
+            ppobj('', r.text, 'status', '{}')
     except case('node ringready'):
         if node == '':
             raise CliError('Node name must be specified')
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                         node + '/ringready')
+        debug_request(debug_flag, r)
+        if r.status_code != 200:
+            print('Failed to get ringready, status_code: ' +
+                  str(r.status_code))
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
-                             node + '/ringready')
-            debug_request(debug_flag, r)
-            if r.status_code != 200:
-                print('Failed to get ringready, status_code: ' +
-                      str(r.status_code))
-            else:
-                ppobj('', r.text, 'ringready', '{}')
+            ppobj('', r.text, 'ringready', '{}')
     except case('node transfers'):
         if node == '':
             raise CliError('Node name must be specified')
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                         node + '/transfers')
+        debug_request(debug_flag, r)
+        if r.status_code != 200:
+            print('Failed to get transfers, status_code: ' +
+                  str(r.status_code))
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
-                             node + '/transfers')
-            debug_request(debug_flag, r)
-            if r.status_code != 200:
-                print('Failed to get transfers, status_code: ' +
-                      str(r.status_code))
-            else:
-                ppobj('', r.text, 'transfers', '{}')
+            ppobj('', r.text, 'transfers', '{}')
     except case('node bucket-type create'):
         if node == '' or bucket_type == '' or props == '':
             raise CliError('Node name, bucket-type, props must be specified')
+        r = requests.post(service_url + 'clusters/' + cluster + '/nodes/' +
+                          node + '/types/' + bucket_type, data=props)
+        debug_request(debug_flag, r)
+        if r.status_code != 200:
+            print('Failed to create bucket-type, status_code: ' +
+                  str(r.status_code))
+            ppobj('', r.text, '', '{}')
         else:
-            r = requests.post(service_url + 'clusters/' + cluster + '/nodes/' +
-                              node + '/types/' + bucket_type, data=props)
-            debug_request(debug_flag, r)
-            if r.status_code != 200:
-                print('Failed to create bucket-type, status_code: ' +
-                      str(r.status_code))
-                ppobj('', r.text, '', '{}')
-            else:
-                ppobj('', r.text, '', '{}')
+            ppobj('', r.text, '', '{}')
     except case('node bucket-type list'):
         if node == '':
             raise CliError('Node name must be specified')
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                         node + '/types')
+        debug_request(debug_flag, r)
+        if r.status_code != 200:
+            print('Failed to get bucket types, status_code: ' +
+                  str(r.status_code))
         else:
-            r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
-                             node + '/types')
-            debug_request(debug_flag, r)
-            if r.status_code != 200:
-                print('Failed to get bucket types, status_code: ' +
-                      str(r.status_code))
-            else:
-                ppobj('', r.text, 'bucket_types', '{}')
+            ppobj('', r.text, 'bucket_types', '{}')
     except Exception as e:
-        raise CliError('Unrecognized command ' + cmd + ': ' + str(e))
+        raise CliError('Error running command ' + cmd + ': ' + str(e))
     return 0
 
 
