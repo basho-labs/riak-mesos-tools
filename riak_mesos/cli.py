@@ -719,7 +719,6 @@ def wait_for_node(config, cluster, node):
     if wait_for_framework(config, 60):
         service_url = config.api_url() + 'api/v1/'
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
-        debug_request(debug_flag, r)
         node_json = json.loads(r.text)
         if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
                         str(node_json[node]['TaskData']['HTTPPort']), 20):
