@@ -814,7 +814,7 @@ def run(args):
             return
         js = json.loads(r.text)
         for fw in js['frameworks']:
-            if fw['name'] == config.get('framework-name') and fw['active']:
+            if fw['name'] == config.get('framework-name'):
                 r = requests.post('http://leader.mesos:5050/master/teardown', data='frameworkId='+fw['id'])
                 debug_request(debug_flag, r)
         print('Finished teardown.')
