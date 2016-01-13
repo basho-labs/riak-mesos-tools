@@ -1090,8 +1090,8 @@ def run(args):
                   str(r.status_code))
         else:
             ppobj('', r.text, 'bucket_types', '{}')
-    except Exception as e:
-        raise CliError('Error running command ' + cmd + ': ' + str(e))
+    except Exception:
+        raise CliError('Unrecognized command: ' + cmd)
     return 0
 
 
@@ -1120,9 +1120,6 @@ def main():
         return 1
     except CliError as e:
         print('CliError: ' + str(e))
-        return 1
-    except Exception as e:
-        raise e
         return 1
 
 if __name__ == '__main__':
