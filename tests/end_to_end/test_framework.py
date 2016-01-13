@@ -34,7 +34,8 @@ def test_node_list_add():
     c, o, e = _fc(['node', 'list'])
     if o == b'''Nodes: []\n\n''':
         c, o, e = _fc(['node', 'add', '--nodes', '2'])
-        assert o.strip() == b'New node: riak-default-1'
+        assert o.strip() == b'''New node: riak-default-1
+New node: riak-default-2'''
         assert c == 0
         assert e == b''
     else:
