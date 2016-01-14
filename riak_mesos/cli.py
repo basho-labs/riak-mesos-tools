@@ -808,7 +808,7 @@ def run(args):
                 print(result)
             else:
                 print("Unable to remove framework zookeeper data.")
-                break
+            break
         if case('framework teardown'):
             r = requests.get('http://leader.mesos:5050/master/state.json')
             debug_request(debug_flag, r)
@@ -919,7 +919,7 @@ def run(args):
                            'Error getting cluster.')
                 else:
                     print('Cluster not created.')
-                    break
+                break
             with open(riak_file) as data_file:
                 r = requests.post(service_url + 'clusters/' + cluster +
                                   '/config', data=data_file)
@@ -942,7 +942,7 @@ def run(args):
                            'Error getting cluster.')
                 else:
                     print('Cluster not created.')
-                return
+                break
             with open(riak_file) as data_file:
                 r = requests.post(service_url + 'clusters/' + cluster +
                                   '/advancedConfig', data=data_file)
@@ -1074,7 +1074,7 @@ def run(args):
                       str(r.status_code))
             else:
                 ppobj('', r.text, 'aae-status', '{}')
-                break
+            break
         if case('node status'):
             service_url = config.api_url()
             if service_url is False:
