@@ -696,39 +696,42 @@ def debug(debug_flag, debug_string):
         print('[DEBUG]' + debug_string + '[/DEBUG]')
 
 
-def wait_for_url(url, seconds):
+def wait_for_url(url, debug_flag, seconds):
     if seconds == 0:
         return False
     try:
         r = requests.get(url)
+        debug_request(debug_flag, r)
         if r.status_code == 200:
             return True
     except:
         pass
     time.sleep(1)
-    return wait_for_url(url, seconds - 1)
+    return wait_for_url(url, debug_flag, seconds - 1)
 
 
-def wait_for_framework(config, seconds):
+def wait_for_framework(config, debug_flag, seconds):
     if seconds == 0:
         return False
     try:
         healthcheck_url = config.api_url() + 'healthcheck'
-        if wait_for_url(healthcheck_url, 1):
+        if wait_for_url(healthcheck_url, debug_flag, 1):
             return True
     except:
         pass
     time.sleep(1)
-    return wait_for_framework(config, seconds - 1)
+    return wait_for_framework(config, debug_flag, seconds - 1)
 
 
-def wait_for_node(config, cluster, node):
-    if wait_for_framework(config, 60):
+def wait_for_node(config, cluster, debug_flag, node):
+    if wait_for_framework(config, debug_flag, 60):
         service_url = config.api_url()
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
+        debug_request(debug_flag, r)
         node_json = json.loads(r.text)
         if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
-                        str(node_json[node]['TaskData']['HTTPPort']), 20):
+                        str(node_json[node]['TaskData']['HTTPPort']),
+                        debug_flag, 20):
             print('Node ' + node + ' is ready.')
             return
         print('Node ' + node + ' did not respond in 20 seconds.')
@@ -857,11 +860,10 @@ def run(args):
             framework_json = config.framework_marathon_json()
             client = create_client(config.get_any('marathon', 'url'))
             client.add_app(framework_json)
-            wait_for_framework(config, 60)
             print('Finished adding ' + framework_json['id'] + ' to marathon.')
             break
         if case('framework wait-for-service'):
-            if wait_for_framework(config, 60):
+            if wait_for_framework(config, debug_flag, 60):
                 print('Riak Mesos Framework is ready.')
                 return
             print('Riak Mesos Framework did not respond within 60 seconds.')
@@ -869,23 +871,23 @@ def run(args):
         if case('node wait-for-service'):
             if node == '':
                 raise CliError('Node name must be specified')
-            wait_for_node(config, cluster, node)
+            wait_for_node(config, cluster, debug_flag, node)
             break
         if case('cluster wait-for-service'):
-            if wait_for_framework(config, 60):
+            if wait_for_framework(config, debug_flag, 60):
                 service_url = config.api_url()
                 r = requests.get(service_url + 'clusters/' + cluster +
                                  '/nodes')
                 debug_request(debug_flag, r)
                 js = json.loads(r.text)
                 for k in js.keys():
-                    wait_for_node(config, cluster, k)
+                    wait_for_node(config, cluster, debug_flag, k)
                     return
                 print('Riak Mesos Framework did not respond within 60 '
                       'seconds.')
             break
         if case('proxy wait-for-service'):
-            if wait_for_framework(config, 60):
+            if wait_for_framework(config, debug_flag, 60):
                 client = create_client(config.get_any('marathon', 'url'))
                 app = client.get_app(config.get('framework-name') +
                                      '-director')
@@ -896,7 +898,7 @@ def run(args):
                 ports = task['ports']
                 hostname = task['host']
                 if wait_for_url('http://' + hostname + ':' +
-                                str(ports[0]), 20):
+                                str(ports[0]), debug_flag, 20):
                     print("Proxy is ready.")
                     return
                 print("Proxy did not respond in 20 seconds.")
@@ -904,8 +906,17 @@ def run(args):
             print('Riak Mesos Framework did not respond within 60 seconds.')
             break
         if case('framework endpoints'):
-            print('Not yet implemented.')
-            # TODO impl
+            service_url = config.api_url()
+            if service_url is False:
+                raise CliError("Riak Mesos Framework is not running.")
+            if riak_file == '':
+                r = requests.get(service_url + 'clusters/' + cluster)
+                debug_request(debug_flag, r)
+                if r.status_code == 200:
+                    ppfact('riak.conf: ', r.text, 'RiakConfig',
+                           'Error getting cluster.')
+                else:
+                    print('Cluster not created.')
             break
         if case('cluster config'):
             service_url = config.api_url()
