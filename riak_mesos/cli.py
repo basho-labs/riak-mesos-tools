@@ -909,14 +909,7 @@ def run(args):
             service_url = config.api_url()
             if service_url is False:
                 raise CliError("Riak Mesos Framework is not running.")
-            if riak_file == '':
-                r = requests.get(service_url + 'clusters/' + cluster)
-                debug_request(debug_flag, r)
-                if r.status_code == 200:
-                    ppfact('riak.conf: ', r.text, 'RiakConfig',
-                           'Error getting cluster.')
-                else:
-                    print('Cluster not created.')
+            print("Framework HTTP API: " + service_url)
             break
         if case('cluster config'):
             service_url = config.api_url()
