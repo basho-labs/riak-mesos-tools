@@ -372,7 +372,7 @@ class Config(object):
                 'ip': '',
                 'hostname': 'riak.mesos',
                 'log': '',
-                'user': 'root',
+                'user': 'ubuntu',
                 'framework-name': 'riak',
                 'role': 'riak',
                 'url': riak_url,
