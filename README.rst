@@ -81,6 +81,7 @@ The resulting `/etc/riak-mesos/config.json` can then be modified to fit your env
 * `riak.node.mem`: Amount of Disk resources per Riak node. Default value is: `20000`.
 * `riak.role`: Mesos role for the RMF and tasks. Required for Dynamic Reservations / Persistent Volumes.
   * ***Note:*** The Mesos master may need to be restarted with `MESOS_ROLES=riak` or `--roles=riak`.
+* `riak.user`: The user which will run the Riak process and executor. The user must exist on all of the Mesos agents, and **must not be root**.
 * `riak.auth-principal`: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
 * `riak.flags`: Any additional flags to pass to the RMF. Default value is: `"-use_reservations"`. Remove this parameter when running Mesos version 0.23 or lower.
 * `director.url`: Location for the RMF smart proxy. The smart proxy will automatically detect changes in the Riak cluster topology based on updates to Zookeeper values stored by each of the running Riak nodes.
