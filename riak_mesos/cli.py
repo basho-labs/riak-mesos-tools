@@ -714,7 +714,7 @@ def wait_for_framework(config, debug_flag, seconds):
     if seconds == 0:
         return False
     try:
-        healthcheck_url = config.api_url() + 'healthcheck'
+        healthcheck_url = config.api_url() + 'clusters'
         if wait_for_url(healthcheck_url, debug_flag, 1):
             return True
     except:
