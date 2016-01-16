@@ -710,7 +710,6 @@ def wait_for_url(url, debug_flag, seconds):
     if seconds == 0:
         return False
     try:
-        print('.',)
         r = requests.get(url)
         debug_request(debug_flag, r)
         if r.status_code == 200:
@@ -936,7 +935,7 @@ def run(args):
                     for k in js.keys():
                         cluster_data[k] = node_info(config, cluster,
                                                     debug_flag, k)
-                        print(json.dumps(cluster_data))
+                    print(json.dumps(cluster_data))
                 else:
                     print(r.text)
                 break
