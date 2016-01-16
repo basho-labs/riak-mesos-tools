@@ -761,9 +761,10 @@ def node_info(config, cluster, debug_flag, node):
     direct_host = node_json[node]['Hostname']
     mesos_dns_host = node + '.' + fw + '.mesos'
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
-
     alive = False
-    if wait_for_url(direct_host + ':' + http_port, debug_flag, 1):
+    r = requests.get(direct_host + ':' + http_port)
+    debug_request(debug_flag, r)
+    if r.status_code == 200:
         alive = True
     node_data = {
         'http_direct': direct_host + ':' + http_port,
