@@ -930,12 +930,15 @@ def run(args):
                 r = requests.get(service_url + 'clusters/' + cluster +
                                  '/nodes')
                 debug_request(debug_flag, r)
-                js = json.loads(r.text)
-                cluster_data = {}
-                for k in js.keys():
-                    cluster_data[k] = node_info(config, cluster, debug_flag,
-                                                node)
-                print(json.dumps(cluster_data))
+                if r.status_code == 200:
+                    js = json.loads(r.text)
+                    cluster_data = {}
+                    for k in js.keys():
+                        cluster_data[k] = node_info(config, cluster,
+                                                    debug_flag, node)
+                        print(json.dumps(cluster_data))
+                else:
+                    print(r.text)
                 break
             print('Riak Mesos Framework did not respond within 60 '
                   'seconds.')
