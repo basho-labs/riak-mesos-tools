@@ -759,7 +759,6 @@ def node_info(config, cluster, debug_flag, node):
     http_port = str(node_json[node]['TaskData']['HTTPPort'])
     pb_port = str(node_json[node]['TaskData']['PBPort'])
     direct_host = node_json[node]['Hostname']
-    mesos_dns_host = node + '.' + fw + '.mesos'
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
     alive = False
     r = requests.get('http://' + direct_host + ':' + http_port)
@@ -768,11 +767,9 @@ def node_info(config, cluster, debug_flag, node):
         alive = True
     node_data = {
         'http_direct': direct_host + ':' + http_port,
-        'http_mesos_dns_node': mesos_dns_host + ':' + http_port,
-        'http_mesos_dns_cluster': mesos_dns_cluster + ':' + http_port,
+        'http_mesos_dns': mesos_dns_cluster + ':' + http_port,
         'pb_direct': direct_host + ':' + pb_port,
-        'pb_mesos_dns_node': mesos_dns_host + ':' + pb_port,
-        'pb_mesos_dns_cluster': mesos_dns_cluster + ':' + pb_port,
+        'pb_mesos_dns': mesos_dns_cluster + ':' + pb_port,
         'alive': alive
     }
     return node_data
