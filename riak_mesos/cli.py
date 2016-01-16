@@ -661,6 +661,10 @@ def validate_arg(opt, arg, arg_type='string'):
         raise CliError('Invalid integer for opt: ' + opt + ' [' + arg + '].')
 
 
+def test_flag(args, name):
+    return name in args
+
+
 def extract_flag(args, name):
     val = False
     if name in args:
@@ -1224,18 +1228,27 @@ def main():
     if '--config-schema' in args:
         print('{}')
         return 0
+
+    debug_flag = test_flag(args, '--debug')
+
     try:
         return_code = run(args)
         print('')
         return return_code
     except requests.exceptions.ConnectionError as e:
         print('ConnectionError: ' + str(e))
+        if debug_flag:
+            raise e
         return 1
     except CliError as e:
         print('CliError: ' + str(e))
+        if debug_flag:
+            raise e
         return 1
     except Exception as e:
         print(e)
+        if debug_flag:
+            raise e
         return 1
 
 if __name__ == '__main__':
