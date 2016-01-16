@@ -710,7 +710,7 @@ def wait_for_url(url, debug_flag, seconds):
     if seconds == 0:
         return False
     try:
-        print('.', end="")
+        print('.',)
         r = requests.get(url)
         debug_request(debug_flag, r)
         if r.status_code == 200:
