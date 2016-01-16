@@ -204,6 +204,8 @@ class switch(object):
 
 
 def _to_exception(response):
+    if response is None:
+        return Exception("Unable to get valid response.")
     if response.status_code == 400:
         msg = 'Error on request [{0} {1}]: HTTP {2}: {3}'.format(
             response.request.method,
