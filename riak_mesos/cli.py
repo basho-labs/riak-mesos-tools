@@ -754,13 +754,13 @@ def node_info(config, cluster, debug_flag, node):
     service_url = config.api_url()
     r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
     debug_request(debug_flag, r)
+    fw = config.get('framework-name')
     node_json = json.loads(r.text)
     http_port = str(node_json[node]['TaskData']['HTTPPort'])
     pb_port = str(node_json[node]['TaskData']['PBPort'])
     direct_host = node_json[node]['Hostname']
-    mesos_dns_host = node + '.' + config.get('framework-name') + '.mesos'
-    mesos_dns_cluster = config.get('framework-name') + '-' + cluster + '.'
-    + config.get('framework-name') + '.mesos'
+    mesos_dns_host = node + '.' + fw + '.mesos'
+    mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
 
     alive = False
     if wait_for_url(direct_host + ':' + http_port, debug_flag, 20):
