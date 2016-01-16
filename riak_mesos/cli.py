@@ -928,7 +928,7 @@ def run(args):
                 for k in js.keys():
                     cluster_data[k] = node_info(config, cluster, debug_flag,
                                                 node)
-                print json.dumps(cluster_data)
+                print(json.dumps(cluster_data))
                 break
             print('Riak Mesos Framework did not respond within 60 '
                   'seconds.')
