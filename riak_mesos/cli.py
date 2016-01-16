@@ -740,6 +740,38 @@ def wait_for_node(config, cluster, debug_flag, node):
     return
 
 
+def node_info(config, cluster, debug_flag, node):
+    if wait_for_framework(config, debug_flag, 60):
+        service_url = config.api_url()
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
+        debug_request(debug_flag, r)
+        node_json = json.loads(r.text)
+        http_port = str(node_json[node]['TaskData']['HTTPPort'])
+        pb_port = str(node_json[node]['TaskData']['PBPort'])
+        direct_host = node_json[node]['Hostname']
+        mesos_dns_host = node + '.' + config.get('framework-name') + '.mesos'
+        mesos_dns_cluster = config.get('framework-name') + '-' + cluster + '.'
+        '' + config.get('framework-name') + '.mesos'
+
+        alive = False
+        if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
+                        str(node_json[node]['TaskData']['HTTPPort']),
+                        debug_flag, 20):
+            alive = True
+        node_data = {
+            'http_direct': direct_host + ':' + http_port,
+            'http_mesos_dns_node': mesos_dns_host + ':' + http_port,
+            'http_mesos_dns_cluster': mesos_dns_cluster + ':' + http_port,
+            'pb_direct': direct_host + ':' + pb_port,
+            'pb_mesos_dns_node': mesos_dns_host + ':' + pb_port,
+            'pb_mesos_dns_cluster': mesos_dns_cluster + ':' + pb_port,
+            'alive': alive
+        }
+        return node_data
+    print('Riak Mesos Framework did not respond within 60 seconds.')
+    return
+
+
 def run(args):
     def_conf = '/etc/riak-mesos/config.json'
     args, config_file = extract_option(args, '--config', def_conf)
@@ -883,8 +915,23 @@ def run(args):
                 for k in js.keys():
                     wait_for_node(config, cluster, debug_flag, k)
                 break
-                print('Riak Mesos Framework did not respond within 60 '
-                      'seconds.')
+            print('Riak Mesos Framework did not respond within 60 '
+                  'seconds.')
+            break
+        if case('cluster endpoints'):
+            if wait_for_framework(config, debug_flag, 60):
+                service_url = config.api_url()
+                r = requests.get(service_url + 'clusters/' + cluster +
+                                 '/nodes')
+                debug_request(debug_flag, r)
+                js = json.loads(r.text)
+                cluster_data = {}
+                for k in js.keys():
+                    cluster_data[k] = node_info(config, cluster, debug_flag, node)
+                print json.dumps(cluster_data)
+                break
+            print('Riak Mesos Framework did not respond within 60 '
+                  'seconds.')
             break
         if case('proxy wait-for-service'):
             if wait_for_framework(config, debug_flag, 60):
