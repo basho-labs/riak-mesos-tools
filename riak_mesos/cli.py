@@ -754,7 +754,7 @@ def node_info(config, cluster, debug_flag, node):
         direct_host = node_json[node]['Hostname']
         mesos_dns_host = node + '.' + config.get('framework-name') + '.mesos'
         mesos_dns_cluster = config.get('framework-name') + '-' + cluster + '.'
-        '' + config.get('framework-name') + '.mesos'
+        + config.get('framework-name') + '.mesos'
 
         alive = False
         if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
@@ -770,6 +770,7 @@ def node_info(config, cluster, debug_flag, node):
             'pb_mesos_dns_cluster': mesos_dns_cluster + ':' + pb_port,
             'alive': alive
         }
+        debug(debug_flag, json.dumps(node_data))
         return node_data
     print('Riak Mesos Framework did not respond within 60 seconds.')
     return
