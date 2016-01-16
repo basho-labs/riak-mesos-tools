@@ -22,6 +22,7 @@ import json
 import os
 import sys
 import time
+import traceback
 from sys import platform as _platform
 
 import requests
@@ -1238,16 +1239,19 @@ def main():
     except requests.exceptions.ConnectionError as e:
         print('ConnectionError: ' + str(e))
         if debug_flag:
+            traceback.print_exc()
             raise e
         return 1
     except CliError as e:
         print('CliError: ' + str(e))
         if debug_flag:
+            traceback.print_exc()
             raise e
         return 1
     except Exception as e:
         print(e)
         if debug_flag:
+            traceback.print_exc()
             raise e
         return 1
 
