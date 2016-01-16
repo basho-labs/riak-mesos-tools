@@ -710,6 +710,7 @@ def wait_for_url(url, debug_flag, seconds):
     if seconds == 0:
         return False
     try:
+        print('.', end="")
         r = requests.get(url)
         debug_request(debug_flag, r)
         if r.status_code == 200:
@@ -763,7 +764,7 @@ def node_info(config, cluster, debug_flag, node):
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
 
     alive = False
-    if wait_for_url(direct_host + ':' + http_port, debug_flag, 20):
+    if wait_for_url(direct_host + ':' + http_port, debug_flag, 1):
         alive = True
     node_data = {
         'http_direct': direct_host + ':' + http_port,
@@ -774,7 +775,6 @@ def node_info(config, cluster, debug_flag, node):
         'pb_mesos_dns_cluster': mesos_dns_cluster + ':' + pb_port,
         'alive': alive
     }
-    debug(debug_flag, json.dumps(node_data))
     return node_data
 
 
