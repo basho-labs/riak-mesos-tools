@@ -817,7 +817,7 @@ def run(args):
             debug_request(debug_flag, r)
             if r.status_code != 200:
                 print('Failed to get state.json from master.')
-                return
+                break
             js = json.loads(r.text)
             for fw in js['frameworks']:
                 if fw['name'] == config.get('framework-name'):
@@ -865,7 +865,7 @@ def run(args):
         if case('framework wait-for-service'):
             if wait_for_framework(config, debug_flag, 60):
                 print('Riak Mesos Framework is ready.')
-                return
+                break
             print('Riak Mesos Framework did not respond within 60 seconds.')
             break
         if case('node wait-for-service'):
@@ -882,6 +882,7 @@ def run(args):
                 js = json.loads(r.text)
                 for k in js.keys():
                     wait_for_node(config, cluster, debug_flag, k)
+                break
                 print('Riak Mesos Framework did not respond within 60 '
                       'seconds.')
             break
@@ -892,16 +893,16 @@ def run(args):
                                      '-director')
                 if(len(app['tasks'] == 0)):
                     print("Proxy is not installed.")
-                    return
+                    break
                 task = app['tasks'][0]
                 ports = task['ports']
                 hostname = task['host']
                 if wait_for_url('http://' + hostname + ':' +
                                 str(ports[0]), debug_flag, 20):
                     print("Proxy is ready.")
-                    return
+                    break
                 print("Proxy did not respond in 20 seconds.")
-                return
+                break
             print('Riak Mesos Framework did not respond within 60 seconds.')
             break
         if case('framework endpoints'):
