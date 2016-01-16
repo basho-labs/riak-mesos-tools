@@ -882,7 +882,6 @@ def run(args):
                 js = json.loads(r.text)
                 for k in js.keys():
                     wait_for_node(config, cluster, debug_flag, k)
-                    return
                 print('Riak Mesos Framework did not respond within 60 '
                       'seconds.')
             break
