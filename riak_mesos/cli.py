@@ -935,7 +935,7 @@ def run(args):
                     cluster_data = {}
                     for k in js.keys():
                         cluster_data[k] = node_info(config, cluster,
-                                                    debug_flag, node)
+                                                    debug_flag, k)
                         print(json.dumps(cluster_data))
                 else:
                     print(r.text)
