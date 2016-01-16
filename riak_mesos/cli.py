@@ -48,6 +48,7 @@ def usage():
     print('    cluster list [--json]')
     print('    cluster create')
     print('    cluster wait-for-service')
+    print('    cluster endpoints')
     print('    cluster restart')
     print('    cluster destroy')
     print('    node info --node <name>')
@@ -115,6 +116,8 @@ HELP_DICT = {
      'default).'),
     'cluster wait-for-service':
     ('Iterates over all nodes in cluster and executes node wait-for-service.'),
+    'cluster endpoints':
+    ('Iterates over all nodes in cluster and prints connection information.'),
     'cluster restart':
     ('Performs a rolling restart on a cluster. Specify the name with '
      '--cluster (default is default).'),
