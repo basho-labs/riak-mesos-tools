@@ -762,7 +762,7 @@ def node_info(config, cluster, debug_flag, node):
     mesos_dns_host = node + '.' + fw + '.mesos'
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
     alive = False
-    r = requests.get(direct_host + ':' + http_port)
+    r = requests.get('http://' + direct_host + ':' + http_port)
     debug_request(debug_flag, r)
     if r.status_code == 200:
         alive = True
