@@ -84,8 +84,11 @@ def test_cluster_restart():
     assert c == 0
     assert e == ''
     c, o, e = _fc(['cluster', 'wait-for-service'])
-    assert o.strip() == b'''Node riak-default-1 is ready.
+    expect1 = b'''Node riak-default-1 is ready.
 Node riak-default-2 is ready.'''
+    expect2 = b'''Node riak-default-2 is ready.
+Node riak-default-1 is ready.'''
+    assert o.strip() == expect1 or o.strip() == expect2
     assert c == 0
     assert e == b''
 
