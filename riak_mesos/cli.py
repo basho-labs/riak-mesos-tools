@@ -366,8 +366,8 @@ class Config(object):
 
     def default_framework_config(self):
         download_base = 'http://riak-tools.s3.amazonaws.com'
-        download_base += '/riak-mesos/ubuntu/'
-        riak_pkg = 'riak_mesos_linux_amd64_0.3.0.tar.gz'
+        download_base += '/riak-mesos/erlang/mesos-0.26/ubuntu/'
+        riak_pkg = 'riak_mesos_linux_amd64_0.3.1.tar.gz'
         director_pkg = 'riak_mesos_director_linux_amd64_0.3.0.tar.gz'
         riak_url = download_base + riak_pkg
         director_url = download_base + director_pkg
@@ -1229,7 +1229,7 @@ def main():
         print('Start and manage Riak nodes')
         return 0
     if '--version' in args:
-        print('Riak Mesos Framework Version 0.3.0')
+        print('Riak Mesos Framework Version 0.3.1')
         return 0
     if '--config-schema' in args:
         print('{}')

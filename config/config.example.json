@@ -31,7 +31,7 @@
         },
         "role": "riak",
         "super-chroot": "true",
-        "url": "http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_linux_amd64_0.3.0.tar.gz",
+        "url": "http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz",
         "user": "ubuntu",
         "zk": "leader.mesos:2181"
     }
