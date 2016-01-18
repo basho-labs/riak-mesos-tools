@@ -1,4 +1,5 @@
 import json
+import time
 
 from common import exec_framework_command as _fc
 
@@ -72,6 +73,7 @@ def test_cluster_restart():
     assert o.strip() == b'Cluster restart initiated.'
     assert c == 0
     assert e == b''
+    time.sleep(10)
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
     assert c == 0
     assert e == ''
@@ -83,3 +85,6 @@ def test_cluster_restart():
 Node riak-default-2 is ready.'''
     assert c == 0
     assert e == b''
+
+
+
