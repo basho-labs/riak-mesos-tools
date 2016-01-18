@@ -41,14 +41,18 @@ New node: riak-default-2'''
         assert e == b''
     else:
         c, o, e = _fc(['node', 'list'])
-        assert o.strip() == b'Nodes: [riak-default-1]'
+        assert o.strip() == b'Nodes: [riak-default-1, riak-default-2]'
         assert c == 0
         assert e == b''
-    c, o, e = _fc(['cluster', 'wait-for-service'])
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
+    assert c == 0
+    assert e == ''
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-2'])
     assert c == 0
     assert e == ''
     c, o, e = _fc(['cluster', 'wait-for-service'])
-    assert o.strip() == b'Node riak-default-1 is ready.'
+    assert o.strip() == b'''Node riak-default-1 is ready.
+Node riak-default-2 is ready.'''
     assert c == 0
     assert e == b''
 
@@ -56,6 +60,6 @@ New node: riak-default-2'''
 def test_node_status():
     c, o, e = _fc(['node', 'status', '--node', 'riak-default-1'])
     js = json.loads(o.decode("utf-8").strip())
-    assert js["default"]["Name"] == 'default'
+    assert js["valid"] == 2
     assert c == 0
     assert e == b''
