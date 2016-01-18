@@ -54,8 +54,11 @@ New node: riak-default-2'''
     assert c == 0
     assert e == ''
     c, o, e = _fc(['cluster', 'wait-for-service'])
-    assert o.strip() == b'''Node riak-default-1 is ready.
+    expect1 = b'''Node riak-default-1 is ready.
 Node riak-default-2 is ready.'''
+    expect2 = b'''Node riak-default-2 is ready.
+Node riak-default-1 is ready.'''
+    assert o.strip() == expect1 or o.strip() == expect2
     assert c == 0
     assert e == b''
 
@@ -73,7 +76,7 @@ def test_cluster_restart():
     assert o.strip() == b'Cluster restart initiated.'
     assert c == 0
     assert e == b''
-    time.sleep(10)
+    time.sleep(15)
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
     assert c == 0
     assert e == ''
@@ -87,4 +90,13 @@ Node riak-default-2 is ready.'''
     assert e == b''
 
 
-
+def test_uninstall():
+    c, o, e = _fc(['cluster', 'destroy'])
+    assert c == 0
+    time.sleep(15)
+    c, o, e = _fc(['framework', 'uninstall'])
+    assert c == 0
+    c, o, e = _fc(['framework', 'teardown'])
+    assert c == 0
+    c, o, e = _fc(['framework', 'clean-metadata'])
+    assert c == 0
