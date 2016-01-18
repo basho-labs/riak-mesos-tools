@@ -41,7 +41,9 @@ New node: riak-default-2'''
         assert e == b''
     else:
         c, o, e = _fc(['node', 'list'])
-        assert o.strip() == b'Nodes: [riak-default-1, riak-default-2]'
+        expect1 = b'Nodes: [riak-default-1, riak-default-2]'
+        expect2 = b'Nodes: [riak-default-2, riak-default-1]'
+        assert o.strip() == expect1 or o.strip() == expect2
         assert c == 0
         assert e == b''
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
