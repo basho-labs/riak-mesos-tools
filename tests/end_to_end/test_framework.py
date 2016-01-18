@@ -54,7 +54,7 @@ New node: riak-default-2'''
 
 
 def test_node_status():
-    c, o, e = _fc(['node', 'status'])
+    c, o, e = _fc(['node', 'status', '--node', 'riak-default-1'])
     js = json.loads(o.decode("utf-8").strip())
     assert js["default"]["Name"] == 'default'
     assert c == 0
