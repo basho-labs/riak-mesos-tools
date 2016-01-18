@@ -733,7 +733,7 @@ def wait_for_framework(config, debug_flag, seconds):
     return wait_for_framework(config, debug_flag, seconds - 1)
 
 
-def wait_for_node(config, cluster, debug_flag, node):
+def wait_for_node(config, cluster, debug_flag, node, seconds):
     if wait_for_framework(config, debug_flag, 60):
         service_url = config.api_url()
         r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
@@ -742,8 +742,11 @@ def wait_for_node(config, cluster, debug_flag, node):
         if wait_for_url('http://' + node_json[node]['Hostname'] + ':' +
                         str(node_json[node]['TaskData']['HTTPPort']),
                         debug_flag, 20):
-            print('Node ' + node + ' is ready.')
-            return
+            if node_json[node]['CurrentState'] == 3:
+                print('Node ' + node + ' is ready.')
+                return
+            return wait_for_node(config, cluster, debug_flag, node,
+                                 seconds - 1)
         print('Node ' + node + ' did not respond in 20 seconds.')
         return
     print('Riak Mesos Framework did not respond within 60 seconds.')
@@ -906,7 +909,7 @@ def run(args):
         if case('node wait-for-service'):
             if node == '':
                 raise CliError('Node name must be specified')
-            wait_for_node(config, cluster, debug_flag, node)
+            wait_for_node(config, cluster, debug_flag, node, 20)
             break
         if case('cluster wait-for-service'):
             if wait_for_framework(config, debug_flag, 60):
@@ -916,7 +919,7 @@ def run(args):
                 debug_request(debug_flag, r)
                 js = json.loads(r.text)
                 for k in js.keys():
-                    wait_for_node(config, cluster, debug_flag, k)
+                    wait_for_node(config, cluster, debug_flag, k, 20)
                 break
             print('Riak Mesos Framework did not respond within 60 '
                   'seconds.')
