@@ -3,8 +3,9 @@ import subprocess
 
 
 def exec_framework_command(cmd, env=None, stdin=None):
-    config = os.path.dirname(__file__) + '/../../config/config.test.json'
-    cmd = ['riak-mesos', '--config', config] + cmd
+    # config = os.path.dirname(__file__) + '/../../config/config.test.json'
+    # cmd = ['riak-mesos', '--config', config] + cmd
+    cmd = ['riak-mesos'] + cmd
     return exec_command(cmd, env, stdin)
 
 
