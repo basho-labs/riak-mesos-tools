@@ -65,3 +65,21 @@ def test_node_status():
     assert js["valid"] == 2
     assert c == 0
     assert e == b''
+
+
+def test_cluster_restart():
+    c, o, e = _fc(['cluster', 'restart'])
+    assert o.strip() == b'Cluster restart initiated.'
+    assert c == 0
+    assert e == b''
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
+    assert c == 0
+    assert e == ''
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-2'])
+    assert c == 0
+    assert e == ''
+    c, o, e = _fc(['cluster', 'wait-for-service'])
+    assert o.strip() == b'''Node riak-default-1 is ready.
+Node riak-default-2 is ready.'''
+    assert c == 0
+    assert e == b''
