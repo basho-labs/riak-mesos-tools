@@ -526,7 +526,6 @@ class Config(object):
                         self._config[k][j] = override[k][j]
             else:
                 self._config[k] = override[k]
-        print(json.dumps(self._config))
 
 
 # Marathon
