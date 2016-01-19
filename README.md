@@ -76,24 +76,19 @@ The resulting `/etc/riak-mesos/config.json` can then be modified to fit your env
     -   Ubuntu 14.04 with Erlang Executor (Mesos 0.26 Only): `http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz`
     -   CentOS/RHEL 7 with Golang Executor: `http://riak-tools.s3.amazonaws.com/riak-mesos/golang/centos/riak_mesos_linux_amd64_0.3.1.tar.gz`
     -   CentOS/RHEL 7 with Erlang Executor (Mesos 0.26 Only): `http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/centos/riak_mesos_linux_amd64_0.3.1.tar.gz`
-
 -   `riak.master`: The address for the Mesos master. Example values:
     -   `localhost:5050`
     -   `leader.mesos:5050`
     -   `zk://leader.mesos:2181/mesos`
-
 -   `riak.zk`: The address for Zookeeper. Default value is: `leader.mesos:2181`.
 -   `riak.cpus`: Amount of CPU resources for the Framework task. Default value is: `0.5`.
 -   `riak.mem`: Amount of Memory for the Framework task. Default value is: `2048`.
 -   `riak.node.cpus`: Amount of CPU resources per Riak node. Default value is: `1.0`.
 -   `riak.node.disk`: Amount of Memory resources per Riak node. Default value is: `8000`.
 -   `riak.node.mem`: Amount of Disk resources per Riak node. Default value is: `20000`.
-
-    > -   `Note:` To ensure that each Riak node resides on a unique Mesos agent / physical host, this value should be at least 51% of a single Mesos agent's total capacity.
-
+    -   `Note:` To ensure that each Riak node resides on a unique Mesos agent / physical host, this value should be at least 51% of a single Mesos agent's total capacity.
 -   `riak.role`: Mesos role for the RMF and tasks. Required for Dynamic Reservations / Persistent Volumes.
-
-    > -   **Note:** The Mesos master may need to be restarted with `MESOS_ROLES=riak` or `--roles=riak`.
+    -   **Note:** The Mesos master may need to be restarted with `MESOS_ROLES=riak` or `--roles=riak`.
 
 -   `riak.user`: The user which will run the Riak process and executor. When using the Golang Executor builds, the user may be `root`. If using the Erlang executor, the user must exist on all of the Mesos agents, and **must not be root**.
 -   `riak.auth-principal`: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
@@ -116,14 +111,12 @@ We'll be covering the majority of the commands in this guide. Here is a brief de
     -   `install`: Install the RMF as a Marathon app.
     -   `uninstall`: Delete the RMF from Marathon and delete related Zoookeeper entries.
     -   **Note:** This will not kill Riak node tasks, so make sure to run `riak-mesos cluster destroy` first.
-
 -   `riak-mesos cluster`
     -   `create`: Creates a named Riak cluster (default is `default`) in the RMF using default values for `riak.conf` and `advanced.config`.
     -   `list`: Lists the names of each cluster.
     -   `config`: Outputs the configuration values for `riak.conf` and `advanced.config`.
     -   `restart`: Performs a rolling restart of the cluster. If you've upgraded to a new version of the RMF or Riak, restarting the cluster will push the new Riak version while preserving the data directories if you are using persistent volumes.
     -   `destroy`: Kills all Riak node tasks for a cluster, deletes any created persistent volumes, and un-reserves any dynamically reserved resources for the nodes.
-
 -   `riak-mesos node`: Interact with an individual node in the cluster.
     -   `info`: Outputs information about a Riak node stored by the RMF.
     -   `aae-status`: Outputs the active anti entropy status for a node.
@@ -133,11 +126,9 @@ We'll be covering the majority of the commands in this guide. Here is a brief de
     -   `bucket-type`: Interact with bucket types on a node / cluster.
         -   `create`: Creates and activates a bucket type given some properties as json.
         -   `list`: List all bucket types and their properties from a node / cluster.
-
     -   `list`: List all nodes in a cluster.
     -   `remove`: Kills the task for a node, destroys any created persistent volumes, and un-reserves any dynamically reserved resources.
     -   `add`: Adds one or more nodes to a cluster.
-
 -   `riak-mesos proxy`: Interact with the RMF smart proxy.
     -   `config`: Output the generated Marathon json application definition for the RMF smart proxy.
     -   `install`: Install the RMF smart proxy as a marathon app.

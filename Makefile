@@ -1,4 +1,4 @@
-all: env test packages
+all: env test packages docs
 
 clean:
 	scripts/clean.sh
