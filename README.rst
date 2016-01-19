@@ -42,7 +42,9 @@ Pip Install
 
 .. code::
 
+   # Latest (master)
    pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git#egg=riak_mesos
+   # Tagged
    pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@0.3.1#egg=riak_mesos
 
 Quick Install
