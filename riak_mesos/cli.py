@@ -516,9 +516,17 @@ class Config(object):
         return self._config[key][subkey1]
 
     def _merge(self, override):
-        tmp = self._config.copy()
-        tmp.update(override)
-        self._config = tmp
+        for k in override.keys():
+            if isinstance(override[k], dict):
+                for j in override[k].keys():
+                    if isinstance(override[k][j], dict):
+                        for i in override[k][j].keys():
+                            self._config[k][j][i] = override[k][j][i]
+                    else:
+                        self._config[k][j] = override[k][j]
+            else:
+                self._config[k] = override[k]
+        print(json.dumps(self._config))
 
 
 # Marathon
