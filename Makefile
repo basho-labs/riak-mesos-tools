@@ -13,4 +13,4 @@ packages:
 	scripts/packages.sh
 
 docs:
-	cat README.md | pandoc --from markdown_github --to rst
+	cat README.md | pandoc --from markdown_github --to rst > README.rst
