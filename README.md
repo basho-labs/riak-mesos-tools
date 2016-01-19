@@ -1,5 +1,5 @@
-Riak Mesos Tools
-================
+Riak Mesos CLI / DCOS Riak
+======================
 
 CLI and other tools for interacting with the Riak Mesos Framework.
 
