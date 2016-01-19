@@ -96,19 +96,27 @@ values:
 
    -  Ubuntu 14.04 with Golang Executor:
 
-      http://riak-tools.s3.amazonaws.com/riak-mesos/golang/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
+      ::
+
+          http://riak-tools.s3.amazonaws.com/riak-mesos/golang/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
 
    -  Ubuntu 14.04 with Erlang Executor (Mesos 0.26 Only):
 
-      http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
+      ::
+
+          http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
 
    -  CentOS/RHEL 7 with Golang Executor:
 
-      http://riak-tools.s3.amazonaws.com/riak-mesos/golang/centos/riak_mesos_linux_amd64_0.3.1.tar.gz
+      ::
+
+          http://riak-tools.s3.amazonaws.com/riak-mesos/golang/centos/riak_mesos_linux_amd64_0.3.1.tar.gz
 
    -  CentOS/RHEL 7 with Erlang Executor (Mesos 0.26 Only):
 
-      http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/centos/riak_mesos_linux_amd64_0.3.1.tar.gz
+      ::
+
+          http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/centos/riak_mesos_linux_amd64_0.3.1.tar.gz
 
 -  ``riak.master``: The address for the Mesos master. Example values:
 
