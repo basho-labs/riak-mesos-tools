@@ -101,7 +101,6 @@ The resulting `/etc/riak-mesos/config.json` can then be modified to fit your env
     -   `Note:` To ensure that each Riak node resides on a unique Mesos agent / physical host, this value should be at least 51% of a single Mesos agent's total capacity.
 -   `riak.role`: Mesos role for the RMF and tasks. Required for Dynamic Reservations / Persistent Volumes.
     -   **Note:** The Mesos master may need to be restarted with `MESOS_ROLES=riak` or `--roles=riak`.
-
 -   `riak.user`: The user which will run the Riak process and executor. When using the Golang Executor builds, the user may be `root`. If using the Erlang executor, the user must exist on all of the Mesos agents, and **must not be root**.
 -   `riak.auth-principal`: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
 -   `riak.flags`: Any additional flags to pass to the RMF. Default value is: `"-use_reservations"`. Remove this parameter when running Mesos version 0.23 or lower.
