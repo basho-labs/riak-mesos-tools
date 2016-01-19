@@ -163,46 +163,101 @@ Options (available on most commands):
 Install the RMF
 ---------------
 
+First, verify that your `/etc/riak-mesos/config.json` is getting processed correctly with:
+
+```
+riak-mesos config
+```
+
 Run the following command to create a Marathon application with the id `riak`
 
 ``` sourceCode
 riak-mesos framework install
 ```
 
-You can check the status of the Marathon app deployment by navigating to <http://marathon.mesos:8080> directly, or with this snippet:
+To make deployment scripting easier, use the `wait-for-service` command to block until the framework is ready for service:
 
 ``` sourceCode
-curl --silent http://marathon.mesos:8080/v2/apps/riak | python -m json.tool | grep alive
+riak-mesos framework wait-for-service
 ```
 
 Create a cluster
 ----------------
 
-Let's start with a 3 node cluster. Execute the following to get started:
+Let's start with a 3 node cluster. First check if any clusters have already been created, and then verify the configuration:
+
+```
+riak-mesos cluster list
+riak-mesos cluster config
+riak-mesos cluster config advanced
+```
+
+Create the cluster object in the RMF metadata, and then instruct the scheduler to create 3 Riak nodes:
 
 ``` sourceCode
 riak-mesos cluster create
 riak-mesos node add --nodes 3
+riak-mesos node list
 ```
 
-After a few moments, we can check the status of our nodes:
+After a few moments, we can verify that individual nodes are ready for service with:
 
-``` sourceCode
-riak-mesos node list --json | python -m json.tool | grep CurrentState
+```
+riak-mesos node wait-for-service --node riak-default-1
+riak-mesos node wait-for-service --node riak-default-2
+riak-mesos node wait-for-service --node riak-default-3
 ```
 
-A status of `3` means that the nodes are in the `Started` state, so a healthy cluster would look like this:
+Alternatively a shortcut to the above is:
 
-``` sourceCode
-"CurrentState": 3,
-"CurrentState": 3,
-"CurrentState": 3,
+```
+riak-mesos cluster wait-for-service
+```
+
+To get connection information about each of the nodes directly, try this command:
+
+```
+riak-mesos cluster endpoints | python -m json.tool
+```
+
+The output should look similar to this:
+
+```
+{
+    "riak-default-1": {
+        "alive": true,
+        "http_direct": "mesos-slave-01.novalocal:52041",
+        "http_mesos_dns": "riak-default.riak.mesos:52041",
+        "pb_direct": "mesos-slave-01.novalocal:52042",
+        "pb_mesos_dns": "riak-default.riak.mesos:52042"
+    },
+    "riak-default-2": {
+        "alive": true,
+        "http_direct": "mesos-slave-01.novalocal:65397",
+        "http_mesos_dns": "riak-default.riak.mesos:65397",
+        "pb_direct": "mesos-slave-01.novalocal:65398",
+        "pb_mesos_dns": "riak-default.riak.mesos:65398"
+    },
+    "riak-default-3": {
+        "alive": true,
+        "http_direct": "mesos-slave-01.novalocal:17907",
+        "http_mesos_dns": "riak-default.riak.mesos:17907",
+        "pb_direct": "mesos-slave-01.novalocal:17908",
+        "pb_mesos_dns": "riak-default.riak.mesos:17908"
+    }
+}
 ```
 
 Inspecting Nodes
 ----------------
 
-Now that the cluster is running, let's perform some checks on individual nodes.
+Now that the cluster is running, let's perform some checks on individual nodes. This first command will show the hostname and ports for http and protobufs, as well as the metadata stored by the RMF:
+
+```
+riak-mesos node info --node riak-default-1
+```
+
+To get the current ring membership and partition ownership information for a node, try:
 
 ``` sourceCode
 riak-mesos node status --node riak-default-1 | python -m json.tool
@@ -211,27 +266,33 @@ riak-mesos node status --node riak-default-1 | python -m json.tool
 The output of that command should yield results similar to the following if everything went well:
 
 ``` sourceCode
-"nodes": [
-    {
-        "id": "riak-default-1@ip-172-31-51-148.ec2.internal",
-        "pending_percentage": null,
-        "ring_percentage": 34.375,
-        "status": "valid"
-    },
-    {
-        "id": "riak-default-2@ip-172-31-51-148.ec2.internal",
-        "pending_percentage": null,
-        "ring_percentage": 32.8125,
-        "status": "valid"
-    },
-    {
-        "id": "riak-default-3@ip-172-31-51-148.ec2.internal",
-        "pending_percentage": null,
-        "ring_percentage": 32.8125,
-        "status": "valid"
-    }
-],
-"valid": 3
+{
+    "down": 0,
+    "exiting": 0,
+    "joining": 0,
+    "leaving": 0,
+    "nodes": [
+        {
+            "id": "riak-default-1@mesos-slave-01.novalocal",
+            "pending_percentage": null,
+            "ring_percentage": 32.8125,
+            "status": "valid"
+        },
+        {
+            "id": "riak-default-2@mesos-slave-01.novalocal",
+            "pending_percentage": null,
+            "ring_percentage": 32.8125,
+            "status": "valid"
+        },
+        {
+            "id": "riak-default-3@mesos-slave-01.novalocal",
+            "pending_percentage": null,
+            "ring_percentage": 34.375,
+            "status": "valid"
+        }
+    ],
+    "valid": 3
+}
 ```
 
 Other useful information can be found by executing these commands:
@@ -245,19 +306,23 @@ riak-mesos node transfers --node riak-default-1
 Update the Cluster Configuration
 --------------------------------
 
-You can customize the `riak.conf` and `advanced.config` for a cluster if necessary. Use <https://github.com/basho-labs/riak-mesos/blob/master/scheduler/data/riak.erlang.conf> (or riak.golang.conf) and <https://github.com/basho-labs/riak-mesos/blob/master/scheduler/data/advanced.erlang.config> (or advanced.golang.conf) as templates to make your changes to. It is important that all of the values specified with `{{...}}` remain intact.
+You can customize the `riak.conf` and `advanced.config` for a cluster if necessary. Use <https://github.com/basho-labs/riak-mesos/blob/master/artifacts/data/riak.erlang.conf> (or riak.golang.conf) and <https://github.com/basho-labs/riak-mesos/blob/master/artifacts/data/advanced.erlang.config> (or advanced.golang.conf) as templates to make your changes to. It is important that all of the values specified with `{{...}}` remain intact.
 
 Once you have created your customized versions of these files, you can save them to the cluster using the following commands:
 
 Update riak.conf
 ----------------
 
+As an example, I've created a file called `riak.more_logging.conf` in which I've updated this line: `log.console.level = debug`
+
 ``` sourceCode
-riak-mesos cluster config --file /path/to/your/riak.conf
+riak-mesos cluster config --file riak.more_logging.conf
 ```
 
 Update advanced.config
 ----------------------
+
+Similarly the advanced.config can be updated like so:
 
 ``` sourceCode
 riak-mesos cluster config advanced --file /path/to/your/advanced.config
@@ -271,6 +336,8 @@ Restart the Cluster
 If your Riak cluster is in a stable state (no active transfers, ringready is true), there are certain situations where you might want to perform a rolling restart on your cluster. Execute the following to restart your cluster:
 
 ``` sourceCode
+riak-mesos node ringready --node riak-default-1
+riak-mesos node transfers --node riak-default-1
 riak-mesos cluster restart
 ```
 
@@ -280,14 +347,49 @@ Situations where a cluster restart is required include:
 -   Changes to `advanced.config`
 -   Upgrading to a new version of RMF / Riak
 
+Create Bucket Types
+-------------------
+
+Several newer features in Riak require the creation of bucket types. To see the current bucket types and their properties, use the following:
+
+```
+riak-mesos node bucket-type list --node riak-default-1 | python -m json.tool
+```
+
+Use this command to create a new bucket type with custom properties:
+
+```
+riak-mesos node bucket-type create --node riak-default-1 --bucket-type mytype --props '{"props":{"n_val": 3}}'
+```
+
+More information about specific bucket type properties can be found here: <http://docs.basho.com/riak/latest/dev/advanced/bucket-types/>.
+
+A successful response looks like this:
+
+```
+{"mytype": {"actions": {"create": "mytype created", "activate": "mytype has been activated"}, "success": true}, "links": {"self": "/admin/explore/nodes/riak-default-1@mesos-slave-01.novalocal/bucket_types/mytype"}}
+```
+
+To update an existing type, just modify the command and run it again:
+
+```
+riak-mesos node bucket-type create --node riak-default-1 --bucket-type mytype --props '{"props":{"n_val": 2}}'
+```
+
+Which should give something like this back:
+
+```
+{"mytype": {"actions": {"update": "mytype updated"}, "success": true}, "links": {"self": "/admin/explore/nodes/riak-default-1@mesos-slave-01.novalocal/bucket_types/mytype"}}
+```
+
 Install the Proxy
 -----------------
 
 There are a few ways to access the Riak nodes in your cluster, including hosting your own HAProxy and keeping the config updated to include the host names and ports for all of the nodes. This approach can be problematic because the HAProxy config would need to be updated every time there is a change to one of the nodes in the cluster resulting from restarts, task failures, etc.
 
-To account for this difficulty, we've created a smart proxy called `riak mesos director`. The director should keep tabs on the current state of the cluster including all of the hostnames and ports, and it also provides a load balancer / proxy to spread load across all of the nodes.
+To account for this difficulty, we've created a smart proxy called the `riak-mesos-director`. The director should keep tabs on the current state of the cluster including all of the hostnames and ports, and it also provides a load balancer / proxy to spread load across all of the nodes.
 
-To install the proxy, simply run:
+To install the proxy as a marathon app with the id `riak-director`, simply run:
 
 ``` sourceCode
 riak-mesos proxy install
