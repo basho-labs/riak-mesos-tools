@@ -120,14 +120,18 @@ We'll be covering the majority of the commands in this guide. Here is a brief de
 -   `riak-mesos framework`: Interact with the RMF application.
     -   `config`: Output the generated Marathon json application definition for the RMF.
     -   `install`: Install the RMF as a Marathon app.
-    -   `uninstall`: Delete the RMF from Marathon and delete related Zoookeeper entries.
-    -   **Note:** This will not kill Riak node tasks, so make sure to run `riak-mesos cluster destroy` first.
+    -   `uninstall`: Delete the RMF from Marathon.
+    -   `wait-for-service`: Waits until the framework's HTTP API returns OK.
+    -   `clean-metadata`: Removes Zookeeper metadata stored by the RMF instance.
+    -   `teardown`: Issues a teardown call to the Mesos master, killing all tasks related to the RMF instance.
 -   `riak-mesos cluster`
     -   `create`: Creates a named Riak cluster (default is `default`) in the RMF using default values for `riak.conf` and `advanced.config`.
     -   `list`: Lists the names of each cluster.
-    -   `config`: Outputs the configuration values for `riak.conf` and `advanced.config`.
+    -   `config [advanced]`: Outputs the configuration values for `riak.conf` and `advanced.config`.
     -   `restart`: Performs a rolling restart of the cluster. If you've upgraded to a new version of the RMF or Riak, restarting the cluster will push the new Riak version while preserving the data directories if you are using persistent volumes.
     -   `destroy`: Kills all Riak node tasks for a cluster, deletes any created persistent volumes, and un-reserves any dynamically reserved resources for the nodes.
+    -   `wait-for-service`: Iterates over all of the nodes in the cluster, calling wait-for-service on each.
+    -   `endpoints`: Lists each node and connection information for each including HTTP and Protobuf ports and hosts.
 -   `riak-mesos node`: Interact with an individual node in the cluster.
     -   `info`: Outputs information about a Riak node stored by the RMF.
     -   `aae-status`: Outputs the active anti entropy status for a node.
@@ -140,11 +144,21 @@ We'll be covering the majority of the commands in this guide. Here is a brief de
     -   `list`: List all nodes in a cluster.
     -   `remove`: Kills the task for a node, destroys any created persistent volumes, and un-reserves any dynamically reserved resources.
     -   `add`: Adds one or more nodes to a cluster.
+    -   `wait-for-service`: Waits for the Riak node to respond to pings, and then waits for it to be joined to the cluster.
 -   `riak-mesos proxy`: Interact with the RMF smart proxy.
     -   `config`: Output the generated Marathon json application definition for the RMF smart proxy.
     -   `install`: Install the RMF smart proxy as a marathon app.
     -   `uninstall`: Delete the RMF smart proxy from Marathon.
     -   `endpoints`: List the endpoints and descriptions provided by the RMF smart proxy.
+    -   `wait-for-service`: Waits for the proxy service to return OK.
+
+Options (available on most commands):
+    --config <json-file> (/etc/riak-mesos/config.json)
+    --cluster <cluster-name> (default)
+    --debug
+    --help
+    --info
+    --version
 
 Install the RMF
 ---------------
