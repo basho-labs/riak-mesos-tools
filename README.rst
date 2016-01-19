@@ -25,7 +25,7 @@ DCOS Install
 * Create a file at `/etc/riak-mesos/config.json` and use this `config.json <config/config.example.json>`_ as a template. More information on configuration values can be found below.
 * Append the DCOS Riak package repo to your DCOS repo sources::
 
-    dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/0.3.0.zip
+    dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/0.3.1.zip
 
 * Update packages::
 
@@ -43,7 +43,7 @@ Pip Install
 .. code::
 
    pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git#egg=riak_mesos
-   pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@0.3.0#egg=riak_mesos
+   pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@0.3.1#egg=riak_mesos
 
 Quick Install
 -------------
@@ -64,30 +64,31 @@ If your environment differs from the required the default parameters, you may ne
 
 The resulting `/etc/riak-mesos/config.json` can then be modified to fit your environment. Here is a brief description of some of those values:
 
-* `riak.url`: Location of the RMF tar ball which contains the actual RMF executables.
-  * Use `"http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_linux_amd64_0.3.0.tar.gz"` for Ubuntu environments.
-  * Use `"http://riak-tools.s3.amazonaws.com/riak-mesos/centos/riak_mesos_linux_amd64_0.3.0.tar.gz"` for CentOS environments.
-  * Use `"http://riak-tools.s3.amazonaws.com/riak-mesos/coreos/riak_mesos_linux_amd64_0.3.0.tar.gz"` (Default) for CoreOS / Other Linux environments.
-* `riak.master`: The address for the Mesos master. Example values:
-  * `localhost:5050`
-  * `leader.mesos:5050`
-  * `zk://leader.mesos:2181/mesos`
-* `riak.zk`: The address for Zookeeper. Default value is: `leader.mesos:2181`.
-* `riak.cpus`: Amount of CPU resources for the Framework task. Default value is: `0.5`.
-* `riak.mem`: Amount of Memory for the Framework task. Default value is: `2048`.
-* `riak.node.cpus`: Amount of CPU resources per Riak node. Default value is: `1.0`.
-* `riak.node.disk`: Amount of Memory resources per Riak node. Default value is: `8000`.
+* ***riak.url***: Location of the RMF tar ball which contains the actual RMF executables. Following are the current releases:
+  * Ubuntu 14.04 with Golang Executor: ***"http://riak-tools.s3.amazonaws.com/riak-mesos/golang/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz"***
+  * Ubuntu 14.04 with Erlang Executor (Mesos 0.26 Only): ***"http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz"***
+  * CentOS/RHEL 7 with Golang Executor: ***"http://riak-tools.s3.amazonaws.com/riak-mesos/golang/centos/riak_mesos_linux_amd64_0.3.1.tar.gz"***
+  * CentOS/RHEL 7 with Erlang Executor (Mesos 0.26 Only): ***"http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/centos/riak_mesos_linux_amd64_0.3.1.tar.gz"***
+* ***riak.master***: The address for the Mesos master. Example values:
+  * ***localhost:5050***
+  * ***leader.mesos:5050***
+  * ***zk://leader.mesos:2181/mesos***
+* ***riak.zk***: The address for Zookeeper. Default value is: ***leader.mesos:2181***.
+* ***riak.cpus***: Amount of CPU resources for the Framework task. Default value is: ***0.5***.
+* ***riak.mem***: Amount of Memory for the Framework task. Default value is: ***2048***.
+* ***riak.node.cpus***: Amount of CPU resources per Riak node. Default value is: ***1.0***.
+* ***riak.node.disk***: Amount of Memory resources per Riak node. Default value is: ***8000***.
   * ***Note:*** To ensure that each Riak node resides on a unique Mesos agent / physical host, this value should be at least 51% of a single Mesos agent's total capacity.
-* `riak.node.mem`: Amount of Disk resources per Riak node. Default value is: `20000`.
-* `riak.role`: Mesos role for the RMF and tasks. Required for Dynamic Reservations / Persistent Volumes.
-  * ***Note:*** The Mesos master may need to be restarted with `MESOS_ROLES=riak` or `--roles=riak`.
-* `riak.user`: The user which will run the Riak process and executor. The user must exist on all of the Mesos agents, and **must not be root**.
-* `riak.auth-principal`: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
-* `riak.flags`: Any additional flags to pass to the RMF. Default value is: `"-use_reservations"`. Remove this parameter when running Mesos version 0.23 or lower.
-* `director.url`: Location for the RMF smart proxy. The smart proxy will automatically detect changes in the Riak cluster topology based on updates to Zookeeper values stored by each of the running Riak nodes.
-* `director.use-public`: When this is true, the smart proxy will only be deployed on an agent with a public role.
-* `director.cmd`: Legacy versions of the framework may need to modify this.
-* `marathon.url`: Address for Marathon. Default value is: `"http://marathon.mesos:8080"`.
+* ***riak.node.mem***: Amount of Disk resources per Riak node. Default value is: ***20000***.
+* ***riak.role***: Mesos role for the RMF and tasks. Required for Dynamic Reservations / Persistent Volumes.
+  * ***Note:*** The Mesos master may need to be restarted with ***MESOS_ROLES=riak*** or ***--roles=riak***.
+* ***riak.user***: The user which will run the Riak process and executor. The user must exist on all of the Mesos agents, and **must not be root**.
+* ***riak.auth-principal***: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
+* ***riak.flags***: Any additional flags to pass to the RMF. Default value is: ***"-use_reservations"***. Remove this parameter when running Mesos version 0.23 or lower.
+* ***director.url***: Location for the RMF smart proxy. The smart proxy will automatically detect changes in the Riak cluster topology based on updates to Zookeeper values stored by each of the running Riak nodes.
+* ***director.use-public***: When this is true, the smart proxy will only be deployed on an agent with a public role.
+* ***director.cmd***: Legacy versions of the framework may need to modify this.
+* ***marathon.url***: Address for Marathon. Default value is: ***"http://marathon.mesos:8080"***.
 
 
 Usage
