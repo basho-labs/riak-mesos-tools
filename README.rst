@@ -66,7 +66,7 @@ If your environment differs from the required the default parameters, you may ne
 
 The resulting :code:`/etc/riak-mesos/config.json` can then be modified to fit your environment. Here is a brief description of some of those values:
 
-- :code:``riak.url``: Location of the RMF tar ball which contains the actual RMF executables. Following are the current releases.
+* ``riak.url``: Location of the RMF tar ball which contains the actual RMF executables. Following are the current releases.
     - Ubuntu 14.04 with Golang Executor::
 
           http://riak-tools.s3.amazonaws.com/riak-mesos/golang/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
