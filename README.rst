@@ -67,31 +67,41 @@ If your environment differs from the required the default parameters, you may ne
 The resulting :code:`/etc/riak-mesos/config.json` can then be modified to fit your environment. Here is a brief description of some of those values:
 
 * :code:`riak.url`: Location of the RMF tar ball which contains the actual RMF executables. Following are the current releases:
+
     * Ubuntu 14.04 with Golang Executor::
 
           http://riak-tools.s3.amazonaws.com/riak-mesos/golang/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
+
     * Ubuntu 14.04 with Erlang Executor (Mesos 0.26 Only)::
 
           http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
+
     * CentOS/RHEL 7 with Golang Executor::
 
           http://riak-tools.s3.amazonaws.com/riak-mesos/golang/centos/riak_mesos_linux_amd64_0.3.1.tar.gz
+
     * CentOS/RHEL 7 with Erlang Executor (Mesos 0.26 Only)::
 
           http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/centos/riak_mesos_linux_amd64_0.3.1.tar.gz
+
 * :code:`riak.master`: The address for the Mesos master. Example values:
     * :code:`localhost:5050`
     * :code:`leader.mesos:5050`
     * :code:`zk://leader.mesos:2181/mesos`
+
 * :code:`riak.zk`: The address for Zookeeper. Default value is: :code:`leader.mesos:2181`.
 * :code:`riak.cpus`: Amount of CPU resources for the Framework task. Default value is: :code:`0.5`.
 * :code:`riak.mem`: Amount of Memory for the Framework task. Default value is: :code:`2048`.
 * :code:`riak.node.cpus`: Amount of CPU resources per Riak node. Default value is: :code:`1.0`.
 * :code:`riak.node.disk`: Amount of Memory resources per Riak node. Default value is: :code:`8000`.
-    * :code:`Note:` To ensure that each Riak node resides on a unique Mesos agent / physical host, this value should be at least 51% of a single Mesos agent's total capacity.
 * :code:`riak.node.mem`: Amount of Disk resources per Riak node. Default value is: :code:`20000`.
+
+    * :code:`Note:` To ensure that each Riak node resides on a unique Mesos agent / physical host, this value should be at least 51% of a single Mesos agent's total capacity.
+
 * :code:`riak.role`: Mesos role for the RMF and tasks. Required for Dynamic Reservations / Persistent Volumes.
+
     * **Note:** The Mesos master may need to be restarted with :code:`MESOS_ROLES=riak` or :code:`--roles=riak`.
+
 * :code:`riak.user`: The user which will run the Riak process and executor. When using the Golang Executor builds, the user may be :code:`root`. If using the Erlang executor, the user must exist on all of the Mesos agents, and **must not be root**.
 * :code:`riak.auth-principal`: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
 * :code:`riak.flags`: Any additional flags to pass to the RMF. Default value is: :code:`"-use_reservations"`. Remove this parameter when running Mesos version 0.23 or lower.
