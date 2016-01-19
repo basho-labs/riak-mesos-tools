@@ -43,11 +43,16 @@ Pip Install
 
 **Note:** You may need to run `pip uninstall riak-mesos` first to ensure the latest version.
 
+### Install the latest version (master)
+
 ``` sourceCode
-# Latest (master)
-pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git#egg=riak_mesos
-# Tagged
-pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@0.3.1#egg=riak_mesos
+sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git#egg=riak_mesos
+```
+
+### Install the latest tag ###
+
+``` sourceCode
+sudo sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@0.3.1#egg=riak_mesos
 ```
 
 Quick Install
@@ -430,6 +435,7 @@ When scaling a cluster up, you should attempt to do so days or even weeks before
 
 ``` sourceCode
 riak-mesos node add
+riak-mesos node wait-for-service --node riak-default-4
 ```
 
 Check the status of the node and make sure it was successfully joined to the cluster using:
@@ -443,20 +449,23 @@ Scale down
 
 Scaling down requires the same patience as scaling up in that you should be waiting for transfers to complete between each node removal.
 
-Let's remove all but one of the nodes by performing a remove on `riak-default-2`, `riak-default-3`, and `riak-default-4`
+Let's remove all but one of the nodes by performing a remove on `riak-default-2`, `riak-default-3`, and `riak-default-4`, verifying the data and node status after each step.
+
+``` sourceCode
+riak-mesos node remove --node riak-default-4
+riak-mesos node status --node riak-default-1
+curl $RIAK_HTTP/buckets/test/keys/one
+```
+
+``` sourceCode
+riak-mesos node remove --node riak-default-3
+riak-mesos node status --node riak-default-1
+curl $RIAK_HTTP/buckets/test/keys/two
+```
 
 ``` sourceCode
 riak-mesos node remove --node riak-default-2
-riak-mesos node remove --node riak-default-3
-riak-mesos node remove --node riak-default-4
-```
-
-Verify the Data
----------------
-
-Now that the cluster has undergone some changes, lets verify the data that was written previously with:
-
-``` sourceCode
+riak-mesos node status --node riak-default-1
 curl $RIAK_HTTP/buckets/test/keys/one
 curl $RIAK_HTTP/buckets/test/keys/two
 ```
@@ -464,7 +473,7 @@ curl $RIAK_HTTP/buckets/test/keys/two
 Uninstall RMF
 =============
 
-The following tasks can be used depending on the end goal.
+The following commands can be used to remove part or all of the RMF.
 
 DCOS Riak Uninstall
 -------------------
@@ -527,5 +536,5 @@ Remove the pip package
 To remove the riak-mesos pip package:
 
 ``` sourceCode
-pip uninstall riak-mesos
+sudo pip uninstall riak-mesos
 ```
