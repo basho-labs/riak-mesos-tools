@@ -15,14 +15,14 @@ Before getting started with the RMF, there are a few environment and system rela
 
 Note to DCOS Users
 ==================
-All of the below instructions will work for the `dcos riak` command, just replace `riak-mesos` with `dcos riak`. Some other differences will be pointed out in the corresponding sections.
+All of the below instructions will work for the :code:`dcos riak` command, just replace :code:`riak-mesos` with :code:`dcos riak`. Some other differences will be pointed out in the corresponding sections.
 
 Installation
 ============
 
 DCOS Install
 ------------
-* Create a file at `/etc/riak-mesos/config.json` and use this `config.json <config/config.example.json>`_ as a template. More information on configuration values can be found below.
+* Create a file at :code:`/etc/riak-mesos/config.json` and use this :code:`config.json <config/config.example.json>` as a template. More information on configuration values can be found below.
 * Append the DCOS Riak package repo to your DCOS repo sources::
 
     dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/0.3.1.zip
@@ -38,7 +38,7 @@ DCOS Install
 
 Pip Install
 -----------
-**Note:** You may need to run `pip uninstall riak-mesos` first to ensure the latest version.
+**Note:** You may need to run :code:`pip uninstall riak-mesos` first to ensure the latest version.
 
 .. code::
 
@@ -47,7 +47,7 @@ Pip Install
 
 Quick Install
 -------------
-The included install.sh script will download and extract this package into $HOME/bin/riak-mesos-tools. Using this method does not require DCOS or pip or any of the other dependencies, and should work with most basic Python 2.7+ installations.
+The included install.sh script will download and extract this package into :code:`$HOME/bin/riak-mesos-tools`. Using this method does not require DCOS or pip or any of the other dependencies, and should work with most basic Python 2.7+ installations.
 
 .. code::
 
@@ -62,83 +62,88 @@ If your environment differs from the required the default parameters, you may ne
    riak-mesos config --json | python -m json.tool > config.json
    mv config.json /etc/riak-mesos/config.json
 
-The resulting `/etc/riak-mesos/config.json` can then be modified to fit your environment. Here is a brief description of some of those values:
+The resulting :code:`/etc/riak-mesos/config.json` can then be modified to fit your environment. Here is a brief description of some of those values:
 
-* **riak.url**: Location of the RMF tar ball which contains the actual RMF executables. Following are the current releases:
-    * Ubuntu 14.04 with Golang Executor:
+* :code:`riak.url`: Location of the RMF tar ball which contains the actual RMF executables. Following are the current releases:
+    * Ubuntu 14.04 with Golang Executor::
 
-      "http://riak-tools.s3.amazonaws.com/riak-mesos/golang/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz"
+          http://riak-tools.s3.amazonaws.com/riak-mesos/golang/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
+    * Ubuntu 14.04 with Erlang Executor (Mesos 0.26 Only)::
 
-    * Ubuntu 14.04 with Erlang Executor (Mesos 0.26 Only): **"http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz"**
-    * CentOS/RHEL 7 with Golang Executor: **"http://riak-tools.s3.amazonaws.com/riak-mesos/golang/centos/riak_mesos_linux_amd64_0.3.1.tar.gz"**
-    * CentOS/RHEL 7 with Erlang Executor (Mesos 0.26 Only): **"http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/centos/riak_mesos_linux_amd64_0.3.1.tar.gz"**
-* **riak.master**: The address for the Mesos master. Example values:
-    * **localhost:5050**
-    * **leader.mesos:5050**
-    * **zk://leader.mesos:2181/mesos**
-* **riak.zk**: The address for Zookeeper. Default value is: **leader.mesos:2181**.
-* **riak.cpus**: Amount of CPU resources for the Framework task. Default value is: **0.5**.
-* **riak.mem**: Amount of Memory for the Framework task. Default value is: **2048**.
-* **riak.node.cpus**: Amount of CPU resources per Riak node. Default value is: **1.0**.
-* **riak.node.disk**: Amount of Memory resources per Riak node. Default value is: **8000**.
-    * **Note:** To ensure that each Riak node resides on a unique Mesos agent / physical host, this value should be at least 51% of a single Mesos agent's total capacity.
-* **riak.node.mem**: Amount of Disk resources per Riak node. Default value is: **20000**.
-* **riak.role**: Mesos role for the RMF and tasks. Required for Dynamic Reservations / Persistent Volumes.
-    * **Note:** The Mesos master may need to be restarted with **MESOS_ROLES=riak** or **--roles=riak**.
-* **riak.user**: The user which will run the Riak process and executor. The user must exist on all of the Mesos agents, and **must not be root**.
-* **riak.auth-principal**: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
-* **riak.flags**: Any additional flags to pass to the RMF. Default value is: **"-use_reservations"**. Remove this parameter when running Mesos version 0.23 or lower.
-* **director.url**: Location for the RMF smart proxy. The smart proxy will automatically detect changes in the Riak cluster topology based on updates to Zookeeper values stored by each of the running Riak nodes.
-* **director.use-public**: When this is true, the smart proxy will only be deployed on an agent with a public role.
-* **director.cmd**: Legacy versions of the framework may need to modify this.
-* **marathon.url**: Address for Marathon. Default value is: **"http://marathon.mesos:8080"**.
+          http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz
+    * CentOS/RHEL 7 with Golang Executor::
+
+          http://riak-tools.s3.amazonaws.com/riak-mesos/golang/centos/riak_mesos_linux_amd64_0.3.1.tar.gz
+    * CentOS/RHEL 7 with Erlang Executor (Mesos 0.26 Only)::
+
+          http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/centos/riak_mesos_linux_amd64_0.3.1.tar.gz
+* :code:`riak.master`: The address for the Mesos master. Example values:
+    * :code:`localhost:5050`
+    * :code:`leader.mesos:5050`
+    * :code:`zk://leader.mesos:2181/mesos`
+* :code:`riak.zk`: The address for Zookeeper. Default value is: :code:`leader.mesos:2181`.
+* :code:`riak.cpus`: Amount of CPU resources for the Framework task. Default value is: :code:`0.5`.
+* :code:`riak.mem`: Amount of Memory for the Framework task. Default value is: :code:`2048`.
+* :code:`riak.node.cpus`: Amount of CPU resources per Riak node. Default value is: :code:`1.0`.
+* :code:`riak.node.disk`: Amount of Memory resources per Riak node. Default value is: :code:`8000`.
+    * :code:`Note:` To ensure that each Riak node resides on a unique Mesos agent / physical host, this value should be at least 51% of a single Mesos agent's total capacity.
+* :code:`riak.node.mem`: Amount of Disk resources per Riak node. Default value is: :code:`20000`.
+* :code:`riak.role`: Mesos role for the RMF and tasks. Required for Dynamic Reservations / Persistent Volumes.
+    * **Note:** The Mesos master may need to be restarted with :code:`MESOS_ROLES=riak` or :code:`--roles=riak`.
+* :code:`riak.user`: The user which will run the Riak process and executor. When using the Golang Executor builds, the user may be :code:`root`. If using the Erlang executor, the user must exist on all of the Mesos agents, and **must not be root**.
+* :code:`riak.auth-principal`: The Mesos authentication principal. Required for Dynamic Reservations / Persistent Volumes.
+* :code:`riak.flags`: Any additional flags to pass to the RMF. Default value is: :code:`"-use_reservations"`. Remove this parameter when running Mesos version 0.23 or lower.
+* :code:`director.url`: Location for the RMF smart proxy. The smart proxy will automatically detect changes in the Riak cluster topology based on updates to Zookeeper values stored by each of the running Riak nodes.
+* :code:`director.use-public`: When this is true, the smart proxy will only be deployed on an agent with a public role.
+* :code:`director.cmd`: Legacy versions of the framework may need to modify this.
+* :code:`marathon.url`: Address for Marathon. Default value is: :code:`"http://marathon.mesos:8080"`.
 
 
 Usage
 =====
-Try executing `riak-mesos`, `riak-mesos -h`, or `riak-mesos --help` to output the usage instructions.
+Try executing :code:`riak-mesos`, :code:`riak-mesos -h`, or :code:`riak-mesos --help` to output the usage instructions.
 
 We'll be covering the majority of the commands in this guide. Here is a brief description of some of them:
 
-* `riak-mesos config`: Output the current configuration values.
-* `riak-mesos framework`: Interact with the RMF application.
-  * `config`: Output the generated Marathon json application definition for the RMF.
-  * `install`: Install the RMF as a Marathon app.
-  * `uninstall`: Delete the RMF from Marathon and delete related Zoookeeper entries.
-    * **Note:** This will not kill Riak node tasks, so make sure to run `riak-mesos cluster destroy` first.
-* `riak-mesos cluster`
-  * `create`: Creates a named Riak cluster (default is `default`) in the RMF using default values for `riak.conf` and `advanced.config`.
-  * `list`: Lists the names of each cluster.
-  * `config`: Outputs the configuration values for `riak.conf` and `advanced.config`.
-  * `restart`: Performs a rolling restart of the cluster. If you've upgraded to a new version of the RMF or Riak, restarting the cluster will push the new Riak version while preserving the data directories if you are using persistent volumes.
-  * `destroy`: Kills all Riak node tasks for a cluster, deletes any created persistent volumes, and un-reserves any dynamically reserved resources for the nodes.
-* `riak-mesos node`: Interact with an individual node in the cluster.
-  * `info`: Outputs information about a Riak node stored by the RMF.
-  * `aae-status`: Outputs the active anti entropy status for a node.
-  * `status`: Outputs the member status information for a node.
-  * `ringready`: Outputs the ringready status for a node.
-  * `transfers`: Outputs the active and waiting partition transfers for a node.
-  * `bucket-type`: Interact with bucket types on a node / cluster.
-      * `create`: Creates and activates a bucket type given some properties as json.
-      * `list`: List all bucket types and their properties from a node / cluster.
-  * `list`: List all nodes in a cluster.
-  * `remove`: Kills the task for a node, destroys any created persistent volumes, and un-reserves any dynamically reserved resources.
-  * `add`: Adds one or more nodes to a cluster.
-* `riak-mesos proxy`: Interact with the RMF smart proxy.
-  * `config`: Output the generated Marathon json application definition for the RMF smart proxy.
-  * `install`: Install the RMF smart proxy as a marathon app.
-  * `uninstall`: Delete the RMF smart proxy from Marathon.
-  * `endpoints`: List the endpoints and descriptions provided by the RMF smart proxy.
+* :code:`riak-mesos config`: Output the current configuration values.
+* :code:`riak-mesos framework`: Interact with the RMF application.
+    * :code:`config`: Output the generated Marathon json application definition for the RMF.
+    * :code:`install`: Install the RMF as a Marathon app.
+    * :code:`uninstall`: Delete the RMF from Marathon and delete related Zoookeeper entries.
+    * **Note:** This will not kill Riak node tasks, so make sure to run :code:`riak-mesos cluster destroy` first.
+* :code:`riak-mesos cluster`
+    * :code:`create`: Creates a named Riak cluster (default is :code:`default`) in the RMF using default values for :code:`riak.conf` and :code:`advanced.config`.
+    * :code:`list`: Lists the names of each cluster.
+    * :code:`config`: Outputs the configuration values for :code:`riak.conf` and :code:`advanced.config`.
+    * :code:`restart`: Performs a rolling restart of the cluster. If you've upgraded to a new version of the RMF or Riak, restarting the cluster will push the new Riak version while preserving the data directories if you are using persistent volumes.
+    * :code:`destroy`: Kills all Riak node tasks for a cluster, deletes any created persistent volumes, and un-reserves any dynamically reserved resources for the nodes.
+* :code:`riak-mesos node`: Interact with an individual node in the cluster.
+    * :code:`info`: Outputs information about a Riak node stored by the RMF.
+    * :code:`aae-status`: Outputs the active anti entropy status for a node.
+    * :code:`status`: Outputs the member status information for a node.
+    * :code:`ringready`: Outputs the ringready status for a node.
+    * :code:`transfers`: Outputs the active and waiting partition transfers for a node.
+    * :code:`bucket-type`: Interact with bucket types on a node / cluster.
+        * :code:`create`: Creates and activates a bucket type given some properties as json.
+        * :code:`list`: List all bucket types and their properties from a node / cluster.
+    * :code:`list`: List all nodes in a cluster.
+    * :code:`remove`: Kills the task for a node, destroys any created persistent volumes, and un-reserves any dynamically reserved resources.
+    * :code:`add`: Adds one or more nodes to a cluster.
+* :code:`riak-mesos proxy`: Interact with the RMF smart proxy.
+    * :code:`config`: Output the generated Marathon json application definition for the RMF smart proxy.
+    * :code:`install`: Install the RMF smart proxy as a marathon app.
+    * :code:`uninstall`: Delete the RMF smart proxy from Marathon.
+    * :code:`endpoints`: List the endpoints and descriptions provided by the RMF smart proxy.
 
 Install the RMF
 ---------------
-Run the following command to create a Marathon application with the id `riak`:
+Run the following command to create a Marathon application with the id :code:`riak`
 
 .. code::
 
-   riak-mesos framework install
+    riak-mesos framework install
 
-You can check the status of the Marathon app deployment by navigating to [http://marathon.mesos:8080](http://marathon.mesos:8080) directly, or with this snippet:
+You can check the status of the Marathon app deployment by navigating to http://marathon.mesos:8080 directly, or with this snippet:
 
 .. code::
 
@@ -149,6 +154,7 @@ Create a cluster
 Let's start with a 3 node cluster. Execute the following to get started:
 
 .. code::
+
    riak-mesos cluster create
    riak-mesos node add --nodes 3
 
@@ -158,7 +164,7 @@ After a few moments, we can check the status of our nodes:
 
    riak-mesos node list --json | python -m json.tool | grep CurrentState
 
-A status of `3` means that the nodes are in the `Started` state, so a healthy cluster would look like this:
+A status of :code:`3` means that the nodes are in the :code:`Started` state, so a healthy cluster would look like this:
 
 .. code::
 
@@ -210,7 +216,7 @@ Other useful information can be found by executing these commands:
 
 Update the Cluster Configuration
 --------------------------------
-You can customize the `riak.conf` and `advanced.config` for a cluster if necessary. Use [scheduler/data/riak.conf](https://github.com/basho-labs/riak-mesos/blob/master/scheduler/data/riak.conf) and [scheduler/data/advanced.config](https://github.com/basho-labs/riak-mesos/blob/master/scheduler/data/advanced.config) as templates to make your changes to. It is important that all of the values specified with `{{...}}` remain intact.
+You can customize the :code:`riak.conf` and :code:`advanced.config` for a cluster if necessary. Use https://github.com/basho-labs/riak-mesos/blob/master/scheduler/data/riak.erlang.conf (or riak.golang.conf) and https://github.com/basho-labs/riak-mesos/blob/master/scheduler/data/advanced.erlang.config (or advanced.golang.conf) as templates to make your changes to. It is important that all of the values specified with :code:`{{...}}` remain intact.
 
 Once you have created your customized versions of these files, you can save them to the cluster using the following commands:
 
@@ -226,7 +232,7 @@ Update advanced.config
 
    riak-mesos cluster config advanced --file /path/to/your/advanced.config
 
-**Note:** If you already have nodes running in a cluster, you'll need to perform a `riak-mesos cluster restart` to force the cluster to pick up the new changes.
+**Note:** If you already have nodes running in a cluster, you'll need to perform a :code:`riak-mesos cluster restart` to force the cluster to pick up the new changes.
 
 Restart the Cluster
 -------------------
@@ -238,15 +244,15 @@ If your Riak cluster is in a stable state (no active transfers, ringready is tru
 
 Situations where a cluster restart is required include:
 
-* Changes to `riak.conf`
-* Changes to `advanced.config`
+* Changes to :code:`riak.conf`
+* Changes to :code:`advanced.config`
 * Upgrading to a new version of RMF / Riak
 
 Install the Proxy
 -----------------
 There are a few ways to access the Riak nodes in your cluster, including hosting your own HAProxy and keeping the config updated to include the host names and ports for all of the nodes. This approach can be problematic because the HAProxy config would need to be updated every time there is a change to one of the nodes in the cluster resulting from restarts, task failures, etc.
 
-To account for this difficulty, we've created a smart proxy called `riak mesos director`. The director should keep tabs on the current state of the cluster including all of the hostnames and ports, and it also provides a load balancer / proxy to spread load across all of the nodes.
+To account for this difficulty, we've created a smart proxy called :code:`riak mesos director`. The director should keep tabs on the current state of the cluster including all of the hostnames and ports, and it also provides a load balancer / proxy to spread load across all of the nodes.
 
 To install the proxy, simply run:
 
@@ -299,7 +305,7 @@ Scale down
 ----------
 Scaling down requires the same patience as scaling up in that you should be waiting for transfers to complete between each node removal.
 
-Let's remove all but one of the nodes by performing a remove on `riak-default-2`, `riak-default-3`, and `riak-default-4`
+Let's remove all but one of the nodes by performing a remove on :code:`riak-default-2`, :code:`riak-default-3`, and :code:`riak-default-4`
 
 .. code::
 
@@ -365,7 +371,7 @@ Kill all RMF Instances and Tasks
 
 Remove Zookeeper Metadata
 -------------------------
-To remove the `/riak/frameworks/FRAMEWORK_NAME` from Zookeeper:
+To remove the :code:`/riak/frameworks/FRAMEWORK_NAME` from Zookeeper:
 
 .. code::
 
