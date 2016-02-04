@@ -955,7 +955,7 @@ def run(args):
                 client = create_client(config.get_any('marathon', 'url'))
                 app = client.get_app(config.get('framework-name') +
                                      '-director')
-                if(len(app['tasks'] == 0)):
+                if len(app['tasks']) == 0:
                     print("Proxy is not installed.")
                     break
                 task = app['tasks'][0]
