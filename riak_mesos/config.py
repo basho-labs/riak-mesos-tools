@@ -1,201 +1,32 @@
-import os
+#! /usr/bin/env python
+
+#
+#    Copyright (C) 2016 Basho Technologies, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import requests
-import sys
-
-from marathon import Client
-from sys import platform as _platform
+import util
 
 
-class CliError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-
-def usage():
-    print('Command line utility for the Riak Mesos Framework / DCOS Service.')
-    print('This utility provides tools for modifying and accessing your Riak')
-    print('on Mesos installation.')
-    print('')
-    print('Usage: riak-mesos <subcommands> [options]')
-    print('')
-    print('Subcommands: ')
-    print('    config')
-    print('    framework config')
-    print('    framework install')
-    print('    framework wait-for-service')
-    print('    framework clean-metadata')
-    print('    framework teardown')
-    print('    framework uninstall')
-    print('    framework endpoints')
-    print('    cluster config [--file]')
-    print('    cluster config advanced [--file]')
-    print('    cluster list [--json]')
-    print('    cluster create')
-    print('    cluster wait-for-service')
-    print('    cluster endpoints')
-    print('    cluster restart')
-    print('    cluster destroy')
-    print('    node info --node <name>')
-    print('    node aae-status --node <name>')
-    print('    node status --node <name>')
-    print('    node ringready --node <name>')
-    print('    node transfers --node <name>')
-    print('    node bucket-type create --node <name> --bucket-type <name>')
-    print('                            --props "<json>"')
-    print('    node bucket-type list --node <name>')
-    print('    node list [--json]')
-    print('    node remove --node <name>')
-    print('    node add [--nodes <number>]')
-    print('    node wait-for-service [--node <name>]')
-    print('    proxy config')
-    print('    proxy install')
-    print('    proxy uninstall')
-    print('    proxy endpoints')
-    print('    proxy wait-for-service')
-    print('')
-    print('Options (available on most commands): ')
-    print('    --config <json-file> (/etc/riak-mesos/config.json)')
-    print('    --cluster <cluster-name> (default)')
-    print('    --debug')
-    print('    --help')
-    print('    --info')
-    print('    --version')
-    print('')
-
-
-# Util
-def is_dcos():
-    if len(sys.argv) >= 2:
-        return sys.argv[1] == 'riak'
-    return False
-
-
-def create_client(marathon_url):
-    if is_dcos():
-        from dcos import marathon
-        return marathon.create_client()
-    else:
-        return Client(marathon_url)
-
-
-# Config
-class Config(object):
+class RiakMesosConfig(object):
     def __init__(self, override_file=None):
         self._config = self.default_framework_config()
         if override_file is not None:
             with open(override_file) as data_file:
                 data = json.load(data_file)
                 self._merge(data)
-
-    def zktool_command(self, command, path):
-        tool = ''
-        command = ''
-        if _platform == 'linux' or _platform == 'linux2':
-            tool = os.path.dirname(__file__) + '/' + 'zktool_linux_amd64'
-        elif _platform == 'darwin':
-            tool = os.path.dirname(__file__) + '/' + 'zktool_darwin_amd64'
-        else:
-            return False
-        if command == 'get':
-            args = tool + ' -zk=' + self.get('zk') + ' -name=' + path
-            args += ' -command=zk-get-data'
-            data = os.popen(args).read()
-            if data.strip() == 'zk: node does not exist':
-                return False
-            elif data.strip() == 'zk: could not connect to a server':
-                return False
-            return data
-        elif command == 'delete':
-            args = tool + ' -zk=' + self.get('zk') + ' -name=' + path
-            args += ' -command=zk-delete'
-            output = os.popen(args).read()
-            output += os.popen(args).read()
-            output += os.popen(args).read()
-            return output
-        else:
-            return False
-
-    def kazoo_command(self, command, path):
-        from kazoo.client import KazooClient
-        zk = KazooClient(hosts=self.get('zk'))
-        zk.start()
-        node = path
-        if command == 'get':
-            data, stat = zk.get(node)
-            return data.decode("utf-8")
-        elif command == 'delete':
-            zk.delete('/riak', recursive=True)
-            return 'Successfully deleted ' + path
-        else:
-            return False
-        zk.stop()
-
-    def zk_command(self, command, path):
-        result = ''
-        if os.path.isfile(os.path.dirname(__file__) + '/zktool_linux_amd64'):
-            result = self.zktool_command(command, path)
-        if result:
-            return result
-        return self.kazoo_command(command, path)
-
-    def zk_api_url(self):
-        path = '/riak/frameworks/' + self.get('framework-name') + '/uri'
-        url = self.zk_command('get', path)
-        if url:
-            return url.strip() + '/'
-        return False
-
-    def marathon_api_url(self):
-        try:
-            client = create_client(self.get_any('marathon', 'url'))
-            tasks = client.get_tasks(self.get('framework-name'))
-            if len(tasks) != 0:
-                host = tasks[0]['host']
-                port = tasks[0]['ports'][0]
-                return 'http://' + host + ':' + str(port) + '/'
-            return False
-        except:
-            return False
-
-    def dcos_api_url(self):
-        if not is_dcos():
-            return False
-        try:
-            from dcos import util
-            framework = self.get('framework-name')
-            client = create_client(self.get_any('marathon', 'url'))
-            tasks = client.get_tasks(self.get('framework-name'))
-            if len(tasks) == 0:
-                usage()
-                raise CliError('Riak Mesos Framework is not running.')
-            service_url = util.get_config().get('core.dcos_url').rstrip('/')
-            service_url += '/service/' + framework + '/'
-            r = requests.get(service_url + 'healthcheck')
-            if r.status_code == 200:
-                return service_url
-            return False
-        except:
-            return False
-
-    def api_url(self):
-        try:
-            service_url = self.dcos_api_url()
-            if service_url:
-                return service_url + 'api/v1/'
-            service_url = self.marathon_api_url()
-            if service_url:
-                return service_url + 'api/v1/'
-            service_url = self.zk_api_url()
-            if service_url:
-                return service_url + 'api/v1/'
-            error = 'Unable to connect to DCOS Server, Marathon, or Zookeeper.'
-            raise CliError(error)
-        except Exception as e:
-            raise CliError('Unable to find api url: ' + e.message)
 
     def default_framework_config(self):
         download_base = 'http://riak-tools.s3.amazonaws.com'
@@ -359,3 +190,58 @@ class Config(object):
                         self._config[k][j] = override[k][j]
             else:
                 self._config[k] = override[k]
+
+    def zk_api_url(self):
+        try:
+            path = '/riak/frameworks/' + self.get('framework-name') + '/uri'
+            url = util.zookeeper_command(self.get('zk'), 'get', path)
+            if url:
+                return url.strip() + '/'
+            return False
+        except:
+            return False
+
+    def marathon_api_url(self):
+        try:
+            client = util.marathon_client(self.get_any('marathon', 'url'))
+            tasks = client.get_tasks(self.get('framework-name'))
+            if len(tasks) != 0:
+                host = tasks[0]['host']
+                port = tasks[0]['ports'][0]
+                return 'http://' + host + ':' + str(port) + '/'
+            return False
+        except:
+            return False
+
+    def dcos_api_url(self):
+        try:
+            from dcos import util
+            framework = self.get('framework-name')
+            client = util.marathon_client(self.get_any('marathon', 'url'))
+            tasks = client.get_tasks(self.get('framework-name'))
+            if len(tasks) == 0:
+                raise util.CliError('Riak Mesos Framework is not running.')
+            service_url = util.get_config().get('core.dcos_url').rstrip('/')
+            service_url += '/service/' + framework + '/'
+            r = requests.get(service_url + 'healthcheck')
+            if r.status_code == 200:
+                return service_url
+            return False
+        except:
+            return False
+
+    def api_url(self):
+        try:
+            service_url = self.dcos_api_url()
+            if service_url:
+                return service_url + 'api/v1/'
+            service_url = self.marathon_api_url()
+            if service_url:
+                return service_url + 'api/v1/'
+            service_url = self.zk_api_url()
+            if service_url:
+                return service_url + 'api/v1/'
+            error = 'Unable to connect to DCOS Server, Marathon, or Zookeeper.'
+            raise util.CliError(error)
+        except Exception as e:
+            raise util.CliError('Unable to find api url: ' + e.message)
