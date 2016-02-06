@@ -24,8 +24,9 @@ import sys
 import time
 import traceback
 import requests
+import commands
 
-from riak_mesos import Config, create_client
+from config import Config, create_client
 
 
 def usage():
@@ -383,6 +384,13 @@ def run(args):
     elif help_flag:
         print(cmd_desc)
         return 0
+
+    try:
+        commandFunc = getattr(commands, cmd.replace(' ', '_'))
+        output = commandFunc()
+        print output
+    except AttributeError:
+        raise CliError('Unrecognized command: ' + cmd)
 
     if cmd == '':
         print('No commands executed')
