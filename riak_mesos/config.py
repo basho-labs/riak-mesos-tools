@@ -3,8 +3,68 @@ import json
 import requests
 import sys
 
-from riak_mesos import Client, CliError, usage
+from marathon import Client
 from sys import platform as _platform
+
+
+class CliError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
+def usage():
+    print('Command line utility for the Riak Mesos Framework / DCOS Service.')
+    print('This utility provides tools for modifying and accessing your Riak')
+    print('on Mesos installation.')
+    print('')
+    print('Usage: riak-mesos <subcommands> [options]')
+    print('')
+    print('Subcommands: ')
+    print('    config')
+    print('    framework config')
+    print('    framework install')
+    print('    framework wait-for-service')
+    print('    framework clean-metadata')
+    print('    framework teardown')
+    print('    framework uninstall')
+    print('    framework endpoints')
+    print('    cluster config [--file]')
+    print('    cluster config advanced [--file]')
+    print('    cluster list [--json]')
+    print('    cluster create')
+    print('    cluster wait-for-service')
+    print('    cluster endpoints')
+    print('    cluster restart')
+    print('    cluster destroy')
+    print('    node info --node <name>')
+    print('    node aae-status --node <name>')
+    print('    node status --node <name>')
+    print('    node ringready --node <name>')
+    print('    node transfers --node <name>')
+    print('    node bucket-type create --node <name> --bucket-type <name>')
+    print('                            --props "<json>"')
+    print('    node bucket-type list --node <name>')
+    print('    node list [--json]')
+    print('    node remove --node <name>')
+    print('    node add [--nodes <number>]')
+    print('    node wait-for-service [--node <name>]')
+    print('    proxy config')
+    print('    proxy install')
+    print('    proxy uninstall')
+    print('    proxy endpoints')
+    print('    proxy wait-for-service')
+    print('')
+    print('Options (available on most commands): ')
+    print('    --config <json-file> (/etc/riak-mesos/config.json)')
+    print('    --cluster <cluster-name> (default)')
+    print('    --debug')
+    print('    --help')
+    print('    --info')
+    print('    --version')
+    print('')
 
 
 # Util
