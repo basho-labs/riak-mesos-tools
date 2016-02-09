@@ -14,6 +14,8 @@
 # limitations under the License.
 """DCOS Riak version"""
 
+import util
+
 version = '0.3.1'
 
 usage = '''
@@ -66,6 +68,10 @@ Options (available on most commands):
     --info
     --version
 '''
+
+commands = [
+    util.CliCommand(cmd='config', help='Displays configuration')
+]
 
 help_dict = {
     'config': ('Displays configuration'),

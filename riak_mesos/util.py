@@ -24,6 +24,16 @@ from dcos import marathon
 from kazoo.client import KazooClient
 
 
+class CliCommand(object):
+    def __init__(self, **kwargs):
+        self.cmd=''
+        self.help=''
+        self.alias=''
+        self.args=
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+
+
 class CliError(Exception):
     def __init__(self, value):
         self.value = value
@@ -54,18 +64,18 @@ def extract_flag(args, name):
     return [args, val]
 
 
-def extract_option(self, args, name, default, arg_type='string'):
+def extract_option(args, name, default, arg_type='string'):
     val = default
     if name in args:
         index = args.index(name)
-    if index+1 < len(args):
-        val = args[index+1]
-        self.validate_arg(name, val, arg_type)
-        del args[index]
-        del args[index]
-    else:
-        print constants.usage
-        raise CliError('Not enough arguments for: ' + name)
+        if index+1 < len(args):
+            val = args[index+1]
+            validate_arg(name, val, arg_type)
+            del args[index]
+            del args[index]
+        else:
+            print constants.usage
+            raise CliError('Not enough arguments for: ' + name)
     return [args, val]
 
 
