@@ -15,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import constants
 import json
 import requests
 import time
@@ -24,59 +23,12 @@ from dcos import marathon
 from kazoo.client import KazooClient
 
 
-class CliCommand(object):
-    def __init__(self, **kwargs):
-        self.cmd=''
-        self.help=''
-        self.alias=''
-        self.args=
-        for key, val in kwargs.items():
-            setattr(self, key, val)
-
-
 class CliError(Exception):
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
         return repr(self.value)
-
-
-def validate_arg(opt, arg, arg_type='string'):
-    if arg.startswith('-'):
-        err = 'Invalid argument for opt: ' + opt + ' [' + arg + '].'
-        raise CliError(err)
-    if arg_type == 'integer' and not arg.isdigit():
-        err = 'Invalid integer for opt: ' + opt + ' [' + arg + '].'
-        raise CliError(err)
-
-
-def test_flag(args, name):
-    return name in args
-
-
-def extract_flag(args, name):
-    val = False
-    if name in args:
-        index = args.index(name)
-        val = True
-        del args[index]
-    return [args, val]
-
-
-def extract_option(args, name, default, arg_type='string'):
-    val = default
-    if name in args:
-        index = args.index(name)
-        if index+1 < len(args):
-            val = args[index+1]
-            validate_arg(name, val, arg_type)
-            del args[index]
-            del args[index]
-        else:
-            print constants.usage
-            raise CliError('Not enough arguments for: ' + name)
-    return [args, val]
 
 
 def wait_for_url(url, debug_flag, seconds):
@@ -91,6 +43,65 @@ def wait_for_url(url, debug_flag, seconds):
             pass
         time.sleep(1)
         return wait_for_url(url, debug_flag, seconds - 1)
+
+
+def wait_for_framework(config, debug_flag, seconds):
+    if seconds == 0:
+        return False
+    try:
+        healthcheck_url = config.api_url() + 'clusters'
+        if wait_for_url(healthcheck_url, debug_flag, 1):
+            return True
+    except:
+        pass
+    time.sleep(1)
+    return wait_for_framework(config, debug_flag, seconds - 1)
+
+
+def wait_for_node(config, cluster, debug_flag, node, seconds):
+    if wait_for_framework(config, debug_flag, 60):
+        service_url = config.api_url()
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
+        debug_request(debug_flag, r)
+        node_json = json.loads(r.text)
+        node_host = node_json[node]['Hostname']
+        node_port = str(node_json[node]['TaskData']['HTTPPort'])
+        node_url = 'http://' + node_host + ':' + node_port
+        if wait_for_url(node_url, debug_flag, 20):
+            if node_json[node]['CurrentState'] == 3:
+                print('Node ' + node + ' is ready.')
+                return
+            return wait_for_node(config, cluster, debug_flag, node,
+                                 seconds - 1)
+        print('Node ' + node + ' did not respond in 20 seconds.')
+        return
+    print('Riak Mesos Framework did not respond within 60 seconds.')
+    return
+
+
+def node_info(config, cluster, debug_flag, node):
+    service_url = config.api_url()
+    r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
+    debug_request(debug_flag, r)
+    fw = config.get('framework-name')
+    node_json = json.loads(r.text)
+    http_port = str(node_json[node]['TaskData']['HTTPPort'])
+    pb_port = str(node_json[node]['TaskData']['PBPort'])
+    direct_host = node_json[node]['Hostname']
+    mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
+    alive = False
+    r = requests.get('http://' + direct_host + ':' + http_port)
+    debug_request(debug_flag, r)
+    if r.status_code == 200:
+        alive = True
+    node_data = {
+        'http_direct': direct_host + ':' + http_port,
+        'http_mesos_dns': mesos_dns_cluster + ':' + http_port,
+        'pb_direct': direct_host + ':' + pb_port,
+        'pb_mesos_dns': mesos_dns_cluster + ':' + pb_port,
+        'alive': alive
+    }
+    return node_data
 
 
 def marathon_client(marathon_url=None):
@@ -157,17 +168,3 @@ def ppfact(description, json_str, key, failure):
             print(description + json.dumps(obj[key]))
     except:
         print(description + failure)
-
-
-def help_dict():
-        help = constants.help_dict
-        # Aliases:
-        help['framework config'] = help['framework']
-        help['proxy config'] = help['proxy']
-        help['cluster list'] = help['cluster']
-        help['node list'] = help['node']
-        return help
-
-
-def help(cmd):
-    return help_dict().get(cmd, False)

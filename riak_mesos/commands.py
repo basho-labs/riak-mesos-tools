@@ -17,7 +17,7 @@ import util
 
 
 def config(args, cfg):
-    if args.json_flag:
+    if args['json_flag']:
         print(cfg.string())
     else:
         util.ppobj('Framework: ', cfg.string(), 'riak', '[]')
@@ -29,9 +29,9 @@ def framework(args, cfg):
     framework_cfg(args, cfg)
 
 
-def framework_cfg(args, cfg):
+def framework_config(args, cfg):
     obj = cfg.framework_marathon_string()
-    if json_flag:
+    if args['json_flag']:
         print(obj)
     else:
         ppobj('Marathon Cfg: ', obj, '', '{}')
@@ -71,7 +71,7 @@ def framework_teardown(args, cfg):
             print('Finished teardown.')
     return
 
-def proxy_cfg(args, cfg):
+def proxy_config(args, cfg):
     proxy(args, cfg)
 
 
@@ -197,7 +197,7 @@ def framework_endpoints(args, cfg):
     return
 
 
-def cluster_cfg(args, cfg):
+def cluster_config(args, cfg):
     service_url = cfg.api_url()
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
@@ -220,7 +220,7 @@ def cluster_cfg(args, cfg):
             else:
                 print('riak.conf updated')
     return
-def cluster_cfg_advanced(args, cfg):
+def cluster_config_advanced(args, cfg):
     service_url = cfg.api_url()
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
@@ -256,7 +256,7 @@ def cluster(args, cfg):
     r = requests.get(service_url + 'clusters')
     debug_request(debug_flag, r)
     if r.status_code == 200:
-        if json_flag:
+        if args['json_flag']:
             print(r.text)
         else:
             pparr('Clusters: ', r.text, '[]')
@@ -320,7 +320,7 @@ def node(args, cfg):
         raise CliError("Riak Mesos Framework is not running.")
     r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
     debug_request(debug_flag, r)
-    if json_flag:
+    if args['json_flag']:
         print(r.text)
     else:
         pparr('Nodes: ', r.text, '[]')

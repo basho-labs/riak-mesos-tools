@@ -14,8 +14,6 @@
 # limitations under the License.
 """DCOS Riak version"""
 
-import util
-
 version = '0.3.1'
 
 usage = '''
@@ -69,10 +67,6 @@ Options (available on most commands):
     --version
 '''
 
-commands = [
-    util.CliCommand(cmd='config', help='Displays configuration')
-]
-
 help_dict = {
     'config': ('Displays configuration'),
     'framework': ('Displays configration for riak marathon app'),
@@ -95,7 +89,8 @@ help_dict = {
     'proxy endpoints':
     ('Lists the endpoints exposed by a riak-mesos-director marathon app '
      '--public-dns (default is {{public-dns}}).'),
-    'framework install': ('Retrieves a list of cluster names'),
+    'framework install':
+    ('Generates and installs a marathon app for the framework'),
     'framework wait-for-service':
     ('Waits 60 seconds or until Framework is running'),
     'framework endpoints': ('Retrieves useful endpoints for the framework'),
