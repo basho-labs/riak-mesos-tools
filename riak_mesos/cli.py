@@ -25,6 +25,7 @@ import constants
 import util
 
 from config import RiakMesosConfig
+from util import CliError
 
 
 def help_dict():
@@ -44,10 +45,10 @@ def help(cmd):
 def validate_arg(opt, arg, arg_type='string'):
     if arg.startswith('-'):
         err = 'Invalid argument for opt: ' + opt + ' [' + arg + '].'
-        raise util.CliError(err)
+        raise CliError(err)
     if arg_type == 'integer' and not arg.isdigit():
         err = 'Invalid integer for opt: ' + opt + ' [' + arg + '].'
-        raise util.CliError(err)
+        raise CliError(err)
 
 
 def test_flag(args, name):
@@ -74,7 +75,7 @@ def extract_option(args, name, default, arg_type='string'):
             del args[index]
         else:
             print constants.usage
-            raise util.CliError('Not enough arguments for: ' + name)
+            raise CliError('Not enough arguments for: ' + name)
     return [args, val]
 
 
@@ -127,9 +128,9 @@ class RiakMesosCli(object):
             print('No commands executed')
             return
         elif self.cmd.startswith('-'):
-            raise util.CliError('Unrecognized option: ' + self.cmd)
+            raise CliError('Unrecognized option: ' + self.cmd)
         elif not cmd_desc:
-            raise util.CliError('Unrecognized command: ' + self.cmd)
+            raise CliError('Unrecognized command: ' + self.cmd)
 
         try:
             command_func_str = self.cmd.replace(' ', '_')
@@ -175,7 +176,7 @@ def main():
             traceback.print_exc()
             raise e
         return 1
-    except util.CliError as e:
+    except CliError as e:
         print('CliError: ' + str(e))
         if debug:
             traceback.print_exc()
