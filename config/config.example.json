@@ -1,38 +1,38 @@
 {
-    "director": {
-        "url": "http://riak-tools.s3.amazonaws.com/riak-mesos/ubuntu/riak_mesos_director_linux_amd64_0.3.0.tar.gz",
-        "use-public": false,
-        "cmd": "./director/bin/ermf-director"
-    },
-    "marathon": {
-        "url": "http://marathon.mesos:8080"
-    },
     "riak": {
-        "auth-principal": "riak",
-        "auth-provider": "",
-        "auth-secret-file": "",
-        "cpus": 0.5,
-        "flags": "-use_reservations",
         "framework-name": "riak",
+        "hostname": "Framework HTTP API hostname.",
+        "marathon": "http://marathon.mesos:8080",
+        "master": "zk://leader.mesos:2181/mesos",
+        "zk": "leader.mesos:2181",
+        "user": "root",
+        "role": "riak",
+        "auth-principal": "riak",
+        "instances": 1,
         "healthcheck-grace-period-seconds": 300,
         "healthcheck-interval-seconds": 60,
-        "healthcheck-max-consecutive-failures": 5,
         "healthcheck-timeout-seconds": 20,
-        "hostname": "riak.mesos",
-        "instances": 1,
-        "ip": "",
-        "log": "",
-        "master": "zk://leader.mesos:2181/mesos",
-        "mem": 2048,
-        "node": {
-            "cpus": 1.0,
-            "disk": 1000,
-            "mem": 2000
+        "healthcheck-max-consecutive-failures": 5,
+        "scheduler": {
+            "url": "http://s3.amazonaws.com/downloads.basho.com/riak_mesos_scheduler/0.4/0.4.0/ubuntu/trusty/riak_mesos_scheduler_0.4.0-1_amd64.tar.gz",
+            "cpus": 0.5,
+            "mem": 2048
         },
-        "role": "riak",
-        "super-chroot": "true",
-        "url": "http://riak-tools.s3.amazonaws.com/riak-mesos/erlang/mesos-0.26/ubuntu/riak_mesos_linux_amd64_0.3.1.tar.gz",
-        "user": "ubuntu",
-        "zk": "leader.mesos:2181"
+        "executor": {
+            "url": "http://s3.amazonaws.com/downloads.basho.com/riak_mesos_executor/0.2/0.2.1/ubuntu/trusty/riak_mesos_executor_0.2.1-1_amd64.tar.gz",
+            "cpus": 0.1,
+            "mem": 512
+        },
+        "node": {
+            "url": "http://s3.amazonaws.com/downloads.basho.com/riak/2.1/2.1.3/ubuntu/trusty/riak_2.1.3-1_amd64.tar.gz",
+            "cpus": 1.0,
+            "mem": 8000,
+            "disk": 20000,
+        },
+        "proxy": {
+            "url": "http://s3.amazonaws.com/downloads.basho.com/riak_mesos_director/0.3/0.3.0/ubuntu/trusty/riak_mesos_director_0.3.0-1_amd64.tar.gz",
+            "cpus": 0.5,
+            "mem": 1024
+        }
     }
 }

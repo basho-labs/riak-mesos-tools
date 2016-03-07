@@ -22,57 +22,8 @@ import util
 
 class RiakMesosConfig(object):
     def __init__(self, override_file=None):
-        self._config = self.default_framework_config()
-        if override_file is not None:
-            with open(override_file) as data_file:
-                data = json.load(data_file)
-                self._merge(data)
-
-    def default_framework_config(self):
-        download_base = 'http://riak-tools.s3.amazonaws.com'
-        download_base += '/riak-mesos/erlang/mesos-0.26/ubuntu/'
-        riak_pkg = 'riak_mesos_linux_amd64_0.3.1.tar.gz'
-        director_pkg = 'riak_mesos_director_linux_amd64_0.3.0.tar.gz'
-        riak_url = download_base + riak_pkg
-        director_url = download_base + director_pkg
-        return {
-            'riak': {
-                'master': 'zk://leader.mesos:2181/mesos',
-                'zk': 'leader.mesos:2181',
-                'ip': '',
-                'hostname': 'riak.mesos',
-                'log': '',
-                'user': 'ubuntu',
-                'framework-name': 'riak',
-                'role': 'riak',
-                'url': riak_url,
-                'auth-provider': '',
-                'auth-principal': 'riak',
-                'auth-secret-file': '',
-                'instances': 1,
-                'cpus': 0.5,
-                'mem': 2048,
-                'node': {
-                    'cpus': 1.0,
-                    'mem': 8000,
-                    'disk': 20000
-                },
-                'flags': '-use_reservations',
-                'super-chroot': 'true',
-                'healthcheck-grace-period-seconds': 300,
-                'healthcheck-interval-seconds': 60,
-                'healthcheck-timeout-seconds': 20,
-                'healthcheck-max-consecutive-failures': 5
-            },
-            'director': {
-                'url': director_url,
-                'cmd': './director/bin/ermf-director',
-                'use-public': False
-            },
-            'marathon': {
-                'url': 'http://marathon.mesos:8080'
-            }
-        }
+        with open(override_file) as data_file:
+            self._config = json.load(data_file)
 
     def _fw_arg(self, name, var_name):
         if self.get(var_name) != '':
