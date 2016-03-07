@@ -368,9 +368,11 @@ class Config(object):
         download_base = 'http://riak-tools.s3.amazonaws.com'
         download_base += '/riak-mesos/erlang/mesos-0.26/ubuntu/'
         riak_pkg = 'riak_mesos_linux_amd64_0.3.1.tar.gz'
+	director_base = 'http://riak-tools.s3.amazonaws.com'
+        director_base += '/riak-mesos/ubuntu/'
         director_pkg = 'riak_mesos_director_linux_amd64_0.3.0.tar.gz'
         riak_url = download_base + riak_pkg
-        director_url = download_base + director_pkg
+        director_url = director_base + director_pkg
         return {
             'riak': {
                 'master': 'zk://leader.mesos:2181/mesos',
