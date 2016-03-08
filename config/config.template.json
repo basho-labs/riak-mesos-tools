@@ -1,0 +1,38 @@
+{
+    "riak": {
+        "framework-name": "riak",
+        "hostname": "Framework HTTP API hostname.",
+        "marathon": "http://marathon.mesos:8080",
+        "master": "zk://leader.mesos:2181/mesos",
+        "zk": "leader.mesos:2181",
+        "user": "root",
+        "role": "riak",
+        "auth-principal": "riak",
+        "instances": 1,
+        "healthcheck-grace-period-seconds": 300,
+        "healthcheck-interval-seconds": 60,
+        "healthcheck-timeout-seconds": 20,
+        "healthcheck-max-consecutive-failures": 5,
+        "scheduler": {
+            "url": "{{scheduler_url}}",
+            "cpus": 0.5,
+            "mem": 2048
+        },
+        "executor": {
+            "url": "{{executor_url}}",
+            "cpus": 0.1,
+            "mem": 512
+        },
+        "node": {
+            "url": "{{node_url}}",
+            "cpus": 1.0,
+            "mem": 8000,
+            "disk": 20000,
+        },
+        "proxy": {
+            "url": "{{proxy_url}}",
+            "cpus": 0.5,
+            "mem": 1024
+        }
+    }
+}
