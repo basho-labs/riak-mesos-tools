@@ -56,19 +56,20 @@ class RiakMesosConfig(object):
         if self.get('hostname') != '':
             mj['env']['RIAK_MESOS_HOSTNAME'] = self.get('hostname')
         if self.get('failover-timeout') != '':
-            mj['env']['RIAK_MESOS_FAILOVER_TIMEOUT'] = self.get(
-                'failover-timeout')
+            mj['env']['RIAK_MESOS_FAILOVER_TIMEOUT'] = str(self.get(
+                'failover-timeout'))
         if self.get('node', 'cpus') != '':
-            mj['env']['RIAK_MESOS_NODE_CPUS'] = self.get('node', 'cpus')
+            mj['env']['RIAK_MESOS_NODE_CPUS'] = str(self.get('node', 'cpus'))
         if self.get('node', 'mem') != '':
-            mj['env']['RIAK_MESOS_NODE_MEM'] = self.get('node', 'mem')
+            mj['env']['RIAK_MESOS_NODE_MEM'] = str(self.get('node', 'mem'))
         if self.get('node', 'disk') != '':
-            mj['env']['RIAK_MESOS_NODE_DISK'] = self.get('node', 'disk')
+            mj['env']['RIAK_MESOS_NODE_DISK'] = str(self.get('node', 'disk'))
         if self.get('executor', 'cpus') != '':
-            mj['env']['RIAK_MESOS_EXECUTOR_CPUS'] = self.get(
-                'executor', 'cpus')
+            mj['env']['RIAK_MESOS_EXECUTOR_CPUS'] = str(self.get(
+                'executor', 'cpus'))
         if self.get('executor', 'mem') != '':
-            mj['env']['RIAK_MESOS_EXECUTOR_MEM'] = self.get('executor', 'mem')
+            mj['env']['RIAK_MESOS_EXECUTOR_MEM'] = str(self.get(
+                'executor', 'mem'))
         healthcheck = {'path': '/healthcheck'}
         healthcheck.update({'portIndex': 0}),
         healthcheck.update({'protocol': 'HTTP'})
