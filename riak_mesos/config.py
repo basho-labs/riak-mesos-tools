@@ -69,22 +69,21 @@ class RiakMesosConfig(object):
                 'executor', 'cpus')
         if self.get('executor', 'mem') != '':
             mj['env']['RIAK_MESOS_EXECUTOR_MEM'] = self.get('executor', 'mem')
-        healthcheck = {}
-        healthcheck['path'] = '/healthcheck',
-        healthcheck['portIndex'] = 0,
-        healthcheck['protocol'] = 'HTTP',
-        healthcheck['gracePeriodSeconds'] = self.get(
-            'healthcheck-grace-period-seconds')
-        healthcheck['intervalSeconds'] = self.get(
-            'healthcheck-interval-seconds')
-        healthcheck['timeoutSeconds'] = self.get(
-            'healthcheck-timeout-seconds')
-        healthcheck['maxConsecutiveFailures'] = self.get(
-            'healthcheck-max-consecutive-failures')
-        healthcheck['ignoreHttp1xx'] = False
+        healthcheck = {'path': '/healthcheck'}
+        healthcheck.update({'portIndex': 0}),
+        healthcheck.update({'protocol': 'HTTP'})
+        healthcheck.update({'gracePeriodSeconds': self.get(
+            'healthcheck-grace-period-seconds')})
+        healthcheck.update({'intervalSeconds': self.get(
+            'healthcheck-interval-seconds')})
+        healthcheck.update({'timeoutSeconds': self.get(
+            'healthcheck-timeout-seconds')})
+        healthcheck.update({'maxConsecutiveFailures': self.get(
+            'healthcheck-max-consecutive-failures')})
+        healthcheck.update({'ignoreHttp1xx': False})
         mj['healthchecks'] = []
         mj['healthchecks'].append(healthcheck)
-        return mj
+        return healthcheck
 
     def framework_marathon_string(self):
         return json.dumps(self.framework_marathon_json())
