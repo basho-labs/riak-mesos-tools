@@ -14,7 +14,7 @@
 # limitations under the License.
 """DCOS Riak Constants"""
 
-version = '0.3.1'
+version = 'ack-refactor'
 
 usage = '''
 Command line utility for the Riak Mesos Framework / DCOS Service.
