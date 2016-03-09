@@ -83,7 +83,7 @@ class RiakMesosConfig(object):
         healthcheck.update({'ignoreHttp1xx': False})
         mj['healthchecks'] = []
         mj['healthchecks'].append(healthcheck)
-        return healthcheck
+        return mj
 
     def framework_marathon_string(self):
         return json.dumps(self.framework_marathon_json())
