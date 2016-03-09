@@ -106,7 +106,7 @@ def node_info(config, cluster, debug_flag, node):
 
 def marathon_client(marathon_url=None):
     if marathon_url is not None:
-        return marathon.Client(marathon_url)
+        return marathon.Client('http://' + marathon_url)
     else:
         return marathon.create_client()
 
