@@ -32,11 +32,11 @@ class RiakMesosConfig(object):
         mj['cpus'] = self.get('scheduler', 'cpus')
         mj['mem'] = self.get('scheduler', 'mem')
         mj['ports'] = [0]
-        mj['uris'] = [
-            self.get('scheduler', 'url'),
-            self.get('executor', 'url'),
-            self.get('node', 'url'),
-            self.get('node', 'patches-url')],
+        mj['uris'] = []
+        mj['uris'].append(self.get('scheduler', 'url'))
+        mj['uris'].append(self.get('executor', 'url'))
+        mj['uris'].append(self.get('node', 'url'))
+        mj['uris'].append(self.get('node', 'patches-url'))
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         mj['env'] = {}
         mj['env']['RIAK_MESOS_NAME'] = self.get('framework-name')
@@ -69,19 +69,21 @@ class RiakMesosConfig(object):
                 'executor', 'cpus')
         if self.get('executor', 'mem') != '':
             mj['env']['RIAK_MESOS_EXECUTOR_MEM'] = self.get('executor', 'mem')
-        mj['healthchecks'] = [{}]
-        mj['healthchecks'][0]['path'] = '/healthcheck',
-        mj['healthchecks'][0]['portIndex'] = 0,
-        mj['healthchecks'][0]['protocol'] = 'HTTP',
-        mj['healthchecks'][0]['gracePeriodSeconds'] = self.get(
+        healthcheck = {}
+        healthcheck['path'] = '/healthcheck',
+        healthcheck['portIndex'] = 0,
+        healthcheck['protocol'] = 'HTTP',
+        healthcheck['gracePeriodSeconds'] = self.get(
             'healthcheck-grace-period-seconds')
-        mj['healthchecks'][0]['intervalSeconds'] = self.get(
+        healthcheck['intervalSeconds'] = self.get(
             'healthcheck-interval-seconds')
-        mj['healthchecks'][0]['timeoutSeconds'] = self.get(
+        healthcheck['timeoutSeconds'] = self.get(
             'healthcheck-timeout-seconds')
-        mj['healthchecks'][0]['maxConsecutiveFailures'] = self.get(
+        healthcheck['maxConsecutiveFailures'] = self.get(
             'healthcheck-max-consecutive-failures')
-        mj['healthchecks'][0]['ignoreHttp1xx'] = False
+        healthcheck['ignoreHttp1xx'] = False
+        mj['healthchecks'] = []
+        mj['healthchecks'].append(healthcheck)
         return mj
 
     def framework_marathon_string(self):
