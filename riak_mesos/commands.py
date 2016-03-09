@@ -40,7 +40,7 @@ def framework_config(args, cfg):
 def framework_uninstall(args, cfg):
     print('Uninstalling framework...')
     fn = cfg.get('framework-name')
-    client = util.marathon_client(cfg.get_any('marathon', 'url'))
+    client = util.marathon_client(cfg.get('marathon'))
     client.remove_app('/' + fn)
     print('Finished removing ' + '/' + fn + ' from marathon')
     return
@@ -86,14 +86,14 @@ def proxy(args, cfg):
 
 def proxy_install(args, cfg):
     director_json = cfg.director_marathon_json(cluster)
-    client = util.marathon_client(cfg.get_any('marathon', 'url'))
+    client = util.marathon_client(cfg.get('marathon'))
     client.add_app(director_json)
     print('Finished adding ' + director_json['id'] + ' to marathon.')
     return
 
 
 def proxy_uninstall(args, cfg):
-    client = util.marathon_client(cfg.get_any('marathon', 'url'))
+    client = util.marathon_client(cfg.get('marathon'))
     fn = cfg.get('framework-name')
     client.remove_app('/' + fn + '-director')
     print('Finished removing ' + '/' + fn + '-director' +
@@ -102,7 +102,7 @@ def proxy_uninstall(args, cfg):
 
 
 def proxy_endpoints(args, cfg):
-    client = util.marathon_client(cfg.get_any('marathon', 'url'))
+    client = util.marathon_client(cfg.get('marathon'))
     app = client.get_app(cfg.get('framework-name') + '-director')
     task = app['tasks'][0]
     ports = task['ports']
@@ -118,7 +118,7 @@ def proxy_endpoints(args, cfg):
 
 def framework_install(args, cfg):
     framework_json = cfg.framework_marathon_json()
-    client = util.marathon_client(cfg.get_any('marathon', 'url'))
+    client = util.marathon_client(cfg.get('marathon'))
     client.add_app(framework_json)
     print('Finished adding ' + framework_json['id'] + ' to marathon.')
     return
@@ -177,7 +177,7 @@ def cluster_endpoints(args, cfg):
 
 def proxy_wait_for_service(args, cfg):
     if util.wait_for_framework(cfg, args['debug_flag'], 60):
-        client = util.marathon_client(cfg.get_any('marathon', 'url'))
+        client = util.marathon_client(cfg.get('marathon'))
         app = client.get_app(cfg.get('framework-name') +
                              '-director')
         if len(app['tasks']) == 0:

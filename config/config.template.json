@@ -35,6 +35,7 @@
         },
         "proxy": {
             "url": "{{proxy_url}}",
+            "use-public": false,
             "cpus": 0.5,
             "mem": 1024
         }

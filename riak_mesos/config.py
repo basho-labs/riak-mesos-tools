@@ -25,78 +25,83 @@ class RiakMesosConfig(object):
         with open(override_file) as data_file:
             self._config = json.load(data_file)
 
-    def _fw_arg(self, name, var_name):
-        if self.get(var_name) != '':
-            return ' -' + name + '=' + self.get(var_name)
-        return ''
-
-    def _fw_arg_val(self, name, val):
-        if val != '':
-            return ' -' + name + '=' + str(val)
-        return ''
-
     def framework_marathon_json(self):
-        cmd = 'riak_mesos_framework/framework_linux_amd64'
-        cmd += self._fw_arg('master', 'master')
-        cmd += self._fw_arg('zk', 'zk')
-        cmd += self._fw_arg('name', 'framework-name')
-        cmd += self._fw_arg('user', 'user')
-        cmd += self._fw_arg('ip', 'ip')
-        cmd += self._fw_arg('hostname', 'hostname')
-        cmd += self._fw_arg('log', 'log')
-        cmd += self._fw_arg('role', 'role')
-        cmd += self._fw_arg('mesos_authentication_provider', 'auth-provider')
-        cmd += self._fw_arg('mesos_authentication_principal', 'auth-principal')
-        cmd += self._fw_arg('mesos_authentication_secret_file',
-                            'auth-secret-file')
-        cmd += self._fw_arg_val('node_cpus', self.get('node', 'cpus'))
-        cmd += self._fw_arg_val('node_mem', self.get('node', 'mem'))
-        cmd += self._fw_arg_val('node_disk', self.get('node', 'disk'))
-        cmd += ' ' + self.get('flags') if self.get('flags') != '' else ''
-        healthcheck = {
-            'path': '/healthcheck',
-            'portIndex': 0,
-            'protocol': 'HTTP',
-            'gracePeriodSeconds':
-            self.get('healthcheck-grace-period-seconds'),
-            'intervalSeconds':
-            self.get('healthcheck-interval-seconds'),
-            'timeoutSeconds':
-            self.get('healthcheck-timeout-seconds'),
-            'maxConsecutiveFailures':
-            self.get('healthcheck-max-consecutive-failures'),
-            'ignoreHttp1xx': False
-        }
-        return {
-            'id': self.get('framework-name'),
-            'instances': self.get('instances'),
-            'cpus': self.get('cpus'),
-            'mem': self.get('mem'),
-            'ports': [0, 0],
-            'uris': [self.get('url')],
-            'env': {'USE_SUPER_CHROOT': self.get('super-chroot')},
-            'cmd': cmd,
-            'healthChecks': [healthcheck]
-        }
+        mj = {}
+        mj['id'] = self.get('framework-name')
+        mj['instances'] = self.get('instances')
+        mj['cpus'] = self.get('scheduler', 'cpus')
+        mj['mem'] = self.get('scheduler', 'mem')
+        mj['ports'] = [0]
+        mj['uris'] = [
+            self.get('scheduler', 'url'),
+            self.get('executor', 'url'),
+            self.get('node', 'url'),
+            self.get('node', 'patches-url')],
+        mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
+        mj['env'] = {}
+        mj['env']['RIAK_MESOS_NAME'] = self.get('framework-name')
+        mj['env']['RIAK_MESOS_ZK'] = self.get('zk')
+        mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
+        mj['env']['RIAK_MESOS_USER'] = self.get('user')
+        if self.get('auth-principal') != '':
+            mj['env']['RIAK_MESOS_PRINCIPAL'] = self.get('auth-principal')
+        if self.get('auth-provider') != '':
+            mj['env']['RIAK_MESOS_PROVIDER'] = self.get('auth-provider')
+        if self.get('auth-secret-file') != '':
+            mj['env']['RIAK_MESOS_SECRET_FILE'] = self.get('auth-secret-file')
+        if self.get('role') != '':
+            mj['env']['RIAK_MESOS_ROLE'] = self.get('role')
+        if self.get('ip') != '':
+            mj['env']['RIAK_MESOS_IP'] = self.get('ip')
+        if self.get('hostname') != '':
+            mj['env']['RIAK_MESOS_HOSTNAME'] = self.get('hostname')
+        if self.get('failover-timeout') != '':
+            mj['env']['RIAK_MESOS_FAILOVER_TIMEOUT'] = self.get(
+                'failover-timeout')
+        if self.get('node', 'cpus') != '':
+            mj['env']['RIAK_MESOS_NODE_CPUS'] = self.get('node', 'cpus')
+        if self.get('node', 'mem') != '':
+            mj['env']['RIAK_MESOS_NODE_MEM'] = self.get('node', 'mem')
+        if self.get('node', 'disk') != '':
+            mj['env']['RIAK_MESOS_NODE_DISK'] = self.get('node', 'disk')
+        if self.get('executor', 'cpus') != '':
+            mj['env']['RIAK_MESOS_EXECUTOR_CPUS'] = self.get(
+                'executor', 'cpus')
+        if self.get('executor', 'mem') != '':
+            mj['env']['RIAK_MESOS_EXECUTOR_MEM'] = self.get('executor', 'mem')
+        mj['healthchecks'] = [{}]
+        mj['healthchecks'][0]['path'] = '/healthcheck',
+        mj['healthchecks'][0]['portIndex'] = 0,
+        mj['healthchecks'][0]['protocol'] = 'HTTP',
+        mj['healthchecks'][0]['gracePeriodSeconds'] = self.get(
+            'healthcheck-grace-period-seconds')
+        mj['healthchecks'][0]['intervalSeconds'] = self.get(
+            'healthcheck-interval-seconds')
+        mj['healthchecks'][0]['timeoutSeconds'] = self.get(
+            'healthcheck-timeout-seconds')
+        mj['healthchecks'][0]['maxConsecutiveFailures'] = self.get(
+            'healthcheck-max-consecutive-failures')
+        mj['healthchecks'][0]['ignoreHttp1xx'] = False
+        return mj
 
     def framework_marathon_string(self):
         return json.dumps(self.framework_marathon_json())
 
     def director_marathon_json(self, cluster):
         director_marathon_conf = {
-            'id': '/riak-director',
-            'cmd': self.get_any('director', 'cmd'),
-            'cpus': 0.5,
-            'mem': 500.0,
-            'ports': [0, 0, 0, 0],
+            'id': '/' + cluster + '-proxy',
+            'cmd': './director/bin/ermf-director',
+            'cpus': self.get('proxy', 'cpus'),
+            'mem': self.get('proxy', 'mem'),
+            'ports': [0, 0, 0],
             'instances': 1,
             'env': {
-                'USE_SUPER_CHROOT': self.get('super-chroot'),
+                'USE_SUPER_CHROOT': False,
                 'DIRECTOR_ZK': self.get('zk'),
                 'DIRECTOR_FRAMEWORK': self.get('framework-name'),
                 'DIRECTOR_CLUSTER': cluster
             },
-            'uris': [self.get_any('director', 'url')],
+            'uris': [self.get('proxy', 'url')],
             'healthChecks': [
                 {
                     'protocol': 'HTTP',
@@ -109,7 +114,7 @@ class RiakMesosConfig(object):
                 }
             ]
         }
-        if self.get_any('director', 'use-public'):
+        if self.get('proxy', 'use-public'):
             director_marathon_conf['acceptedResourceRoles'] = ['public']
         return director_marathon_conf
 
@@ -158,7 +163,7 @@ class RiakMesosConfig(object):
 
     def marathon_api_url(self):
         try:
-            client = util.marathon_client(self.get_any('marathon', 'url'))
+            client = util.marathon_client(self.get('marathon'))
             tasks = client.get_tasks(self.get('framework-name'))
             if len(tasks) != 0:
                 host = tasks[0]['host']
@@ -172,7 +177,7 @@ class RiakMesosConfig(object):
         try:
             from dcos import util
             framework = self.get('framework-name')
-            client = util.marathon_client(self.get_any('marathon', 'url'))
+            client = util.marathon_client(self.get('marathon'))
             tasks = client.get_tasks(self.get('framework-name'))
             if len(tasks) == 0:
                 raise util.CliError('Riak Mesos Framework is not running.')
