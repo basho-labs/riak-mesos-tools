@@ -21,12 +21,7 @@ from util import CliError
 
 
 def config(args, cfg):
-    if args['json_flag']:
-        print(cfg.string())
-    else:
-        util.ppobj('Framework: ', cfg.string(), 'riak', '[]')
-        util.ppobj('Director: ', cfg.string(), 'director', '[]')
-        util.ppobj('Marathon: ', cfg.string(), 'marathon', '[]')
+    print(cfg.string())
 
 
 def framework(args, cfg):
