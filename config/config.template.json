@@ -2,13 +2,16 @@
     "riak": {
         "framework-name": "riak",
         "hostname": "riak.mesos",
-        "marathon": "http://marathon.mesos:8080",
+        "marathon": "marathon.mesos:8080",
         "master": "zk://leader.mesos:2181/mesos",
         "zk": "leader.mesos:2181",
         "user": "root",
         "role": "riak",
         "auth-principal": "riak",
+        "auth-provider": "",
+        "auth-secret-file": "",
         "instances": 1,
+        "failover-timeout": 10000.0,
         "healthcheck-grace-period-seconds": 300,
         "healthcheck-interval-seconds": 60,
         "healthcheck-timeout-seconds": 20,
@@ -25,6 +28,7 @@
         },
         "node": {
             "url": "{{node_url}}",
+            "patches-url": "{{explorer_url}}"
             "cpus": 1.0,
             "mem": 8000,
             "disk": 20000
