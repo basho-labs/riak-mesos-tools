@@ -1,7 +1,7 @@
 {
     "riak": {
         "framework-name": "riak",
-        "hostname": "Framework HTTP API hostname.",
+        "hostname": "riak.mesos",
         "marathon": "http://marathon.mesos:8080",
         "master": "zk://leader.mesos:2181/mesos",
         "zk": "leader.mesos:2181",
@@ -27,7 +27,7 @@
             "url": "{{node_url}}",
             "cpus": 1.0,
             "mem": 8000,
-            "disk": 20000,
+            "disk": 20000
         },
         "proxy": {
             "url": "{{proxy_url}}",

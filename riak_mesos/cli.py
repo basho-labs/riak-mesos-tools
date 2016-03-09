@@ -109,8 +109,6 @@ class RiakMesosCli(object):
         config = None
         if os.path.isfile(config_file):
             config = RiakMesosConfig(config_file)
-        else:
-            config = RiakMesosConfig()
 
         self.cfg = config
 
@@ -131,6 +129,9 @@ class RiakMesosCli(object):
             raise CliError('Unrecognized option: ' + self.cmd)
         elif not cmd_desc:
             raise CliError('Unrecognized command: ' + self.cmd)
+
+        if self.cfg is None:
+                raise CliError('No config file found')
 
         try:
             command_func_str = self.cmd.replace(' ', '_')

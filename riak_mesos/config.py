@@ -127,8 +127,11 @@ class RiakMesosConfig(object):
 
     def get_any(self, key, subkey1, subkey2=None):
         if subkey2 is not None and subkey2 is not None:
-            return self._config[key][subkey1][subkey2]
-        return self._config[key][subkey1]
+            if key in self._config and subkey1 in self._config[key] and subkey2 in self._config[key][subkey1]:
+                return self._config[key][subkey1][subkey2]
+        if key in self._config and subkey1 in self._config[key]:
+            return self._config[key][subkey1]
+        return ''
 
     def _merge(self, override):
         for k in override.keys():
