@@ -24,7 +24,8 @@ def test_help():
 
 
 def test_config():
-    c, o, e = _c(['riak-mesos', 'config', '--json', '--config', './config/config.example.json'])
+    c, o, e = _c(['riak-mesos', 'config', '--json', '--config',
+                  './config/config.example.json'])
     js = json.loads(o.decode("utf-8").strip())
     assert js['riak']['framework-name'] == 'riak'
     assert c == 0
@@ -32,7 +33,8 @@ def test_config():
 
 
 def test_framework_config():
-    c, o, e = _c(['riak-mesos', 'framework', 'config', '--json', '--config', './config/config.example.json'])
+    c, o, e = _c(['riak-mesos', 'framework', 'config', '--json', '--config',
+                  './config/config.example.json'])
     js = json.loads(o.decode("utf-8").strip())
     assert js['id'] == 'riak'
     assert c == 0
