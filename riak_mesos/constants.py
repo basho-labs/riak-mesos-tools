@@ -32,6 +32,7 @@ Subcommands:
     framework teardown
     framework uninstall
     framework endpoints
+    cluster info
     cluster config [--file]
     cluster config advanced [--file]
     cluster list [--json]
@@ -93,7 +94,9 @@ help_dict = {
     ('Generates and installs a marathon app for the framework'),
     'framework wait-for-service':
     ('Waits 60 seconds or until Framework is running'),
-    'framework endpoints': ('Retrieves useful endpoints for the framework'),
+    'framework endpoints': ('Retrieves useful endpoints for the framework.'),
+    'cluster info':
+    ('Gets current metadata about a cluster.'),
     'cluster config':
     ('Gets or sets the riak.conf configuration for a cluster, specify cluster '
      'id with --cluster and config file location with --file'),

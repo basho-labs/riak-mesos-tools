@@ -204,28 +204,32 @@ def framework_endpoints(args, cfg):
     return
 
 
+def cluster_info(args, cfg):
+    service_url = cfg.api_url()
+    if service_url is False:
+        raise CliError("Riak Mesos Framework is not running.")
+
+    r = requests.get(service_url + 'clusters/' + args['cluster'])
+    util.debug_request(args['debug_flag'], r)
+    print(r.text)
+    return
+
+
 def cluster_config(args, cfg):
     service_url = cfg.api_url()
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
     if args['riak_file'] == '':
-        r = requests.get(service_url + 'clusters/' + args['cluster'])
+        r = requests.get(service_url + 'clusters/' + args['cluster'] +
+                         '/config')
         util.debug_request(args['debug_flag'], r)
-        if r.status_code == 200:
-            util.ppfact('riak.conf: ', r.text, 'RiakCfg',
-                        'Error getting cluster.')
-        else:
-            print('Cluster not created.')
-            return
+        print(r.text)
+    else:
         with open(args['riak_file']) as data_file:
             r = requests.post(service_url + 'clusters/' + args['cluster'] +
                               '/cfg', data=data_file)
             util.debug_request(args['debug_flag'], r)
-            if r.status_code != 200:
-                print('Failed to set riak.conf, status_code: ' +
-                      str(r.status_code))
-            else:
-                print('riak.conf updated')
+            print(r.text)
     return
 
 
@@ -234,24 +238,16 @@ def cluster_config_advanced(args, cfg):
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
     if args['riak_file'] == '':
-        r = requests.get(service_url + 'clusters/' + args['cluster'])
+        r = requests.get(service_url + 'clusters/' + args['cluster'] + '/advancedConfig')
         util.debug_request(args['debug_flag'], r)
-        if r.status_code == 200:
-            util.ppfact('advanced.cfg: ', r.text, 'AdvancedCfg',
-                        'Error getting cluster.')
-        else:
-            print('Cluster not created.')
-            return
+        print(r.text)
+    else:
         with open(args['riak_file']) as data_file:
             r = requests.post(service_url + 'clusters/' + args['cluster'] +
                               '/advancedCfg', data=data_file)
             util.debug_request(args['debug_flag'], r)
-            if r.status_code != 200:
-                print('Failed to set advanced.cfg, status_code: ' +
-                      str(r.status_code))
-            else:
-                print('advanced.cfg updated')
-        return
+            print(r.text)
+    return
 
 
 def cluster_list(args, cfg):
@@ -264,13 +260,7 @@ def cluster(args, cfg):
         raise CliError("Riak Mesos Framework is not running.")
     r = requests.get(service_url + 'clusters')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code == 200:
-        if args['json_flag']:
-            print(r.text)
-        else:
-            util.ppobj('Clusters: ', r.text, 'clusters', '[]')
-    else:
-        print('No clusters created')
+    print(r.text)
     return
 
 
@@ -280,11 +270,7 @@ def cluster_create(args, cfg):
         raise CliError("Riak Mesos Framework is not running.")
     r = requests.put(service_url + 'clusters/' + args['cluster'], data='')
     util.debug_request(args['debug_flag'], r)
-    if r.text == '' or r.status_code != 200:
-        print('Cluster already exists.')
-    else:
-        util.ppfact('Added cluster: ', r.text, 'Name',
-                    'Error creating cluster.')
+    print(r.text)
     return
 
 
@@ -295,13 +281,7 @@ def cluster_restart(args, cfg):
     r = requests.post(service_url + 'clusters/' + args['cluster'] + '/restart',
                       data='')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code == 404:
-        print('Cluster does not exist.')
-    elif r.status_code != 202:
-        print('Failed to restart cluster, status code: ' +
-              str(r.status_code))
-    else:
-        print('Cluster restart initiated.')
+    print(r.text)
     return
 
 
@@ -311,11 +291,7 @@ def cluster_destroy(args, cfg):
         raise CliError("Riak Mesos Framework is not running.")
     r = requests.delete(service_url + 'clusters/' + args['cluster'], data='')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code != 202:
-        print('Failed to destroy cluster, status_code: ' +
-              str(r.status_code))
-    else:
-        print('Destroyed cluster: ' + args['cluster'])
+    print(r.text)
     return
 
 
@@ -329,10 +305,7 @@ def node(args, cfg):
         raise CliError("Riak Mesos Framework is not running.")
     r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes')
     util.debug_request(args['debug_flag'], r)
-    if args['json_flag']:
-        print(r.text)
-    else:
-        util.pparr('Nodes: ', r.text, '[]')
+    print(r.text)
     return
 
 
@@ -340,14 +313,20 @@ def node_info(args, cfg):
     service_url = cfg.api_url()
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
-    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes')
+    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
+                     args['node'])
     util.debug_request(args['debug_flag'], r)
-    node_json = json.loads(r.text)
-    print('HTTP: http://' + node_json[node]['Hostname'] + ':' +
-          str(node_json[node]['TaskData']['HTTPPort']))
-    print('PB  : ' + node_json[node]['Hostname'] + ':' +
-          str(node_json[node]['TaskData']['PBPort']))
-    util.ppobj('Node: ', r.text, node, '{}')
+    # TODO: Parse the relevant parts of the node info
+    print(r.text)
+    # node_json = try_json(r.text)
+    # if (node_json is not False):
+    #     print('HTTP: http://' + node_json[node]['Hostname'] + ':' +
+    #           str(node_json[node]['TaskData']['HTTPPort']))
+    #     print('PB  : ' + node_json[node]['Hostname'] + ':' +
+    #           str(node_json[node]['TaskData']['PBPort']))
+    #     util.ppobj('Node: ', r.text, node, '{}')
+    # else:
+    #     print r.text
     return
 
 
@@ -359,12 +338,7 @@ def node_add(args, cfg):
         r = requests.post(service_url + 'clusters/' + args['cluster'] +
                           '/nodes', data='')
         util.debug_request(args['debug_flag'], r)
-        if r.status_code != 200:
-            print(r.text)
-        else:
-            util.ppfact('New node: ' + cfg.get('framework-name') + '-' +
-                        args['cluster'] + '-', r.text, 'SimpleId',
-                        'Error adding node')
+        print(r.text)
     return
 
 
@@ -375,16 +349,13 @@ def node_remove(args, cfg):
     if args['node'] == '':
         raise CliError('Node name must be specified')
     r = requests.delete(service_url + 'clusters/' + args['cluster'] +
-                        '/nodes/' + node, data='')
+                        '/nodes/' + args['node'], data='')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code != 202:
-        print('Failed to remove node, status_code: ' +
-              str(r.status_code))
-    else:
-        print('Removed node')
+    print(r.text)
     return
 
 
+# TODO Maybe just proxy the riak explorer commands straight to nodes
 def node_aae_status(args, cfg):
     service_url = cfg.api_url()
     if service_url is False:
@@ -394,11 +365,7 @@ def node_aae_status(args, cfg):
     r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
                      args['node'] + '/aae')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code != 200:
-        print('Failed to get aae-status, status_code: ' +
-              str(r.status_code))
-    else:
-        util.ppobj('', r.text, 'aae-status', '{}')
+    print(r.text)
     return
 
 
@@ -411,11 +378,7 @@ def node_status(args, cfg):
     r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
                      args['node'] + '/status')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code != 200:
-        print('Failed to get status, status_code: ' +
-              str(r.status_code))
-    else:
-        util.ppobj('', r.text, 'status', '{}')
+    print(r.text)
     return
 
 
@@ -428,11 +391,7 @@ def node_ringready(args, cfg):
     r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
                      args['node'] + '/ringready')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code != 200:
-        print('Failed to get ringready, status_code: ' +
-              str(r.status_code))
-    else:
-        util.ppobj('', r.text, 'ringready', '{}')
+    print(r.text)
     return
 
 
@@ -445,11 +404,7 @@ def node_transfers(args, cfg):
     r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
                      args['node'] + '/transfers')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code != 200:
-        print('Failed to get transfers, status_code: ' +
-              str(r.status_code))
-    else:
-        util.ppobj('', r.text, 'transfers', '{}')
+    print(r.text)
     return
 
 
@@ -464,12 +419,7 @@ def node_bucket_type_create(args, cfg):
                       args['node'] + '/types/' + args['bucket_type'],
                       data=args['props'])
     util.debug_request(args['debug_flag'], r)
-    if r.status_code != 200:
-        print('Failed to create bucket-type, status_code: ' +
-              str(r.status_code))
-        util.ppobj('', r.text, '', '{}')
-    else:
-        util.ppobj('', r.text, '', '{}')
+    print(r.text)
     return
 
 
@@ -482,9 +432,12 @@ def node_bucket_type_list(args, cfg):
     r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
                      args['node'] + '/types')
     util.debug_request(args['debug_flag'], r)
-    if r.status_code != 200:
-        print('Failed to get bucket types, status_code: ' +
-              str(r.status_code))
-    else:
-        util.ppobj('', r.text, 'bucket_types', '{}')
+    print(r.text)
     return
+
+
+def try_json(data):
+    try:
+        return json.loads(data)
+    except:
+        return False
