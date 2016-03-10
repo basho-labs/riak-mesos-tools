@@ -150,11 +150,10 @@ def pparr(description, json_str, failure):
 def ppobj(description, json_str, key, failure):
     try:
         obj = json.loads(json_str)
-        print(description)
         if key == '':
-            print(json.dumps(obj))
+            print(description + json.dumps(obj))
         else:
-            print(json.dumps(obj[key]))
+            print(description + json.dumps(obj[key]))
     except:
         print(description + failure)
 

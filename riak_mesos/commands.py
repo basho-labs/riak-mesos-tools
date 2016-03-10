@@ -268,7 +268,7 @@ def cluster(args, cfg):
         if args['json_flag']:
             print(r.text)
         else:
-            util.pparr('Clusters: ', r.text, '[]')
+            util.ppobj('Clusters: ', r.text, 'clusters', '[]')
     else:
         print('No clusters created')
     return
@@ -278,7 +278,7 @@ def cluster_create(args, cfg):
     service_url = cfg.api_url()
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
-    r = requests.post(service_url + 'clusters/' + args['cluster'], data='')
+    r = requests.put(service_url + 'clusters/' + args['cluster'], data='')
     util.debug_request(args['debug_flag'], r)
     if r.text == '' or r.status_code != 200:
         print('Cluster already exists.')
