@@ -3,7 +3,7 @@
         "framework-name": "riak",
         "hostname": "riak.mesos",
         "marathon": "marathon.mesos:8080",
-        "master": "zk://leader.mesos:2181/mesos",
+        "master": "leader.mesos:5050",
         "zk": "leader.mesos:2181",
         "user": "root",
         "role": "riak",
@@ -19,25 +19,25 @@
         "scheduler": {
             "url": "{{scheduler_url}}",
             "cpus": 0.5,
-            "mem": 2048
+            "mem": 2048.0
         },
         "executor": {
             "url": "{{executor_url}}",
             "cpus": 0.1,
-            "mem": 512
+            "mem": 512.0
         },
         "node": {
             "url": "{{node_url}}",
             "patches-url": "{{explorer_url}}",
             "cpus": 1.0,
-            "mem": 8000,
-            "disk": 20000
+            "mem": 8000.0,
+            "disk": 20000.0
         },
         "proxy": {
             "url": "{{proxy_url}}",
             "use-public": false,
             "cpus": 0.5,
-            "mem": 1024
+            "mem": 1024.0
         }
     }
 }
