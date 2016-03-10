@@ -30,19 +30,16 @@ def framework(args, cfg):
 
 def framework_config(args, cfg):
     obj = cfg.framework_marathon_string()
-    if args['json_flag']:
-        print(obj)
-    else:
-        util.ppobj('Marathon Cfg: ', obj, '', '{}')
+    print(obj)
     return
 
 
 def framework_uninstall(args, cfg):
     print('Uninstalling framework...')
-    fn = cfg.get('framework-name')
     client = util.marathon_client(cfg.get('marathon'))
-    client.remove_app('/' + fn)
-    print('Finished removing ' + '/' + fn + ' from marathon')
+    client.remove_app('/' + cfg.get('framework-name'))
+    print('Finished removing ' + '/' + cfg.get('framework-name') +
+          ' from marathon')
     return
 
 
@@ -59,7 +56,7 @@ def framework_clean_metadata(args, cfg):
 
 
 def framework_teardown(args, cfg):
-    r = requests.get('http://leader.mesos:5050/master/state.json')
+    r = requests.get('http://' + cfg.get('master') + '/master/state.json')
     util.debug_request(args['debug_flag'], r)
     if r.status_code != 200:
         print('Failed to get state.json from master.')
@@ -68,7 +65,7 @@ def framework_teardown(args, cfg):
     for fw in js['frameworks']:
         if fw['name'] == cfg.get('framework-name'):
             r = requests.post(
-                'http://leader.mesos:5050/master/teardown',
+                'http://' + cfg.get('master') + '/master/teardown',
                 data='frameworkId='+fw['id'])
             util.debug_request(args['debug_flag'], r)
             print('Finished teardown.')
@@ -80,7 +77,7 @@ def proxy_config(args, cfg):
 
 
 def proxy(args, cfg):
-    print(cfg.director_marathon_string(cluster))
+    print(cfg.director_marathon_string(args['cluster']))
     return
 
 
