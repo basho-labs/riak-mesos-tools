@@ -1,0 +1,43 @@
+{
+    "riak": {
+        "framework-name": "riak",
+        "hostname": "riak.mesos",
+        "marathon": "marathon.mesos:8080",
+        "master": "leader.mesos:5050",
+        "zk": "leader.mesos:2181",
+        "user": "root",
+        "role": "riak",
+        "auth-principal": "riak",
+        "auth-provider": "",
+        "auth-secret-file": "",
+        "instances": 1,
+        "failover-timeout": 10000.0,
+        "healthcheck-grace-period-seconds": 300,
+        "healthcheck-interval-seconds": 60,
+        "healthcheck-timeout-seconds": 20,
+        "healthcheck-max-consecutive-failures": 5,
+        "scheduler": {
+            "url": "{{scheduler_url}}",
+            "cpus": 0.5,
+            "mem": 2048.0
+        },
+        "executor": {
+            "url": "{{executor_url}}",
+            "cpus": 0.1,
+            "mem": 512.0
+        },
+        "node": {
+            "url": "{{node_url}}",
+            "patches-url": "{{explorer_url}}",
+            "cpus": 1.0,
+            "mem": 8000.0,
+            "disk": 20000.0
+        },
+        "proxy": {
+            "url": "{{proxy_url}}",
+            "use-public": false,
+            "cpus": 0.5,
+            "mem": 1024.0
+        }
+    }
+}

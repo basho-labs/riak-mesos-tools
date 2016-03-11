@@ -6,7 +6,7 @@ from common import exec_command as _c
 def test_version():
     c, o, e = _c(['dcos-riak', '--version'])
     assert c == 0
-    assert o.strip() == b'Riak Mesos Framework Version 0.3.1'
+    assert o.strip() == b'Riak Mesos Framework Version 0.4.0'
     assert e == b''
 
 
@@ -24,15 +24,17 @@ def test_help():
 
 
 def test_config():
-    c, o, e = _c(['riak-mesos', 'config', '--json'])
+    c, o, e = _c(['riak-mesos', 'config', '--json', '--config',
+                  './config/config.example.json'])
     js = json.loads(o.decode("utf-8").strip())
-    assert js['director']['use-public'] is False
+    assert js['riak']['framework-name'] == 'riak'
     assert c == 0
     assert e == b''
 
 
 def test_framework_config():
-    c, o, e = _c(['riak-mesos', 'framework', 'config', '--json'])
+    c, o, e = _c(['riak-mesos', 'framework', 'config', '--json', '--config',
+                  './config/config.example.json'])
     js = json.loads(o.decode("utf-8").strip())
     assert js['id'] == 'riak'
     assert c == 0
