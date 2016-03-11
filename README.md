@@ -43,25 +43,10 @@ Pip Install
 
 **Note:** You may need to run `pip uninstall riak-mesos` first to ensure the latest version.
 
-### Install the latest version (master)
-
-``` sourceCode
-sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git#egg=riak_mesos
-```
-
 ### Install the latest tag ###
 
 ``` sourceCode
 sudo sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@0.3.1#egg=riak_mesos
-```
-
-Quick Install
--------------
-
-The included install.sh script will download and extract this package into `$HOME/bin/riak-mesos-tools`. Using this method does not require DCOS or pip or any of the other dependencies, and should work with most basic Python 2.7+ installations.
-
-``` sourceCode
-curl -s -L https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/master/install.sh | sh
 ```
 
 Create a Configuration File
