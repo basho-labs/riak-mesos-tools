@@ -17,7 +17,7 @@
         "healthcheck-timeout-seconds": 20,
         "healthcheck-max-consecutive-failures": 5,
         "scheduler": {
-            "url": "http://riak-tools.s3.amazonaws.com/riak_mesos_scheduler/0.0/0.0.1/ubuntu/trusty/riak_mesos_scheduler-0.0.1-amd64.tar.gz",
+            "url": "http://riak-tools.s3.amazonaws.com/riak_mesos_scheduler/0.1/0.1.0/ubuntu/trusty/riak_mesos_scheduler-0.1.0-amd64.tar.gz",
             "cpus": 0.5,
             "mem": 2048.0
         },
