@@ -34,6 +34,7 @@ def help_dict():
         help['framework config'] = help['framework']
         help['cluster list'] = help['cluster']
         help['node list'] = help['node']
+        help['director config'] = help['director']
         help['proxy'] = help['director']
         help['proxy config'] = help['director']
         help['proxy install'] = help['director install']

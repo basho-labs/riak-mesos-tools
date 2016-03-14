@@ -34,6 +34,22 @@ def framework_config(args, cfg):
     return
 
 
+def framework_install(args, cfg):
+    framework_json = cfg.framework_marathon_json()
+    client = util.marathon_client(cfg.get('marathon'))
+    client.add_app(framework_json)
+    print('Finished adding ' + framework_json['id'] + ' to marathon.')
+    return
+
+
+def framework_wait_for_service(args, cfg):
+    if util.wait_for_framework(cfg, args['debug_flag'], 60):
+        print('Riak Mesos Framework is ready.')
+        return
+    print('Riak Mesos Framework did not respond within 60 seconds.')
+    return
+
+
 def framework_uninstall(args, cfg):
     print('Uninstalling framework...')
     client = util.marathon_client(cfg.get('marathon'))
@@ -81,6 +97,27 @@ def director(args, cfg):
     return
 
 
+def director_wait_for_service(args, cfg):
+    if util.wait_for_framework(cfg, args['debug_flag'], 60):
+        client = util.marathon_client(cfg.get('marathon'))
+        app = client.get_app(cfg.get('framework-name') +
+                             '-director')
+        if len(app['tasks']) == 0:
+            print("Director is not installed.")
+            return
+        task = app['tasks'][0]
+        ports = task['ports']
+        hostname = task['host']
+        if util.wait_for_url('http://' + hostname + ':' +
+                             str(ports[0]), args['debug_flag'], 20):
+            print("Director is ready.")
+            return
+        print("Director did not respond in 20 seconds.")
+        return
+    print('Riak Mesos Framework did not respond within 60 seconds.')
+    return
+
+
 def director_install(args, cfg):
     director_json = cfg.director_marathon_json(args['cluster'])
     client = util.marathon_client(cfg.get('marathon'))
@@ -114,6 +151,10 @@ def director_endpoints(args, cfg):
     return
 
 
+def proxy_wait_for_service(args, cfg):
+    director_wait_for_service(args, cfg)
+
+
 def proxy_config(args, cfg):
     director(args, cfg)
 
@@ -132,22 +173,6 @@ def proxy_uninstall(args, cfg):
 
 def proxy_endpoints(args, cfg):
     director_endpoints(args, cfg)
-
-
-def framework_install(args, cfg):
-    framework_json = cfg.framework_marathon_json()
-    client = util.marathon_client(cfg.get('marathon'))
-    client.add_app(framework_json)
-    print('Finished adding ' + framework_json['id'] + ' to marathon.')
-    return
-
-
-def framework_wait_for_service(args, cfg):
-    if util.wait_for_framework(cfg, args['debug_flag'], 60):
-        print('Riak Mesos Framework is ready.')
-        return
-    print('Riak Mesos Framework did not respond within 60 seconds.')
-    return
 
 
 def node_wait_for_service(args, cfg):
@@ -190,31 +215,6 @@ def cluster_endpoints(args, cfg):
                 return
             print('Riak Mesos Framework did not respond within 60 '
                   'seconds.')
-    return
-
-
-def proxy_wait_for_service(args, cfg):
-    director_wait_for_service(args, cfg)
-
-
-def director_wait_for_service(args, cfg):
-    if util.wait_for_framework(cfg, args['debug_flag'], 60):
-        client = util.marathon_client(cfg.get('marathon'))
-        app = client.get_app(cfg.get('framework-name') +
-                             '-director')
-        if len(app['tasks']) == 0:
-            print("Director is not installed.")
-            return
-        task = app['tasks'][0]
-        ports = task['ports']
-        hostname = task['host']
-        if util.wait_for_url('http://' + hostname + ':' +
-                             str(ports[0]), args['debug_flag'], 20):
-            print("Director is ready.")
-            return
-        print("Director did not respond in 20 seconds.")
-        return
-    print('Riak Mesos Framework did not respond within 60 seconds.')
     return
 
 

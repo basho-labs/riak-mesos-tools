@@ -92,13 +92,13 @@ class RiakMesosConfig(object):
     def director_marathon_json(self, cluster):
         director_marathon_conf = {
             'id': '/' + cluster + '-director',
-            'cmd': './director/bin/ermf-director',
+            'cmd': './riak_mesos_director/bin/ermf-director',
             'cpus': self.get('director', 'cpus'),
             'mem': self.get('director', 'mem'),
             'ports': [0, 0, 0],
             'instances': 1,
             'env': {
-                'USE_SUPER_CHROOT': False,
+                'USE_SUPER_CHROOT': "false",
                 'DIRECTOR_ZK': self.get('zk'),
                 'DIRECTOR_FRAMEWORK': self.get('framework-name'),
                 'DIRECTOR_CLUSTER': cluster
