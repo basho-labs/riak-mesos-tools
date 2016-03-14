@@ -33,7 +33,7 @@
             "mem": 8000.0,
             "disk": 20000.0
         },
-        "proxy": {
+        "director": {
             "url": "http://riak-tools.s3.amazonaws.com/riak_mesos_director/0.3/0.3.1/ubuntu/trusty/riak_mesos_director-0.3.1-amd64.tar.gz",
             "use-public": false,
             "cpus": 0.5,

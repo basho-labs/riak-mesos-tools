@@ -72,45 +72,66 @@ def framework_teardown(args, cfg):
     return
 
 
-def proxy_config(args, cfg):
-    proxy(args, cfg)
+def director_config(args, cfg):
+    director(args, cfg)
 
 
-def proxy(args, cfg):
+def director(args, cfg):
     print(cfg.director_marathon_string(args['cluster']))
     return
 
 
-def proxy_install(args, cfg):
-    director_json = cfg.director_marathon_json(cluster)
+def director_install(args, cfg):
+    director_json = cfg.director_marathon_json(args['cluster'])
     client = util.marathon_client(cfg.get('marathon'))
     client.add_app(director_json)
     print('Finished adding ' + director_json['id'] + ' to marathon.')
     return
 
 
-def proxy_uninstall(args, cfg):
+def director_uninstall(args, cfg):
     client = util.marathon_client(cfg.get('marathon'))
-    fn = cfg.get('framework-name')
-    client.remove_app('/' + fn + '-director')
-    print('Finished removing ' + '/' + fn + '-director' +
+    client.remove_app('/' + args['cluster'] + '-director')
+    print('Finished removing ' + '/' + args['cluster'] + '-director' +
           ' from marathon')
     return
 
 
-def proxy_endpoints(args, cfg):
+def director_endpoints(args, cfg):
     client = util.marathon_client(cfg.get('marathon'))
-    app = client.get_app(cfg.get('framework-name') + '-director')
+    app = client.get_app('/' + args['cluster'] + '-director')
     task = app['tasks'][0]
     ports = task['ports']
     hostname = task['host']
-    print('Load Balanced Riak Cluster (HTTP)')
-    print('    http://' + hostname + ':' + str(ports[0]))
-    print('Load Balanced Riak Cluster (Protobuf)')
-    print('    http://' + hostname + ':' + str(ports[1]))
-    print('Riak Mesos Director API (HTTP)')
-    print('    http://' + hostname + ':' + str(ports[2]))
+    endpoints = {
+        'framework': cfg.get('framework-name'),
+        'cluster': args['cluster'],
+        'riak_http': hostname + ':' + str(ports[0]),
+        'riak_pb': hostname + ':' + str(ports[1]),
+        'director_http': hostname + ':' + str(ports[2])
+    }
+    print(json.dumps(endpoints))
     return
+
+
+def proxy_config(args, cfg):
+    director(args, cfg)
+
+
+def proxy(args, cfg):
+    director(args, cfg)
+
+
+def proxy_install(args, cfg):
+    director_install(args, cfg)
+
+
+def proxy_uninstall(args, cfg):
+    director_uninstall(args, cfg)
+
+
+def proxy_endpoints(args, cfg):
+    director_endpoints(args, cfg)
 
 
 def framework_install(args, cfg):
@@ -173,21 +194,25 @@ def cluster_endpoints(args, cfg):
 
 
 def proxy_wait_for_service(args, cfg):
+    director_wait_for_service(args, cfg)
+
+
+def director_wait_for_service(args, cfg):
     if util.wait_for_framework(cfg, args['debug_flag'], 60):
         client = util.marathon_client(cfg.get('marathon'))
         app = client.get_app(cfg.get('framework-name') +
                              '-director')
         if len(app['tasks']) == 0:
-            print("Proxy is not installed.")
+            print("Director is not installed.")
             return
         task = app['tasks'][0]
         ports = task['ports']
         hostname = task['host']
         if util.wait_for_url('http://' + hostname + ':' +
                              str(ports[0]), args['debug_flag'], 20):
-            print("Proxy is ready.")
+            print("Director is ready.")
             return
-        print("Proxy did not respond in 20 seconds.")
+        print("Director did not respond in 20 seconds.")
         return
     print('Riak Mesos Framework did not respond within 60 seconds.')
     return

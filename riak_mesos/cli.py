@@ -32,9 +32,14 @@ def help_dict():
         help = constants.help_dict
         # Aliases:
         help['framework config'] = help['framework']
-        help['proxy config'] = help['proxy']
         help['cluster list'] = help['cluster']
         help['node list'] = help['node']
+        help['proxy'] = help['director']
+        help['proxy config'] = help['director']
+        help['proxy install'] = help['director install']
+        help['proxy uninstall'] = help['director uninstall']
+        help['proxy endpoints'] = help['director endpoints']
+        help['proxy wait-for-service'] = help['director wait-for-service']
         return help
 
 

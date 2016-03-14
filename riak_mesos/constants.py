@@ -53,11 +53,11 @@ Subcommands:
     node remove --node <name>
     node add [--nodes <number>]
     node wait-for-service [--node <name>]
-    proxy config
-    proxy install
-    proxy uninstall
-    proxy endpoints
-    proxy wait-for-service
+    director config
+    director install
+    director uninstall
+    director endpoints
+    director wait-for-service
 
 Options (available on most commands):
     --config <json-file> (/etc/riak-mesos/config.json)
@@ -78,16 +78,16 @@ help_dict = {
      'Mesos master'),
     'framework clean-metadata':
     ('Deletes all metadata for the selected Riak Mesos Framework instance'),
-    'proxy':
+    'director':
     ('Generates a marathon json config using --zookeeper (default is '
      'leader.mesos:2181) and --cluster (default is default).'),
-    'proxy install':
+    'director install':
     ('Installs a riak-mesos-director marathon app on the public Mesos node '
      'using --zookeeper (default is leader.mesos:2181) and --cluster (default '
      'is default).'),
-    'proxy wait-for-service': ('Waits 20 seconds or until proxy is running'),
-    'proxy uninstall': ('Uninstalls the riak-mesos-director marathon app.'),
-    'proxy endpoints':
+    'director wait-for-service': ('Waits 20 seconds or until director is running'),
+    'director uninstall': ('Uninstalls the riak-mesos-director marathon app.'),
+    'director endpoints':
     ('Lists the endpoints exposed by a riak-mesos-director marathon app '
      '--public-dns (default is {{public-dns}}).'),
     'framework install':

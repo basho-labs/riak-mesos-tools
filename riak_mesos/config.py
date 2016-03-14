@@ -91,10 +91,10 @@ class RiakMesosConfig(object):
 
     def director_marathon_json(self, cluster):
         director_marathon_conf = {
-            'id': '/' + cluster + '-proxy',
+            'id': '/' + cluster + '-director',
             'cmd': './director/bin/ermf-director',
-            'cpus': self.get('proxy', 'cpus'),
-            'mem': self.get('proxy', 'mem'),
+            'cpus': self.get('director', 'cpus'),
+            'mem': self.get('director', 'mem'),
             'ports': [0, 0, 0],
             'instances': 1,
             'env': {
@@ -103,7 +103,7 @@ class RiakMesosConfig(object):
                 'DIRECTOR_FRAMEWORK': self.get('framework-name'),
                 'DIRECTOR_CLUSTER': cluster
             },
-            'uris': [self.get('proxy', 'url')],
+            'uris': [self.get('director', 'url')],
             'healthChecks': [
                 {
                     'protocol': 'HTTP',
@@ -116,7 +116,7 @@ class RiakMesosConfig(object):
                 }
             ]
         }
-        if self.get('proxy', 'use-public'):
+        if self.get('director', 'use-public'):
             director_marathon_conf['acceptedResourceRoles'] = ['public']
         return director_marathon_conf
 
