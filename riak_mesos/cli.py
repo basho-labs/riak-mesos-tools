@@ -19,9 +19,9 @@
 import os
 import sys
 import traceback
+
 import requests
 from riak_mesos import commands, constants, util
-
 from riak_mesos.config import RiakMesosConfig
 from riak_mesos.util import CliError
 

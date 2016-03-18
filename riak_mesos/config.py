@@ -16,6 +16,7 @@
 # limitations under the License.
 
 import json
+
 import requests
 from riak_mesos import util
 

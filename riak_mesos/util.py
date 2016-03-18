@@ -16,9 +16,9 @@
 # limitations under the License.
 
 import json
-import requests
 import time
 
+import requests
 from dcos import marathon
 from kazoo.client import KazooClient
 
