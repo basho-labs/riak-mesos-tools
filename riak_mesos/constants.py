@@ -86,7 +86,8 @@ help_dict = {
     ('Installs a riak-mesos-director marathon app on the public Mesos node '
      'using --zookeeper (default is leader.mesos:2181) and --cluster (default '
      'is default).'),
-    'director wait-for-service': ('Waits 20 seconds or until director is running'),
+    'director wait-for-service':
+    ('Waits 20 seconds or until director is running'),
     'director uninstall': ('Uninstalls the riak-mesos-director marathon app.'),
     'director endpoints':
     ('Lists the endpoints exposed by a riak-mesos-director marathon app '

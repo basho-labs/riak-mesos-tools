@@ -266,7 +266,8 @@ def cluster_config_advanced(args, cfg):
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
     if args['riak_file'] == '':
-        r = requests.get(service_url + 'clusters/' + args['cluster'] + '/advancedConfig')
+        r = requests.get(service_url + 'clusters/' + args['cluster'] +
+                         '/advancedConfig')
         util.debug_request(args['debug_flag'], r)
         print(r.text)
     else:
