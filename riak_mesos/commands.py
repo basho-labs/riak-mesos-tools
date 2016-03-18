@@ -16,8 +16,7 @@
 import json
 import requests
 import util
-
-from util import CliError
+from riak_mesos.util import CliError
 
 
 def config(args, cfg):

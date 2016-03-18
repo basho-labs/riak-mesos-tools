@@ -17,7 +17,7 @@
 
 import json
 import requests
-import util
+from riak_mesos import util
 
 
 class RiakMesosConfig(object):

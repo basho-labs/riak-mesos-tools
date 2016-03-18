@@ -20,9 +20,7 @@ import os
 import sys
 import traceback
 import requests
-import commands
-import constants
-import util
+from riak_mesos import commands, constants, util
 
 from config import RiakMesosConfig
 from util import CliError
