@@ -15,7 +15,6 @@
 
 import json
 import requests
-import util
 from riak_mesos.util import CliError
 
 
