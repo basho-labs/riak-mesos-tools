@@ -147,9 +147,11 @@ class RiakMesosCli(object):
                        command_func_str + '(args, cfg)')
             command_func = getattr(commands, command_func_str)
             command_func(self.args, self.cfg)
-        except AttributeError:
-            print('CliError: Unrecognized command: ' + self.cmd)
-            return 1
+        except AttributeError as e:
+                print('CliError: Unrecognized command: ' + self.cmd)
+                if self.args['debug_flag']:
+                        traceback.print_exc()
+                        raise e
 
         return 0
 

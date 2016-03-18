@@ -42,6 +42,12 @@ def framework_install(args, cfg):
     return
 
 
+def framework_status(args, cfg):
+    client = util.marathon_client(cfg.get('marathon'))
+    result = client.get_app('/' + cfg.get('framework-name'))
+    print(json.dumps(result))
+
+
 def framework_wait_for_service(args, cfg):
     if util.wait_for_framework(cfg, args['debug_flag'], 60):
         print('Riak Mesos Framework is ready.')

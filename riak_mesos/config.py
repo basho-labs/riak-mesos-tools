@@ -29,6 +29,7 @@ class RiakMesosConfig(object):
         mj = {}
         mj['id'] = self.get('framework-name')
         mj['instances'] = self.get('instances')
+        mj['user'] = self.get('user')
         mj['cpus'] = self.get('scheduler', 'cpus')
         mj['mem'] = self.get('scheduler', 'mem')
         mj['ports'] = [0]
@@ -82,8 +83,8 @@ class RiakMesosConfig(object):
         healthcheck.update({'maxConsecutiveFailures': self.get(
             'healthcheck-max-consecutive-failures')})
         healthcheck.update({'ignoreHttp1xx': False})
-        mj['healthchecks'] = []
-        mj['healthchecks'].append(healthcheck)
+        mj['healthChecks'] = []
+        mj['healthChecks'].append(healthcheck)
         return mj
 
     def framework_marathon_string(self):

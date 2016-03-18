@@ -27,6 +27,7 @@ Subcommands:
     config
     framework config
     framework install
+    framework status
     framework wait-for-service
     framework clean-metadata
     framework teardown
@@ -90,6 +91,8 @@ help_dict = {
     'director endpoints':
     ('Lists the endpoints exposed by a riak-mesos-director marathon app '
      '--public-dns (default is {{public-dns}}).'),
+    'framework status':
+    ('Prints the current marathon app status for the framework.'),
     'framework install':
     ('Generates and installs a marathon app for the framework'),
     'framework wait-for-service':
