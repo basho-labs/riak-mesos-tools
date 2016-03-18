@@ -354,7 +354,7 @@ def node_info(args, cfg):
     #           str(node_json[node]['TaskData']['PBPort']))
     #     util.ppobj('Node: ', r.text, node, '{}')
     # else:
-    #     print r.text
+    #     print(r.text)
     return
 
 

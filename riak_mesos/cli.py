@@ -80,7 +80,7 @@ def extract_option(args, name, default, arg_type='string'):
             del args[index]
             del args[index]
         else:
-            print constants.usage
+            print(constants.usage)
             raise CliError('Not enough arguments for: ' + name)
     return [args, val]
 
@@ -122,7 +122,7 @@ class RiakMesosCli(object):
         cmd_desc = help(self.cmd)
 
         if self.args['help_flag'] and not cmd_desc:
-            print constants.usage
+            print(constants.usage)
             return 0
         elif self.args['help_flag']:
             print(cmd_desc)
@@ -161,7 +161,7 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == 'riak':
         args = sys.argv[2:]
     if len(args) == 0:
-        print constants.usage
+        print(constants.usage)
         return 0
     if '--info' in args:
         print('Start and manage Riak nodes')
