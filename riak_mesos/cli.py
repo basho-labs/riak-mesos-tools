@@ -22,8 +22,8 @@ import traceback
 import requests
 from riak_mesos import commands, constants, util
 
-from config import RiakMesosConfig
-from util import CliError
+from riak_mesos.config import RiakMesosConfig
+from riak_mesos.util import CliError
 
 
 def help_dict():
