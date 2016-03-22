@@ -194,8 +194,20 @@ class RiakMesosConfig(object):
         except:
             return False
 
+    def config_api_url(self):
+        try:
+            service_url = self.get('framework-url')
+            if service_url != '':
+                return service_url
+            return False
+        except:
+            return False
+
     def api_url(self):
         try:
+            service_url = self.config_api_url()
+            if service_url:
+                return 'http://' + service_url + '/api/v1/'
             service_url = self.dcos_api_url()
             if service_url:
                 return service_url + 'api/v1/'
