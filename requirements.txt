@@ -1,9 +1,16 @@
-dcos==0.2.0
-futures==3.0.3
-pluggy==0.3.1
-requests==2.8.1
-six==1.10.0
-tox==2.2.1
-virtualenv==13.1.2
-wheel==0.24.0
-kazoo==2.2.1
+dcos>=0.2.0
+futures>=3.0.3
+pluggy>=0.3.1
+requests>=2.8.1
+six>=1.10.0
+tox>=2.2, <3.0
+virtualenv>=13.1.2
+wheel>=0.24.0, <1.0
+kazoo>=2.2.1
+jsonschema>=2.4
+toml>=0.9,<1.0
+pystache>=0.5,<1.0
+portalocker>=0.5,<1.0
+gitpython>=1.0,<2.0
+pygments>=2.0,<3.0
+pager>=3.3,<4.0
