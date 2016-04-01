@@ -40,11 +40,15 @@ class RiakMesosConfig(object):
         mj['uris'].append(self.get('node', 'url'))
         mj['uris'].append(self.get('node', 'patches-url'))
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
+        if self.get('constraints') != '':
+            mj['constraints'] = self.get('constraints')
         mj['env'] = {}
         mj['env']['RIAK_MESOS_NAME'] = self.get('framework-name')
         mj['env']['RIAK_MESOS_ZK'] = self.get('zk')
         mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
         mj['env']['RIAK_MESOS_USER'] = self.get('user')
+        if self.get('scheduler', 'constraints') != '':
+            mj['env']['RIAK_MESOS_CONSTRAINTS'] = self.get('scheduler', 'constraints')
         if self.get('auth-principal') != '':
             mj['env']['RIAK_MESOS_PRINCIPAL'] = self.get('auth-principal')
         if self.get('auth-provider') != '':
