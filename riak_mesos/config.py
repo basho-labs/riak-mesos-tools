@@ -48,7 +48,7 @@ class RiakMesosConfig(object):
         mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
         mj['env']['RIAK_MESOS_USER'] = self.get('user')
         if self.get('scheduler', 'constraints') != '':
-            mj['env']['RIAK_MESOS_CONSTRAINTS'] = self.get('scheduler', 'constraints')
+            mj['env']['RIAK_MESOS_CONSTRAINTS'] = json.dumps(self.get('scheduler', 'constraints'))
         if self.get('auth-principal') != '':
             mj['env']['RIAK_MESOS_PRINCIPAL'] = self.get('auth-principal')
         if self.get('auth-provider') != '':
