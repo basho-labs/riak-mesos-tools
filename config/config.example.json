@@ -1,7 +1,7 @@
 {
     "riak": {
         "framework-name": "riak",
-        "hostname": "riak.mesos",
+        "hostname": "riak.marathon.mesos",
         "marathon": "marathon.mesos:8080",
         "master": "leader.mesos:5050",
         "zk": "leader.mesos:2181",

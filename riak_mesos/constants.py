@@ -51,7 +51,7 @@ Subcommands:
                             --props "<json>"
     node bucket-type list --node <name>
     node list [--json]
-    node remove --node <name>
+    node remove --node <name> [--force]
     node add [--nodes <number>]
     node wait-for-service [--node <name>]
     director config

@@ -377,8 +377,11 @@ def node_remove(args, cfg):
         raise CliError("Riak Mesos Framework is not running.")
     if args['node'] == '':
         raise CliError('Node name must be specified')
-    r = requests.delete(service_url + 'clusters/' + args['cluster'] +
-                        '/nodes/' + args['node'], data='')
+    requrl = service_url + 'clusters/'
+    requrl += args['cluster'] + '/nodes/' + args['node']
+    if args['force_flag']:
+        requrl += '?force=true'
+    r = requests.delete(requrl, data='')
     util.debug_request(args['debug_flag'], r)
     print(r.text)
     return
