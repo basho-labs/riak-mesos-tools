@@ -198,8 +198,8 @@ def cluster_wait_for_service(args, cfg):
         for k in js.keys():
             util.wait_for_node(cfg, cluster, args['debug_flag'], k, 20)
             return
-        print('Riak Mesos Framework did not respond within 60 '
-              'seconds.')
+    print('Riak Mesos Framework did not respond within 60 '
+          'seconds.')
     return
 
 
@@ -211,16 +211,20 @@ def cluster_endpoints(args, cfg):
         util.debug_request(args['debug_flag'], r)
         if r.status_code == 200:
             js = json.loads(r.text)
-            cluster_data = {}
-            for k in js.keys():
-                cluster_data[k] = node_info(cfg, cluster,
-                                            args['debug_flag'], k)
-                print(json.dumps(cluster_data))
-            else:
-                print(r.text)
-                return
-            print('Riak Mesos Framework did not respond within 60 '
-                  'seconds.')
+            # cluster_data = {}
+            print "["
+            for k in js["nodes"]:
+                args["node"] = k
+                # TODO: fix util.node_info
+                node_info(args, cfg)
+                # print(json.dumps(cluster_data))
+            print "]"
+            return
+        else:
+            print(r.text)
+            return
+    print('Riak Mesos Framework did not respond within 60 '
+          'seconds.')
     return
 
 
