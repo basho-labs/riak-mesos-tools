@@ -39,7 +39,8 @@ def wait_for_url(url, debug_flag, seconds):
             debug_request(debug_flag, r)
             if r.status_code == 200:
                 return True
-        except:
+        except Exception as e:
+            debug(debug_flag, str(e))
             pass
         time.sleep(1)
         return wait_for_url(url, debug_flag, seconds - 1)
@@ -50,6 +51,7 @@ def wait_for_framework(config, debug_flag, seconds):
         return False
     try:
         healthcheck_url = config.api_url() + 'clusters'
+        debug(debug_flag, "Trying " + healthcheck_url)
         if wait_for_url(healthcheck_url, debug_flag, 1):
             return True
     except:
@@ -59,46 +61,42 @@ def wait_for_framework(config, debug_flag, seconds):
 
 
 def wait_for_node(config, cluster, debug_flag, node, seconds):
-    if wait_for_framework(config, debug_flag, 60):
-        service_url = config.api_url()
-        r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
-        debug_request(debug_flag, r)
-        node_json = json.loads(r.text)
-        node_host = node_json[node]['Hostname']
-        node_port = str(node_json[node]['TaskData']['HTTPPort'])
-        node_url = 'http://' + node_host + ':' + node_port
-        if wait_for_url(node_url, debug_flag, 20):
-            if node_json[node]['CurrentState'] == 3:
-                print('Node ' + node + ' is ready.')
-                return
-            return wait_for_node(config, cluster, debug_flag, node,
-                                 seconds - 1)
+    if seconds == 0:
         print('Node ' + node + ' did not respond in 20 seconds.')
         return
-    print('Riak Mesos Framework did not respond within 60 seconds.')
-    return
+    node_data = node_info(config, cluster, debug_flag, node)
+    if node_data['alive'] and node_data['status'] == 'started':
+        print('Node ' + node + ' is ready.')
+        return
+    time.sleep(1)
+    return wait_for_node(config, cluster, debug_flag, node,
+                         seconds - 1)
 
 
 def node_info(config, cluster, debug_flag, node):
     service_url = config.api_url()
-    r = requests.get(service_url + 'clusters/' + cluster + '/nodes')
+    r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node)
     debug_request(debug_flag, r)
-    fw = config.get('framework-name')
     node_json = json.loads(r.text)
-    http_port = str(node_json[node]['TaskData']['HTTPPort'])
-    pb_port = str(node_json[node]['TaskData']['PBPort'])
-    direct_host = node_json[node]['Hostname']
+    http_port = str(node_json[node]['location']['http_port'])
+    pb_port = str(node_json[node]['location']['http_port'])
+    direct_host = node_json[node]['location']['hostname']
+    fw = config.get('framework-name')
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
     alive = False
-    r = requests.get('http://' + direct_host + ':' + http_port)
-    debug_request(debug_flag, r)
-    if r.status_code == 200:
-        alive = True
+    if direct_host != '' and http_port != 'undefined':
+        try:
+            r = requests.get('http://' + direct_host + ':' + http_port)
+            debug_request(debug_flag, r)
+            alive = r.status_code == 200
+        except:
+            alive = False
     node_data = {
         'http_direct': direct_host + ':' + http_port,
         'http_mesos_dns': mesos_dns_cluster + ':' + http_port,
         'pb_direct': direct_host + ':' + pb_port,
         'pb_mesos_dns': mesos_dns_cluster + ':' + pb_port,
+        'status': node_json[node]['status'],
         'alive': alive
     }
     return node_data

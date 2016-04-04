@@ -17,8 +17,8 @@ def test_framework_install():
 
 def test_cluster_create():
     c, o, e = _fc(['cluster', 'create'])
-    expect1 = b'Added cluster: "default"'
-    expect2 = b'Cluster already exists.'
+    expect1 = b'{"success":true}'
+    expect2 = b'{"success":false,"error":"exists"}'
     assert o.strip() == expect1 or o.strip() == expect2
     assert c == 0
     assert e == b''
@@ -27,23 +27,23 @@ def test_cluster_create():
 def test_cluster_list():
     c, o, e = _fc(['cluster', 'list', '--json'])
     js = json.loads(o.decode("utf-8").strip())
-    assert js["default"]["Name"] == 'default'
+    assert js["clusters"][0] == 'default'
     assert c == 0
     assert e == b''
 
 
 def test_node_list_add():
     c, o, e = _fc(['node', 'list'])
-    if o == b'''Nodes: []\n\n''':
+    if o == b'''{"nodes":[]}\n''':
         c, o, e = _fc(['node', 'add', '--nodes', '2'])
-        assert o.strip() == b'''New node: riak-default-1
-New node: riak-default-2'''
+        assert o.strip() == b'''{"success":true}
+{"success":true}'''
         assert c == 0
         assert e == b''
     else:
         c, o, e = _fc(['node', 'list'])
-        expect1 = b'Nodes: [riak-default-1, riak-default-2]'
-        expect2 = b'Nodes: [riak-default-2, riak-default-1]'
+        expect1 = b'{"nodes":["riak-default-1","riak-default-2"]}'
+        expect2 = b'{"nodes":["riak-default-2","riak-default-1"]}'
         assert o.strip() == expect1 or o.strip() == expect2
         assert c == 0
         assert e == b''
@@ -66,15 +66,14 @@ Node riak-default-1 is ready.'''
 def test_node_status():
     c, o, e = _fc(['node', 'status', '--node', 'riak-default-1'])
     js = json.loads(o.decode("utf-8").strip())
-    assert js["valid"] == 2
+    assert js["status"]["valid"] == 2
     assert c == 0
     assert e == b''
 
 
-# Skipping cluster restart for now
 # def test_cluster_restart():
 #     c, o, e = _fc(['cluster', 'restart'])
-#     assert o.strip() == b'Cluster restart initiated.'
+#     assert o.strip() == b'{"success":true}'
 #     assert c == 0
 #     assert e == b''
 #     time.sleep(15)

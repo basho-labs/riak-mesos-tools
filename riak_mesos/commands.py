@@ -184,7 +184,8 @@ def proxy_endpoints(args, cfg):
 def node_wait_for_service(args, cfg):
     if args['node'] == '':
         raise CliError('Node name must be specified')
-    util.wait_for_node(cfg, cluster, args['debug_flag'], node, 20)
+    util.wait_for_node(cfg, args['cluster'], args['debug_flag'],
+                       args['node'], 20)
     return
 
 
@@ -195,9 +196,10 @@ def cluster_wait_for_service(args, cfg):
                          '/nodes')
         util.debug_request(args['debug_flag'], r)
         js = json.loads(r.text)
-        for k in js.keys():
-            util.wait_for_node(cfg, cluster, args['debug_flag'], k, 20)
-            return
+        for k in js['nodes']:
+            util.wait_for_node(cfg, args['cluster'], args['debug_flag'],
+                               k, 20)
+        return
     print('Riak Mesos Framework did not respond within 60 '
           'seconds.')
     return
@@ -209,16 +211,13 @@ def cluster_endpoints(args, cfg):
         r = requests.get(service_url + 'clusters/' + args['cluster'] +
                          '/nodes')
         util.debug_request(args['debug_flag'], r)
+        cluster_data = {}
         if r.status_code == 200:
             js = json.loads(r.text)
-            # cluster_data = {}
-            print "["
             for k in js["nodes"]:
-                args["node"] = k
-                # TODO: fix util.node_info
-                node_info(args, cfg)
-                # print(json.dumps(cluster_data))
-            print "]"
+                cluster_data[k] = util.node_info(cfg, args['cluster'],
+                                                 args['debug_flag'], k)
+            print(json.dumps(cluster_data))
             return
         else:
             print(r.text)

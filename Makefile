@@ -12,7 +12,7 @@ env:
 	echo "Virtualenv created."
 
 activate-env: env
-	source $(BASEDIR)/env/bin/activate
+	$(shell source $(BASEDIR)/env/bin/activate)
 	echo "Virtualenv activated."
 
 deps:
