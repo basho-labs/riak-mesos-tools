@@ -110,18 +110,20 @@ def marathon_client(marathon_url=None):
 
 
 def zookeeper_command(hosts, command, path):
+    try:
         zk = KazooClient(hosts=hosts)
         zk.start()
-        node = path
         if command == 'get':
-            data, stat = zk.get(node)
+            data, stat = zk.get(path)
             return data.decode("utf-8")
         elif command == 'delete':
-            zk.delete('/riak', recursive=True)
+            zk.delete(path, recursive=True)
             return 'Successfully deleted ' + path
         else:
             return False
         zk.stop()
+    except:
+        return False
 
 
 def debug(debug_flag, debug_string):
