@@ -49,10 +49,11 @@ def framework_status(args, cfg):
 
 
 def framework_wait_for_service(args, cfg):
-    if util.wait_for_framework(cfg, args['debug_flag'], 60):
+    if util.wait_for_framework(cfg, args['debug_flag'], args['timeout']):
         print('Riak Mesos Framework is ready.')
         return
-    print('Riak Mesos Framework did not respond within 60 seconds.')
+    print('Riak Mesos Framework did not respond within ' +
+          str(args['timeout']) + ' seconds.')
     return
 
 
@@ -104,7 +105,8 @@ def director(args, cfg):
 
 
 def director_wait_for_service(args, cfg):
-    if util.wait_for_framework(cfg, args['debug_flag'], 60):
+    # Passing 1 for timeout to only check once
+    if util.wait_for_framework(cfg, args['debug_flag'], 1):
         client = util.marathon_client(cfg.get('marathon'))
         app = client.get_app(cfg.get('framework-name') +
                              '-director')
@@ -115,12 +117,13 @@ def director_wait_for_service(args, cfg):
         ports = task['ports']
         hostname = task['host']
         if util.wait_for_url('http://' + hostname + ':' +
-                             str(ports[0]), args['debug_flag'], 20):
+                             str(ports[0]), args['debug_flag'],
+                             args['timeout'] - 1):
             print("Director is ready.")
             return
-        print("Director did not respond in 20 seconds.")
+        print('Director did not respond in ' + args['timeout'] + ' seconds.')
         return
-    print('Riak Mesos Framework did not respond within 60 seconds.')
+    print('Riak Mesos Framework did not respond.')
     return
 
 
@@ -185,23 +188,34 @@ def node_wait_for_service(args, cfg):
     if args['node'] == '':
         raise CliError('Node name must be specified')
     util.wait_for_node(cfg, args['cluster'], args['debug_flag'],
-                       args['node'], 20)
+                       args['node'], args['timeout'])
     return
 
 
 def cluster_wait_for_service(args, cfg):
-    if util.wait_for_framework(cfg, args['debug_flag'], 60):
+    # Uses 1 second timeout to just test once to see if Framework up
+    if util.wait_for_framework(cfg, args['debug_flag'], 1):
         service_url = cfg.api_url()
         r = requests.get(service_url + 'clusters/' + args['cluster'] +
                          '/nodes')
         util.debug_request(args['debug_flag'], r)
         js = json.loads(r.text)
+        # Timeout must be at least 1 second
+        num_nodes = len(js['nodes'])
+        node_timeout = max(args['timeout'] / num_nodes, 1)
         for k in js['nodes']:
             util.wait_for_node(cfg, args['cluster'], args['debug_flag'],
-                               k, 20)
+                               k, node_timeout)
+        if num_nodes >= args['num_nodes']:
+            # Okay, need to divide up the timeout properly
+            util.wait_for_node_status_valid(cfg,
+                                            args['cluster'],
+                                            args['debug_flag'],
+                                            js['nodes'][0],
+                                            args['num_nodes'],
+                                            args['timeout'])
         return
-    print('Riak Mesos Framework did not respond within 60 '
-          'seconds.')
+    print('Riak Mesos Framework did not respond.')
     return
 
 

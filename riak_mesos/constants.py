@@ -28,7 +28,7 @@ Subcommands:
     framework config
     framework install
     framework status
-    framework wait-for-service
+    framework wait-for-service [--timeout <seconds>]
     framework clean-metadata
     framework teardown
     framework uninstall
@@ -38,7 +38,7 @@ Subcommands:
     cluster config advanced [--file]
     cluster list [--json]
     cluster create
-    cluster wait-for-service
+    cluster wait-for-service [--timeout <seconds>]
     cluster endpoints
     cluster restart
     cluster destroy
@@ -53,12 +53,12 @@ Subcommands:
     node list [--json]
     node remove --node <name> [--force]
     node add [--nodes <number>]
-    node wait-for-service [--node <name>]
+    node wait-for-service [--node <name>] [--timeout <seconds>]
     director config
     director install
     director uninstall
     director endpoints
-    director wait-for-service
+    director wait-for-service [--timeout <seconds>]
 
 Options (available on most commands):
     --config <json-file> (/etc/riak-mesos/config.json)
@@ -97,7 +97,8 @@ help_dict = {
     'framework install':
     ('Generates and installs a marathon app for the framework'),
     'framework wait-for-service':
-    ('Waits 60 seconds or until Framework is running'),
+    ('Waits timeout seconds (default is 60) or until Framework is running. '
+     'Specify timeout with --timeout.'),
     'framework endpoints': ('Retrieves useful endpoints for the framework.'),
     'cluster info':
     ('Gets current metadata about a cluster.'),
@@ -112,7 +113,9 @@ help_dict = {
     ('Creates a new cluster. Specify the name with --cluster (default is '
      'default).'),
     'cluster wait-for-service':
-    ('Iterates over all nodes in cluster and executes node wait-for-service.'),
+    ('Iterates over all nodes in cluster and executes node wait-for-service. '
+     'Optionally waits until the number of nodes (specified by --nodes) at '
+     'minimum are joined to the cluster.'),
     'cluster endpoints':
     ('Iterates over all nodes in cluster and prints connection information.'),
     'cluster restart':
@@ -130,7 +133,9 @@ help_dict = {
     'node add':
     ('Adds one or more (using --nodes) nodes to a --cluster (default is '
      'default).'),
-    'node wait-for-service': ('Waits 20 seconds or until node is running'),
+    'node wait-for-service':
+    ('Waits timeout seconds (default is 60) or until node is running. '
+     'Specify timeout with --timeout.'),
     'node remove':
     ('Removes a node from the cluster, specify node id with --node'),
     'node aae-status':

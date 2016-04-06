@@ -111,7 +111,7 @@ We'll be covering the majority of the commands in this guide. Here is a brief de
     -   `config`: Output the generated Marathon json application definition for the RMF.
     -   `install`: Install the RMF as a Marathon app.
     -   `uninstall`: Delete the RMF from Marathon.
-    -   `wait-for-service`: Waits until the framework's HTTP API returns OK.
+    -   `wait-for-service`: Waits timeout seconds (default is 60) until the framework's HTTP API returns OK.
     -   `clean-metadata`: Removes Zookeeper metadata stored by the RMF instance.
     -   `teardown`: Issues a teardown call to the Mesos master, killing all tasks related to the RMF instance.
 -   `riak-mesos cluster`
