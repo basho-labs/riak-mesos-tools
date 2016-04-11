@@ -60,17 +60,47 @@ def wait_for_framework(config, debug_flag, seconds):
     return wait_for_framework(config, debug_flag, seconds - 1)
 
 
-def wait_for_node(config, cluster, debug_flag, node, seconds):
-    if seconds == 0:
-        print('Node ' + node + ' did not respond in 20 seconds.')
-        return
-    node_data = node_info(config, cluster, debug_flag, node)
-    if node_data['alive'] and node_data['status'] == 'started':
-        print('Node ' + node + ' is ready.')
-        return
-    time.sleep(1)
-    return wait_for_node(config, cluster, debug_flag, node,
-                         seconds - 1)
+def wait_for_node(config, cluster, debug_flag, node, timeout):
+    def inner_wait_for_node(seconds):
+        if seconds == 0:
+            print('Node ' + node + ' did not respond in ' +
+                  str(timeout) + 'seconds.')
+            return
+        node_data = node_info(config, cluster, debug_flag, node)
+        if node_data['alive'] and node_data['status'] == 'started':
+            print('Node ' + node + ' is ready.')
+            return
+        time.sleep(1)
+        return inner_wait_for_node(seconds - 1)
+
+    return inner_wait_for_node(timeout)
+
+
+def wait_for_node_status_valid(config, cluster, debug_flag,
+                               node, num_valid_nodes, timeout):
+    def inner_wait_for_node_status_valid(seconds):
+        if seconds == 0:
+            print('Cluster ' + cluster + ' did not respond with ' +
+                  str(num_valid_nodes) + ' valid nodes in ' +
+                  str(timeout) + ' seconds.')
+            return
+        status = node_status(config, cluster, debug_flag, node)
+        if status['status']['valid'] >= num_valid_nodes:
+            print('Cluster ' + cluster + ' is ready.')
+            return
+        time.sleep(1)
+        return inner_wait_for_node_status_valid(seconds - 1)
+
+    return inner_wait_for_node_status_valid(timeout)
+
+
+def node_status(config, cluster, debug_flag, node):
+    service_url = config.api_url()
+    r = requests.get(service_url + 'clusters/' + cluster +
+                     '/nodes/' + node + '/status/')
+    debug_request(debug_flag, r)
+    node_json = json.loads(r.text)
+    return node_json
 
 
 def node_info(config, cluster, debug_flag, node):

@@ -9,7 +9,7 @@ def test_framework_install():
     assert o.strip() == b'Finished adding riak to marathon.'
     assert c == 0
     assert e == b''
-    c, o, e = _fc(['framework', 'wait-for-service'])
+    c, o, e = _fc(['framework', 'wait-for-service', '--timeout', '600'])
     assert o.strip() == b'Riak Mesos Framework is ready.'
     assert c == 0
     assert e == b''
@@ -47,13 +47,16 @@ def test_node_list_add():
         assert o.strip() == expect1 or o.strip() == expect2
         assert c == 0
         assert e == b''
-    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1',
+                   '--timeout', '600'])
     assert c == 0
     assert e == ''
-    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-2'])
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-2',
+                   '--timeout', '600'])
     assert c == 0
     assert e == ''
-    c, o, e = _fc(['cluster', 'wait-for-service'])
+    c, o, e = _fc(['cluster', 'wait-for-service',
+                   '--timeout', '600', '--nodes', '2'])
     expect1 = b'''Node riak-default-1 is ready.
 Node riak-default-2 is ready.'''
     expect2 = b'''Node riak-default-2 is ready.

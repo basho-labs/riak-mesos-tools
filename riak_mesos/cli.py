@@ -101,6 +101,9 @@ class RiakMesosCli(object):
                                                             '--bucket-type',
                                                             'default')
         cli_args, self.args['props'] = extract_option(cli_args, '--props', '')
+        cli_args, timeout = extract_option(cli_args, '--timeout',
+                                           '60', 'integer')
+        self.args['timeout'] = int(timeout)
         cli_args, num_nodes = extract_option(cli_args, '--nodes', '1',
                                              'integer')
         self.args['num_nodes'] = int(num_nodes)
