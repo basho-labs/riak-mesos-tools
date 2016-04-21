@@ -18,7 +18,7 @@
         "healthcheck-max-consecutive-failures": 5,
         "constraints": [],
         "scheduler": {
-            "url": "",
+            "url": "http://riak-tools.s3.amazonaws.com/riak_mesos_scheduler/0.2/0.2.0/ubuntu/trusty/riak_mesos_scheduler-0.2.0-amd64.tar.gz",
             "cpus": 0.5,
             "mem": 2048.0,
             "constraints": [["hostname", "UNIQUE"]]
