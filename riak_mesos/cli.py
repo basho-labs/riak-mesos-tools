@@ -90,6 +90,8 @@ class RiakMesosCli(object):
         cli_args, config_file = extract_option(cli_args, '--config', def_conf)
         cli_args, self.args['riak_file'] = extract_option(cli_args, '--file',
                                                           '')
+        cli_args, self.args['lines'] = extract_option(cli_args, '--lines',
+                                                      '1000')
         cli_args, self.args['force_flag'] = extract_flag(cli_args, '--force')
         cli_args, self.args['json_flag'] = extract_flag(cli_args, '--json')
         cli_args, self.args['help_flag'] = extract_flag(cli_args, '--help')

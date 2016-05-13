@@ -490,3 +490,67 @@ def try_json(data):
         return json.loads(data)
     except:
         return False
+
+
+def node_log_list(args, cfg):
+    service_url = cfg.scheduler_url()
+    if service_url is False:
+        raise CliError("Riak Mesos Framework is not running.")
+    if args['node'] == '':
+        raise CliError('Node name must be specified')
+    node_name = util.get_node_name(cfg, args['cluster'],
+                                   args['debug_flag'],
+                                   args['node'])
+    r = requests.get(service_url + 'explore/clusters/' +
+                     args['cluster'] + '/nodes/' +
+                     node_name + '/log/files')
+    util.debug_request(args['debug_flag'], r)
+    if r.status_code != 200:
+        print('Failed to get log files, status_code: ' +
+              str(r.status_code))
+    else:
+        print(r.text)
+    return
+
+
+def node_log(args, cfg):
+    service_url = cfg.scheduler_url()
+    if service_url is False:
+        raise CliError("Riak Mesos Framework is not running.")
+    if args['node'] == '':
+        raise CliError('Node name must be specified')
+    if args['riak_file'] == '':
+        raise CliError('Log file must be specified')
+    node_name = util.get_node_name(cfg, args['cluster'],
+                                   args['debug_flag'],
+                                   args['node'])
+    r = requests.get(service_url + 'explore/clusters/' +
+                     args['cluster'] + '/nodes/' +
+                     node_name + '/log/files/' +
+                     args['riak_file'] + '?rows=' +
+                     args['lines'])
+    util.debug_request(args['debug_flag'], r)
+    if r.status_code != 200:
+        print('Failed to get log files, status_code: ' +
+              str(r.status_code))
+    else:
+        print(r.text)
+    return
+
+
+def node_stats(args, cfg):
+    service_url = cfg.scheduler_url()
+    if service_url is False:
+        raise CliError("Riak Mesos Framework is not running.")
+    if args['node'] == '':
+        raise CliError('Node name must be specified')
+
+    r = requests.get(service_url + 'riak/nodes/' +
+                     args['node'] + '/stats')
+    util.debug_request(args['debug_flag'], r)
+    if r.status_code != 200:
+        print('Failed to get stats, status_code: ' +
+              str(r.status_code))
+    else:
+        print(r.text)
+    return

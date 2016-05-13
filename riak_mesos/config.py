@@ -209,19 +209,23 @@ class RiakMesosConfig(object):
             return False
 
     def api_url(self):
+        scheduler_url = self.scheduler_url()
+        return scheduler_url + "api/v1/"
+
+    def scheduler_url(self):
         try:
             service_url = self.config_api_url()
             if service_url:
-                return 'http://' + service_url + '/api/v1/'
+                return 'http://' + service_url + '/'
             service_url = self.dcos_api_url()
             if service_url:
-                return service_url + 'api/v1/'
+                return service_url + '/'
             service_url = self.marathon_api_url()
             if service_url:
-                return service_url + 'api/v1/'
+                return service_url
             service_url = self.zk_api_url()
             if service_url:
-                return service_url + 'api/v1/'
+                return service_url + '/'
             error = 'Unable to connect to DCOS Server, Marathon, or Zookeeper.'
             raise util.CliError(error)
         except Exception as e:

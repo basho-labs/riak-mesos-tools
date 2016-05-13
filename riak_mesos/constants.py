@@ -53,7 +53,10 @@ Subcommands:
     node list [--json]
     node remove --node <name> [--force]
     node add [--nodes <number>]
-    node wait-for-service [--node <name>] [--timeout <seconds>]
+    node wait-for-service --node <name> [--timeout <seconds>]
+    node log list --node <name>
+    node log  --node <name> --file <log_file> [--lines <num_lines>]
+    node stats  --node <name>
     director config
     director install
     director uninstall
@@ -151,5 +154,12 @@ help_dict = {
     ('Creates and activates a bucket type on a node, specify node id with '
      '--node'),
     'node bucket-type list':
-    ('Gets the bucket type list from a node, specify node id with --node')
+    ('Gets the bucket type list from a node, specify node id with --node'),
+    'node log list':
+    ('Lists the available log files for a node, specify node id with --node'),
+    'node log':
+    ('Shows a log file for a node, specify node id with --node'
+     ', filename with --file, and number of lines with --lines'),
+    'node stats':
+    ('Shows the statistics for a node, specify node id with --node')
 }

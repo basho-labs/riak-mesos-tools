@@ -197,3 +197,11 @@ def ppfact(description, json_str, key, failure):
             print(description + json.dumps(obj[key]))
     except:
         print(description + failure)
+
+
+def get_node_name(config, cluster, debug_flag, node):
+    service_url = config.api_url()
+    r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node)
+    debug_request(debug_flag, r)
+    node_json = json.loads(r.text)
+    return node_json[node]['location']['node_name']
