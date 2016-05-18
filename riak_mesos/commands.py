@@ -271,8 +271,8 @@ def cluster_config(args, cfg):
         print(r.text)
     else:
         with open(args['riak_file']) as data_file:
-            r = requests.post(service_url + 'clusters/' + args['cluster'] +
-                              '/cfg', data=data_file)
+            r = requests.put(service_url + 'clusters/' + args['cluster'] +
+                             '/cfg', data=data_file)
             util.debug_request(args['debug_flag'], r)
             print(r.text)
     return
@@ -289,8 +289,8 @@ def cluster_config_advanced(args, cfg):
         print(r.text)
     else:
         with open(args['riak_file']) as data_file:
-            r = requests.post(service_url + 'clusters/' + args['cluster'] +
-                              '/advancedCfg', data=data_file)
+            r = requests.put(service_url + 'clusters/' + args['cluster'] +
+                             '/advancedCfg', data=data_file)
             util.debug_request(args['debug_flag'], r)
             print(r.text)
     return
