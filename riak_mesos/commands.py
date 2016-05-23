@@ -202,10 +202,11 @@ def cluster_wait_for_service(args, cfg):
         js = json.loads(r.text)
         # Timeout must be at least 1 second
         num_nodes = len(js['nodes'])
-        node_timeout = max(args['timeout'] / num_nodes, 1)
-        for k in js['nodes']:
-            util.wait_for_node(cfg, args['cluster'], args['debug_flag'],
-                               k, node_timeout)
+        if num_nodes > 0:
+            node_timeout = max(args['timeout'] / num_nodes, 1)
+            for k in js['nodes']:
+                util.wait_for_node(cfg, args['cluster'], args['debug_flag'],
+                                   k, node_timeout)
         if num_nodes >= args['num_nodes']:
             # Okay, need to divide up the timeout properly
             util.wait_for_node_status_valid(cfg,
