@@ -48,6 +48,8 @@ class RiakMesosConfig(object):
         mj['env']['RIAK_MESOS_ZK'] = self.get('zk')
         mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
         mj['env']['RIAK_MESOS_USER'] = self.get('user')
+        mj['env']['RIAK_MESOS_SCHEDULER_PKG'] = self.get(
+            'scheduler', 'url').rsplit('/', 1)[-1]
         mj['env']['RIAK_MESOS_EXECUTOR_PKG'] = self.get(
             'executor', 'url').rsplit('/', 1)[-1]
         mj['env']['RIAK_MESOS_RIAK_PKG'] = self.get(
