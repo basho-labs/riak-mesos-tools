@@ -58,9 +58,11 @@ def test_node_list_add():
     c, o, e = _fc(['cluster', 'wait-for-service',
                    '--timeout', '600', '--nodes', '2'])
     expect1 = b'''Node riak-default-1 is ready.
-Node riak-default-2 is ready.'''
+Node riak-default-2 is ready.
+Cluster default is ready.'''
     expect2 = b'''Node riak-default-2 is ready.
-Node riak-default-1 is ready.'''
+Node riak-default-1 is ready.
+Cluster default is ready.'''
     assert o.strip() == expect1 or o.strip() == expect2
     assert c == 0
     assert e == b''
