@@ -30,7 +30,8 @@
         },
         "node": {
             "url": "{{node_url}}",
-            "patches-url": "{{explorer_url}}",
+            "patches-url": "{{patches_url}}",
+            "explorer-url": "{{explorer_url}}",
             "cpus": 1.0,
             "mem": 8000.0,
             "disk": 20000.0

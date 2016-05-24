@@ -39,6 +39,7 @@ class RiakMesosConfig(object):
         mj['uris'].append(self.get('executor', 'url'))
         mj['uris'].append(self.get('node', 'url'))
         mj['uris'].append(self.get('node', 'patches-url'))
+        mj['uris'].append(self.get('node', 'explorer-url'))
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
