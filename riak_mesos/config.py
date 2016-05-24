@@ -52,7 +52,7 @@ class RiakMesosConfig(object):
             'executor', 'url').rsplit('/', 1)[-1]
         mj['env']['RIAK_MESOS_RIAK_PKG'] = self.get(
             'node', 'url').rsplit('/', 1)[-1]
-        mj['env']['RIAK_ERLPMD_PATCHES_PKG'] = self.get(
+        mj['env']['RIAK_MESOS_PATCHES_PKG'] = self.get(
             'node', 'patches-url').rsplit('/', 1)[-1]
         mj['env']['RIAK_MESOS_EXPLORER_PKG'] = self.get(
             'node', 'explorer-url').rsplit('/', 1)[-1]
