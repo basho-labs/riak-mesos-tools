@@ -48,6 +48,14 @@ class RiakMesosConfig(object):
         mj['env']['RIAK_MESOS_ZK'] = self.get('zk')
         mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
         mj['env']['RIAK_MESOS_USER'] = self.get('user')
+        mj['env']['RIAK_MESOS_EXECUTOR_PKG'] = self.get(
+            'executor', 'url').rsplit('/', 1)[-1]
+        mj['env']['RIAK_MESOS_RIAK_PKG'] = self.get(
+            'node', 'url').rsplit('/', 1)[-1]
+        mj['env']['RIAK_ERLPMD_PATCHES_PKG'] = self.get(
+            'node', 'patches-url').rsplit('/', 1)[-1]
+        mj['env']['RIAK_MESOS_EXPLORER_PKG'] = self.get(
+            'node', 'explorer-url').rsplit('/', 1)[-1]
         if self.get('scheduler', 'constraints') != '':
             mj['env']['RIAK_MESOS_CONSTRAINTS'] = json.dumps(
                 self.get('scheduler', 'constraints'))
