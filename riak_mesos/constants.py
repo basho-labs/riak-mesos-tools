@@ -14,7 +14,7 @@
 # limitations under the License.
 """DCOS Riak Constants"""
 
-version = '0.4-stable'
+version = '1.0-rc1'
 
 usage = '''
 Command line utility for the Riak Mesos Framework / DCOS Service.
