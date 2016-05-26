@@ -47,6 +47,7 @@ Subcommands:
     node status --node <name>
     node ringready --node <name>
     node transfers --node <name>
+    node transfers wait-for-service --node <name> [--timeout <seconds>]
     node bucket-type create --node <name> --bucket-type <name>
                             --props "<json>"
     node bucket-type list --node <name>
@@ -150,6 +151,8 @@ help_dict = {
     ('Gets the ringready value for a node, specify node id with --node'),
     'node transfers':
     ('Gets the transfers status for a node, specify node id with --node'),
+    'node transfers wait-for-service':
+    ('Waits for transfers to complete, specify node id with --node'),
     'node bucket-type create':
     ('Creates and activates a bucket type on a node, specify node id with '
      '--node'),

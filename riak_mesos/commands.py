@@ -457,6 +457,13 @@ def node_transfers(args, cfg):
     print(r.text)
     return
 
+def node_transfers_wait_for_service(args, cfg):
+    if args['node'] == '':
+        raise CliError('Node name must be specified')
+    util.wait_for_node_transfers(cfg, args['cluster'], args['debug_flag'],
+                                 args['node'], args['timeout'])
+    return
+
 
 def node_bucket_type_create(args, cfg):
     service_url = cfg.api_url()

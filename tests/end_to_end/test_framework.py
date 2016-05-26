@@ -1,5 +1,6 @@
 import json
 import time
+import requests
 
 from common import exec_framework_command as _fc
 
@@ -35,20 +36,22 @@ def test_cluster_list():
 def test_node_list_add():
     c, o, e = _fc(['node', 'list'])
     if o == b'''{"nodes":[]}\n''':
+        print '1'
         c, o, e = _fc(['node', 'add', '--nodes', '2'])
         assert o.strip() == b'''{"success":true}
 {"success":true}'''
         assert c == 0
         assert e == b''
     else:
-        c, o, e = _fc(['node', 'list'])
-        expect1 = b'{"nodes":["riak-default-1","riak-default-2"]}'
-        expect2 = b'{"nodes":["riak-default-2","riak-default-1"]}'
-        assert o.strip() == expect1 or o.strip() == expect2
+        print '2'
         assert c == 0
         assert e == b''
+        js = json.loads(o.decode("utf-8").strip())
+        assert len(js['nodes']) >= 2
+    print '3'
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1',
                    '--timeout', '600'])
+    print '4'
     assert c == 0
     assert e == ''
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-2',
@@ -57,15 +60,10 @@ def test_node_list_add():
     assert e == ''
     c, o, e = _fc(['cluster', 'wait-for-service',
                    '--timeout', '600', '--nodes', '2'])
-    expect1 = b'''Node riak-default-1 is ready.
-Node riak-default-2 is ready.
-Cluster default is ready.'''
-    expect2 = b'''Node riak-default-2 is ready.
-Node riak-default-1 is ready.
-Cluster default is ready.'''
-    assert o.strip() == expect1 or o.strip() == expect2
     assert c == 0
     assert e == b''
+    assert "riak-default-1 is ready" in o.strip()
+    assert "riak-default-2 is ready" in o.strip()
 
 
 def test_node_status():
@@ -76,26 +74,39 @@ def test_node_status():
     assert e == b''
 
 
-# def test_cluster_restart():
-#     c, o, e = _fc(['cluster', 'restart'])
-#     assert o.strip() == b'{"success":true}'
-#     assert c == 0
-#     assert e == b''
-#     time.sleep(15)
-#     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1'])
-#     assert c == 0
-#     assert e == ''
-#     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-2'])
-#     assert c == 0
-#     assert e == ''
-#     c, o, e = _fc(['cluster', 'wait-for-service'])
-#     expect1 = b'''Node riak-default-1 is ready.
-# Node riak-default-2 is ready.'''
-#     expect2 = b'''Node riak-default-2 is ready.
-# Node riak-default-1 is ready.'''
-#     assert o.strip() == expect1 or o.strip() == expect2
-#     assert c == 0
-#     assert e == b''
+def test_one_by_one():
+    c, o, e = _fc(['node', 'info', '--node', 'riak-default-1'])
+    js = json.loads(o.decode("utf-8").strip())
+    host = js["riak-default-1"]["location"]["hostname"]
+    port = js["riak-default-1"]["location"]["http_port"]
+    put_data(host, port, 'test', 'test', 'test1')
+    put_data(host, port, 'test', 'test', 'test2')
+    put_data(host, port, 'test', 'test', 'test3')
+    put_data(host, port, 'test', 'test', 'test4')
+    put_data(host, port, 'test', 'test', 'test5')
+    c, o, e = _fc(['node', 'add'])
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-3',
+                   '--timeout', '600'])
+    c, o, e = _fc(['node', 'transfers', 'wait-for-service', '--node', 'riak-default-3',
+                   '--timeout', '600'])
+    assert "transfers complete" in o.strip()
+    assert c == 0
+    assert e == b''
+
+
+def test_cluster_restart():
+    c, o, e = _fc(['cluster', 'restart'])
+    assert o.strip() == b'{"success":true}'
+    assert c == 0
+    assert e == b''
+    time.sleep(15)
+    c, o, e = _fc(['cluster', 'wait-for-service',
+                   '--timeout', '600', '--nodes', '3'])
+    assert c == 0
+    assert e == b''
+    assert "riak-default-1 is ready" in o.strip()
+    assert "riak-default-2 is ready" in o.strip()
+    assert "riak-default-3 is ready" in o.strip()
 
 
 def test_uninstall():
@@ -108,3 +119,9 @@ def test_uninstall():
     assert c == 0
     c, o, e = _fc(['framework', 'clean-metadata'])
     assert c == 0
+
+
+def put_data(host, port, bucket, key, value):
+    r = requests.put('http://' + host + ":" + str(port) +
+                     '/buckets/' + '/keys/' + 'test',
+                     data=value)

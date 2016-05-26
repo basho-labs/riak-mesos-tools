@@ -76,6 +76,28 @@ def wait_for_node(config, cluster, debug_flag, node, timeout):
     return inner_wait_for_node(timeout)
 
 
+def wait_for_node_transfers(config, cluster, debug_flag, node, timeout):
+    def inner_wait_for_node_transfers(seconds):
+        if seconds == 0:
+            print('Node ' + node + ' transfers did not complete in ' +
+                  str(timeout) + 'seconds.')
+            return
+        service_url = config.api_url()
+        r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
+                         node + '/transfers')
+        debug_request(debug_flag, r)
+        node_json = json.loads(r.text)
+        waiting = len(node_json['transfers']['waiting_to_handoff'])
+        active = len(node_json['transfers']['active'])
+        if waiting == 0 and active == 0:
+            print('Node ' + node + ' transfers complete.')
+            return
+        time.sleep(1)
+        return inner_wait_for_node_transfers(seconds - 1)
+
+    return inner_wait_for_node_transfers(timeout)
+
+
 def wait_for_node_status_valid(config, cluster, debug_flag,
                                node, num_valid_nodes, timeout):
     def inner_wait_for_node_status_valid(seconds):
