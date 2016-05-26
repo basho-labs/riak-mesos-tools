@@ -1,0 +1,51 @@
+{
+    "riak": {
+        "framework-name": "riak",
+        "hostname": "riak.marathon.mesos",
+        "marathon": "marathon.mesos:8080",
+        "master": "leader.mesos:5050",
+        "zk": "leader.mesos:2181",
+        "user": "root",
+        "role": "riak",
+        "auth-principal": "riak",
+        "auth-provider": "",
+        "auth-secret-file": "",
+        "instances": 1,
+        "failover-timeout": 10000.0,
+        "healthcheck-grace-period-seconds": 300,
+        "healthcheck-interval-seconds": 60,
+        "healthcheck-timeout-seconds": 20,
+        "healthcheck-max-consecutive-failures": 5,
+        "constraints": [],
+        "scheduler": {
+            "url": "{{scheduler_url}}",
+            "package": "{{scheduler_package}}",
+            "cpus": 0.5,
+            "mem": 2048.0,
+            "constraints": [["hostname", "UNIQUE"]]
+        },
+        "executor": {
+            "url": "{{executor_url}}",
+            "package": "{{executor_package}}",
+            "cpus": 0.1,
+            "mem": 512.0
+        },
+        "node": {
+            "url": "{{node_url}}",
+            "package": "{{node_package}}",
+            "patches-url": "{{patches_url}}",
+            "patches-package": "{{patches_package}}",
+            "explorer-url": "{{explorer_url}}",
+            "explorer-package": "{{explorer_package}}",
+            "cpus": 1.0,
+            "mem": 8000.0,
+            "disk": 20000.0
+        },
+        "director": {
+            "url": "{{director_url}}",
+            "use-public": false,
+            "cpus": 0.5,
+            "mem": 1024.0
+        }
+    }
+}
