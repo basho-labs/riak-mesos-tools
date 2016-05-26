@@ -28,8 +28,9 @@ if [ -d /tmp/riak-mesos-tools ]; then
     cp -ar /tmp/riak-mesos-tools /root
 # If none is mounted, check out from git
 else
-   git clone --branch 0.4.1 --depth 1 https://github.com/basho-labs/riak-mesos-tools.git
+   git clone --depth 1 https://github.com/basho-labs/riak-mesos-tools.git
 fi
 
 cd riak-mesos-tools
 make test-end-to-end
+find . -name "end-to-end.html" -exec cp \{} /tmp/riak-mesos-tools \;
