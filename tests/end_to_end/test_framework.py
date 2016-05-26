@@ -36,22 +36,18 @@ def test_cluster_list():
 def test_node_list_add():
     c, o, e = _fc(['node', 'list'])
     if o == b'''{"nodes":[]}\n''':
-        print '1'
         c, o, e = _fc(['node', 'add', '--nodes', '2'])
         assert o.strip() == b'''{"success":true}
 {"success":true}'''
         assert c == 0
         assert e == b''
     else:
-        print '2'
         assert c == 0
         assert e == b''
         js = json.loads(o.decode("utf-8").strip())
         assert len(js['nodes']) >= 2
-    print '3'
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1',
                    '--timeout', '600'])
-    print '4'
     assert c == 0
     assert e == ''
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-2',
@@ -87,8 +83,8 @@ def test_one_by_one():
     c, o, e = _fc(['node', 'add'])
     c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-3',
                    '--timeout', '600'])
-    c, o, e = _fc(['node', 'transfers', 'wait-for-service', '--node', 'riak-default-3',
-                   '--timeout', '600'])
+    c, o, e = _fc(['node', 'transfers', 'wait-for-service', '--node',
+                   'riak-default-3', '--timeout', '600'])
     assert "transfers complete" in o.strip()
     assert c == 0
     assert e == b''
@@ -122,6 +118,6 @@ def test_uninstall():
 
 
 def put_data(host, port, bucket, key, value):
-    r = requests.put('http://' + host + ":" + str(port) +
-                     '/buckets/' + '/keys/' + 'test',
-                     data=value)
+    requests.put('http://' + host + ":" + str(port) +
+                 '/buckets/' + '/keys/' + 'test',
+                 data=value)

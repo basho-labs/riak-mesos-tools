@@ -457,6 +457,7 @@ def node_transfers(args, cfg):
     print(r.text)
     return
 
+
 def node_transfers_wait_for_service(args, cfg):
     if args['node'] == '':
         raise CliError('Node name must be specified')
