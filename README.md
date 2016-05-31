@@ -349,9 +349,9 @@ To install the director as a marathon app with an id that matches your configure
 Add Some Data
 -------------
 
-Assuming that the proxy is now running, we can now find an endpoint to talk to Riak with this command:
+Assuming that the director is now running, we can now find an endpoint to talk to Riak with this command:
 
-    riak-mesos proxy endpoints
+    riak-mesos director endpoints
 
 The output should look similar to this:
 
@@ -365,9 +365,9 @@ The output should look similar to this:
 }
 ```
 
-Let's write a few keys to the cluster using the proxy:
+Let's write a few keys to the cluster using the director:
 
-    RIAK_HTTP=$(riak-mesos proxy endpoints | python -c 'import sys, json; print json.load(sys.stdin)["riak_http"]')
+    RIAK_HTTP=$(riak-mesos director endpoints | python -c 'import sys, json; print json.load(sys.stdin)["riak_http"]')
     curl -XPUT $RIAK_HTTP/buckets/test/keys/one -d "this is data"
     curl -XPUT $RIAK_HTTP/buckets/test/keys/two -d "this is data too"
 
@@ -416,14 +416,14 @@ DCOS Riak Uninstall
 
 Follow these steps to cleanly remove riak from a DCOS cluster:
 
-    dcos riak proxy uninstall
+    dcos riak director uninstall
     dcos riak cluster destroy
     dcos riak framework clean-metadata
     dcos package uninstall riak
 
-- Uninstall the Proxy
+- Uninstall the Director
 
-        riak-mesos proxy uninstall
+        riak-mesos director uninstall
 
 - Destroy Clusters
 
