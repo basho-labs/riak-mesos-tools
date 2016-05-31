@@ -22,7 +22,7 @@
             "package": "riak_mesos_scheduler-1.0.rc2-ubuntu-14.04-amd64.tar.gz",
             "cpus": 0.5,
             "mem": 2048.0,
-            "constraints": [["hostname", "UNIQUE"]]
+            "constraints": []
         },
         "executor": {
             "url": "https://github.com/basho-labs/riak-mesos-executor/releases/download/1.0.rc2/riak_mesos_executor-1.0.rc2-ubuntu-14.04-amd64.tar.gz",

@@ -131,7 +131,7 @@ def node_info(config, cluster, debug_flag, node):
     debug_request(debug_flag, r)
     node_json = json.loads(r.text)
     http_port = str(node_json[node]['location']['http_port'])
-    pb_port = str(node_json[node]['location']['http_port'])
+    pb_port = str(node_json[node]['location']['pb_port'])
     direct_host = node_json[node]['location']['hostname']
     fw = config.get('framework-name')
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
