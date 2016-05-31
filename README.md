@@ -411,16 +411,6 @@ Uninstall RMF
 
 The following commands can be used to remove part or all of the RMF.
 
-DCOS Riak Uninstall
--------------------
-
-Follow these steps to cleanly remove riak from a DCOS cluster:
-
-    dcos riak director uninstall
-    dcos riak cluster destroy
-    dcos riak framework clean-metadata
-    dcos package uninstall riak
-
 - Uninstall the Director
 
         riak-mesos director uninstall
@@ -444,3 +434,13 @@ Follow these steps to cleanly remove riak from a DCOS cluster:
 - Remove the pip package
 
         sudo pip uninstall riak-mesos
+
+DCOS Riak Uninstall
+-------------------
+
+Follow these steps to cleanly remove riak from a DCOS cluster:
+
+    dcos riak director uninstall
+    dcos riak cluster destroy
+    dcos riak framework clean-metadata
+    dcos package uninstall riak
