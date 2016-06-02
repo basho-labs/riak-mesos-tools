@@ -108,7 +108,7 @@ def director_wait_for_service(args, cfg):
     # Passing 1 for timeout to only check once
     if util.wait_for_framework(cfg, args['debug_flag'], 1):
         client = util.marathon_client(cfg.get('marathon'))
-        app = client.get_app(cfg.get('framework-name') +
+        app = client.get_app(args['cluster'] +
                              '-director')
         if len(app['tasks']) == 0:
             print("Director is not installed.")

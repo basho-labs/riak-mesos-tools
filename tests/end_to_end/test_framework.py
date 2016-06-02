@@ -105,8 +105,89 @@ def test_cluster_restart():
     assert "riak-default-3 is ready" in o.strip()
 
 
+def test_director_install():
+    c, o, e = _fc(['director', 'install'])
+    assert c == 0
+    c, o, e = _fc(['director', 'wait-for-service',
+                   '--timeout', '600'])
+    assert c == 0
+    assert e == b''
+    assert "Director is ready." in o.strip()
+
+
+def test_second_cluster_create():
+    c, o, e = _fc(['cluster', 'create', '--cluster', 'second'])
+    expect1 = b'{"success":true}'
+    expect2 = b'{"success":false,"error":"exists"}'
+    assert o.strip() == expect1 or o.strip() == expect2
+    assert c == 0
+    assert e == b''
+
+
+def test_second_cluster_list():
+    c, o, e = _fc(['cluster', 'list', '--json'])
+    js = json.loads(o.decode("utf-8").strip())
+    assert "second" in js["clusters"]
+    assert c == 0
+    assert e == b''
+
+
+def test_second_cluster_node_list_add():
+    c, o, e = _fc(['node', 'list', '--cluster', 'second'])
+    if o == b'''{"nodes":[]}\n''':
+        c, o, e = _fc(['node', 'add', '--nodes', '2', '--cluster', 'second'])
+        assert o.strip() == b'''{"success":true}
+{"success":true}'''
+        assert c == 0
+        assert e == b''
+    else:
+        assert c == 0
+        assert e == b''
+        js = json.loads(o.decode("utf-8").strip())
+        assert len(js['nodes']) >= 2
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-second-1',
+                   '--cluster', 'second', '--timeout', '600'])
+    assert c == 0
+    assert e == ''
+    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-second-2',
+                   '--cluster', 'second', '--timeout', '600'])
+    assert c == 0
+    assert e == ''
+    c, o, e = _fc(['cluster', 'wait-for-service',
+                   '--cluster', 'second', '--timeout', '600', '--nodes', '2'])
+    assert c == 0
+    assert e == b''
+    assert "riak-second-1 is ready" in o.strip()
+    assert "riak-second-2 is ready" in o.strip()
+
+
+def test_second_cluster_node_status():
+    c, o, e = _fc(['node', 'status', '--cluster', 'second',
+                   '--node', 'riak-second-1'])
+    js = json.loads(o.decode("utf-8").strip())
+    assert js["status"]["valid"] == 2
+    assert c == 0
+    assert e == b''
+
+
+def test_second_cluster_director_install():
+    c, o, e = _fc(['director', 'install', '--cluster', 'second'])
+    assert c == 0
+    c, o, e = _fc(['director', 'wait-for-service',
+                   '--cluster', 'second', '--timeout', '600'])
+    assert c == 0
+    assert e == b''
+    assert "Director is ready." in o.strip()
+
+
 def test_uninstall():
-    c, o, e = _fc(['cluster', 'destroy'])
+    c, o, e = _fc(['cluster', 'destroy', '--cluster', 'default'])
+    assert c == 0
+    c, o, e = _fc(['director', 'uninstall', '--cluster', 'default'])
+    assert c == 0
+    c, o, e = _fc(['cluster', 'destroy', '--cluster', 'second'])
+    assert c == 0
+    c, o, e = _fc(['director', 'uninstall', '--cluster', 'second'])
     assert c == 0
     time.sleep(15)
     c, o, e = _fc(['framework', 'uninstall'])
