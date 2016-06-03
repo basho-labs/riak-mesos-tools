@@ -78,7 +78,7 @@ Create a Configuration File
 - The artifact urls for additional operating systems and Mesos versions can be found in the following locations:
     - `riak.scheduler.url`: [riak-mesos-scheduler/releases](https://github.com/basho-labs/riak-mesos-scheduler/releases)
     - `riak.executor.url`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
-    - `riak.node.url`: TBD
+    - `riak.node.url`: [riak-mesos/releases](https://github.com/basho-labs/riak-mesos/releases)
     - `riak.node.patches-url`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
     - `riak.node.explorer-url`: [riak_explorer/releases](https://github.com/basho-labs/riak_explorer/releases)
     - `riak.director.url`: [riak-mesos-director/releases](https://github.com/basho-labs/riak-mesos-director/releases)

@@ -116,7 +116,8 @@ Create a Configuration File
       `riak-mesos-scheduler/releases <https://github.com/basho-labs/riak-mesos-scheduler/releases>`__
    -  ``riak.executor.url``:
       `riak-mesos-executor/releases <https://github.com/basho-labs/riak-mesos-executor/releases>`__
-   -  ``riak.node.url``: TBD
+   -  ``riak.node.url``:
+      `riak-mesos/releases <https://github.com/basho-labs/riak-mesos/releases>`__
    -  ``riak.node.patches-url``:
       `riak-mesos-executor/releases <https://github.com/basho-labs/riak-mesos-executor/releases>`__
    -  ``riak.node.explorer-url``:
