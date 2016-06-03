@@ -22,7 +22,7 @@
             "package": "{{scheduler_package}}",
             "cpus": 0.5,
             "mem": 2048.0,
-            "constraints": [["hostname", "UNIQUE"]]
+            "constraints": []
         },
         "executor": {
             "url": "{{executor_url}}",
