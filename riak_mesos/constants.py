@@ -29,7 +29,6 @@ Subcommands:
     framework install
     framework status
     framework wait-for-service [--timeout <seconds>]
-    framework clean-metadata
     framework teardown
     framework uninstall
     framework endpoints

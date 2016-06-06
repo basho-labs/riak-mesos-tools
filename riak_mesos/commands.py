@@ -68,13 +68,20 @@ def framework_uninstall(args, cfg):
 
 def framework_clean_metadata(args, cfg):
     fn = cfg.get('framework-name')
-    print('\nRemoving zookeeper information\n')
-    result = util.zookeeper_command(cfg.get('zk'), 'delete',
-                                    '/riak/frameworks/' + fn)
-    if result:
-        print(result)
+    if args['force_flag']:
+        print('\nRemoving zookeeper information\n')
+        result = util.zookeeper_command(cfg.get('zk'), 'delete',
+                                        '/riak/frameworks/' + fn)
+        if result:
+            print(result)
+        else:
+            print("Unable to remove framework zookeeper data.")
     else:
-        print("Unable to remove framework zookeeper data.")
+        print('\nFramework metadata not removed. Use the --force flag to '
+              'delete all framework zookeeper metadata.\n\n'
+              'WARNING: Running this command with a running instance of the '
+              'Riak Mesos Framework will cause unexpected behavior and '
+              'possible data loss!\n')
     return
 
 

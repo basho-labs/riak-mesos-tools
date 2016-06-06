@@ -103,7 +103,6 @@ Subcommands:
     framework install
     framework status
     framework wait-for-service [--timeout <seconds>]
-    framework clean-metadata
     framework teardown
     framework uninstall
     framework endpoints
@@ -427,10 +426,6 @@ The following commands can be used to remove part or all of the RMF.
 
         riak-mesos framework teardown
 
-- Remove Zookeeper Metadata
-
-        riak-mesos framework clean-metadata
-
 - Remove the pip package
 
         sudo pip uninstall riak-mesos
@@ -442,5 +437,4 @@ Follow these steps to cleanly remove riak from a DCOS cluster:
 
     dcos riak director uninstall
     dcos riak cluster destroy
-    dcos riak framework clean-metadata
     dcos package uninstall riak

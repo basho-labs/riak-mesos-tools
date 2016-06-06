@@ -194,7 +194,7 @@ def test_uninstall():
     assert c == 0
     c, o, e = _fc(['framework', 'teardown'])
     assert c == 0
-    c, o, e = _fc(['framework', 'clean-metadata'])
+    c, o, e = _fc(['framework', 'clean-metadata', '--force'])
     assert c == 0
 
 
