@@ -84,7 +84,7 @@ Create a Configuration File
 
 - Inspect the resulting `/etc/riak-mesos/config.json` and make changes to parameters according to your system requirements. For more information on each of the configuration values, please see [this schema file](https://raw.githubusercontent.com/basho-labs/riak-mesos-dcos-repo/master/repo/packages/R/riak/0/config.json) for field descriptions.
 
-- The artifact urls for additional operating systems and Mesos versions can be found in the following locations:
+- The example config files expect an environment based on mesos-0.28.1 running on ubuntu-14.04. Change the various `url` and `package` fields to point to the relevant artifacts for your mesos and OS setup, details of which are at the following locations:
     - `riak.scheduler.url`: [riak-mesos-scheduler/releases](https://github.com/basho-labs/riak-mesos-scheduler/releases)
     - `riak.executor.url`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
     - `riak.node.url`: [riak-mesos/releases](https://github.com/basho-labs/riak-mesos/releases)
