@@ -195,13 +195,14 @@ class RiakMesosConfig(object):
 
     def dcos_api_url(self):
         try:
-            from dcos import util
+            import dcos.util
             framework = self.get('framework-name')
             client = util.marathon_client(self.get('marathon'))
             tasks = client.get_tasks(self.get('framework-name'))
             if len(tasks) == 0:
                 raise util.CliError('Riak Mesos Framework is not running.')
-            service_url = util.get_config().get('core.dcos_url').rstrip('/')
+            service_url = dcos.util.get_config().get('core.dcos_url')
+            service_url.rstrip('/')
             service_url += '/service/' + framework + '/'
             r = requests.get(service_url + 'healthcheck')
             if r.status_code == 200:
