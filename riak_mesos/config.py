@@ -178,6 +178,8 @@ class RiakMesosConfig(object):
             url = util.zookeeper_command(self.get('zk'), 'get', path)
             if url:
                 return url.strip() + '/'
+            else:
+                print "No URL found in zk"
             return False
         except:
             traceback.print_exc()
@@ -191,6 +193,8 @@ class RiakMesosConfig(object):
                 host = tasks[0]['host']
                 port = tasks[0]['ports'][0]
                 return 'http://' + host + ':' + str(port) + '/'
+            else:
+                print "Task not running in Marathon"
             return False
         except:
             traceback.print_exc()
