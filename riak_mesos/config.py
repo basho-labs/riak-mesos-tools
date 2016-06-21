@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+
 import json
 import traceback
 
@@ -179,7 +181,7 @@ class RiakMesosConfig(object):
             if url:
                 return url.strip() + '/'
             else:
-                print "No URL found in zk"
+                print("No URL found in zk")
             return False
         except:
             traceback.print_exc()
@@ -194,7 +196,7 @@ class RiakMesosConfig(object):
                 port = tasks[0]['ports'][0]
                 return 'http://' + host + ':' + str(port) + '/'
             else:
-                print "Task not running in Marathon"
+                print("Task not running in Marathon")
             return False
         except:
             traceback.print_exc()
