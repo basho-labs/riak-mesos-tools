@@ -16,6 +16,7 @@
 # limitations under the License.
 
 import json
+import traceback
 
 import requests
 from riak_mesos import util
@@ -179,6 +180,7 @@ class RiakMesosConfig(object):
                 return url.strip() + '/'
             return False
         except:
+            traceback.print_exc()
             return False
 
     def marathon_api_url(self):
@@ -191,6 +193,7 @@ class RiakMesosConfig(object):
                 return 'http://' + host + ':' + str(port) + '/'
             return False
         except:
+            traceback.print_exc()
             return False
 
     def dcos_api_url(self):
@@ -209,6 +212,7 @@ class RiakMesosConfig(object):
                 return service_url
             return False
         except:
+            traceback.print_exc()
             return False
 
     def config_api_url(self):
