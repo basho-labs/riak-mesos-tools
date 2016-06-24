@@ -1,12 +1,13 @@
-Riak Mesos CLI / DCOS Riak
-======================
+# Riak Mesos CLI / DCOS Riak
+
 
 CLI and other tools for interacting with the Riak Mesos Framework.
 
 [![image](https://secure.travis-ci.org/basho-labs/riak-mesos-tools.svg)](http://travis-ci.org/basho-labs/riak-mesos-tools)
 
-Requirements
-------------
+-------------
+## Requirements
+
 
 Before getting started with the RMF, there are a few environment and system related requirements that are assumed for the remainder of this tutorial:
 
@@ -14,22 +15,21 @@ Before getting started with the RMF, there are a few environment and system rela
 -   Python version 2.7 or above.
 -   One of the currently supported operating systems. Check the [configuration](#create-a-configuration-file) section for more information.
 
-If using DCOS, the following additional requirements apply:
 
--   DCOS version `0.3.2` (Later versions of DCOS use a different configuration format which is not yet supported by the Riak Mesos Framework).
+### Note to DCOS Users
 
-Note to DCOS Users
-==================
 
 All of the below instructions will work for the `dcos riak` command, just replace `riak-mesos` with `dcos riak`. Some other differences will be pointed out in the corresponding sections.
 
-Installation
-============
+------------------
 
-Pip Install
------------
+## Installation
 
-### Install the latest tag ###
+
+### Pip Install
+
+
+### Install the latest tag
 
 - Get the latest tag of this project:
 
@@ -44,24 +44,33 @@ Pip Install
 
         sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@master#egg=riak_mesos
 
-DCOS Install
-------------
+### DCOS v0.4.x Install
 
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
--   Get the latest version of the `riak-mesos-dcos-repo` project:
+- Add the DCOS Riak package to your DCOS repository sources:
 
-        LATEST_REPO=$(curl -s https://github.com/basho-labs/riak-mesos-dcos-repo/tags | \
-            grep 'tag-name' | awk '/tag-name/{print $3;exit}' FS='[<>]')
+		dcos package repo add Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.4.x.zip
+		
+	NB: you may need to remove and re-add `Universe` afterwards for the Riak package to show up in `dcos package search riak`
+
+- Install the `dcos riak` subcommand:
+
+		dcos package install riak --options /etc/riak-mesos/config.json
+
+### DCOS v0.3.2 Install
+
+
+-   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
 
 -   Append the DCOS Riak package repo to your DCOS repo sources:
 
-        dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/${LATEST_REPO}.zip
+        dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.3.x.zip
 
 -   Update packages:
 
         dcos package update
 
--   Install the dcos riak subcommand:
+-   Install the `dcos riak` subcommand:
 
         dcos package install riak --options /etc/riak-mesos/config.json
 
@@ -75,7 +84,7 @@ Create a Configuration File
 
 - Inspect the resulting `/etc/riak-mesos/config.json` and make changes to parameters according to your system requirements. For more information on each of the configuration values, please see [this schema file](https://raw.githubusercontent.com/basho-labs/riak-mesos-dcos-repo/master/repo/packages/R/riak/0/config.json) for field descriptions.
 
-- The artifact urls for additional operating systems and Mesos versions can be found in the following locations:
+- The example config files expect an environment based on Riak-KV and mesos-0.28.1 running on ubuntu-14.04. Change the various `url` and `package` fields to point to the relevant artifacts for your mesos and OS setup, or to switch to Riak TS. Available packages for each corresponding configuration item are located as follows:
     - `riak.scheduler.url`: [riak-mesos-scheduler/releases](https://github.com/basho-labs/riak-mesos-scheduler/releases)
     - `riak.executor.url`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
     - `riak.node.url`: [riak-mesos/releases](https://github.com/basho-labs/riak-mesos/releases)
