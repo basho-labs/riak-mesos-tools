@@ -1,4 +1,4 @@
-dcos>=0.2.0
+dcos>=0.4.0
 futures>=3.0.3
 pluggy>=0.3.1
 requests>=2.8.1

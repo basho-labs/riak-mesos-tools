@@ -20,7 +20,6 @@ import os
 import sys
 import traceback
 
-import requests
 from riak_mesos import commands, constants, util
 from riak_mesos.config import RiakMesosConfig
 from riak_mesos.util import CliError
@@ -85,50 +84,63 @@ def extract_option(args, name, default, arg_type='string'):
 
 class RiakMesosCli(object):
     def __init__(self, cli_args):
-        self.args = {}
-        def_conf = '/etc/riak-mesos/config.json'
-        cli_args, config_file = extract_option(cli_args, '--config', def_conf)
-        cli_args, self.args['riak_file'] = extract_option(cli_args, '--file',
-                                                          '')
-        cli_args, self.args['lines'] = extract_option(cli_args, '--lines',
-                                                      '1000')
-        cli_args, self.args['force_flag'] = extract_flag(cli_args, '--force')
-        cli_args, self.args['json_flag'] = extract_flag(cli_args, '--json')
-        cli_args, self.args['help_flag'] = extract_flag(cli_args, '--help')
-        cli_args, self.args['debug_flag'] = extract_flag(cli_args, '--debug')
-        cli_args, self.args['cluster'] = extract_option(cli_args, '--cluster',
-                                                        'default')
-        cli_args, self.args['node'] = extract_option(cli_args, '--node', '')
-        cli_args, self.args['bucket_type'] = extract_option(cli_args,
-                                                            '--bucket-type',
-                                                            'default')
-        cli_args, self.args['props'] = extract_option(cli_args, '--props', '')
+        args = {}
+
+        def_conf_file = None
+        sys_conf_file = '/etc/riak-mesos/config.json'
+        usr_conf_file = '~/.config/riak-mesos/config.json'
+        lcl_conf_file = '.config/riak-mesos/config.json'
+        if os.path.isfile(lcl_conf_file):
+            def_conf_file = lcl_conf_file
+        elif os.path.isfile(usr_conf_file):
+            def_conf_file = usr_conf_file
+        elif os.path.isfile(sys_conf_file):
+            def_conf_file = sys_conf_file
+
+        cli_args, config_file = extract_option(cli_args, '--config',
+                                               def_conf_file)
+        cli_args, args['riak_file'] = extract_option(cli_args, '--file',
+                                                     '')
+        cli_args, args['lines'] = extract_option(cli_args, '--lines',
+                                                 '1000')
+        cli_args, args['force_flag'] = extract_flag(cli_args, '--force')
+        cli_args, args['json_flag'] = extract_flag(cli_args, '--json')
+        cli_args, args['verify_ssl_flag'] = extract_flag(cli_args,
+                                                         '--verify-ssl')
+        cli_args, args['help_flag'] = extract_flag(cli_args, '--help')
+        cli_args, args['debug_flag'] = extract_flag(cli_args, '--debug')
+        cli_args, args['cluster'] = extract_option(cli_args, '--cluster',
+                                                   'default')
+        cli_args, args['node'] = extract_option(cli_args, '--node', '')
+        cli_args, args['bucket_type'] = extract_option(cli_args,
+                                                       '--bucket-type',
+                                                       'default')
+        cli_args, args['props'] = extract_option(cli_args, '--props', '')
         cli_args, timeout = extract_option(cli_args, '--timeout',
                                            '60', 'integer')
-        self.args['timeout'] = int(timeout)
+        args['timeout'] = int(timeout)
         cli_args, num_nodes = extract_option(cli_args, '--nodes', '1',
                                              'integer')
-        self.args['num_nodes'] = int(num_nodes)
+        args['num_nodes'] = int(num_nodes)
         self.cmd = ' '.join(cli_args)
-        util.debug(self.args['debug_flag'], 'Cluster: ' + self.args['cluster'])
-        util.debug(self.args['debug_flag'], 'Node: ' + self.args['node'])
-        util.debug(self.args['debug_flag'], 'Nodes: ' +
-                   str(self.args['num_nodes']))
-        util.debug(self.args['debug_flag'], 'Command: ' + self.cmd)
+        util.debug(args['debug_flag'], 'Cluster: ' + args['cluster'])
+        util.debug(args['debug_flag'], 'Node: ' + args['node'])
+        util.debug(args['debug_flag'], 'Nodes: ' +
+                   str(args['num_nodes']))
+        util.debug(args['debug_flag'], 'Command: ' + self.cmd)
 
-        config = None
-        if os.path.isfile(config_file):
-            config = RiakMesosConfig(config_file)
+        if not os.path.isfile(config_file):
+                raise CliError('No config file found')
 
-        self.cfg = config
+        self.cfg = RiakMesosConfig(config_file, args)
 
     def run(self):
         cmd_desc = help(self.cmd)
 
-        if self.args['help_flag'] and not cmd_desc:
+        if self.cfg.args['help_flag'] and not cmd_desc:
             print(constants.usage)
             return 0
-        elif self.args['help_flag']:
+        elif self.cfg.args['help_flag']:
             print(cmd_desc)
             return 0
 
@@ -140,20 +152,18 @@ class RiakMesosCli(object):
         elif not cmd_desc:
             raise CliError('Unrecognized command: ' + self.cmd)
 
-        if self.cfg is None:
-                raise CliError('No config file found')
-
         try:
             command_func_str = self.cmd.replace(' ', '_')
             command_func_str = command_func_str.replace('-', '_')
-            util.debug(self.args['debug_flag'], 'Args: ' + str(self.args))
-            util.debug(self.args['debug_flag'], 'Command Func: ' +
-                       command_func_str + '(args, cfg)')
+            util.debug(self.cfg.args['debug_flag'], 'Args: ' +
+                       str(self.cfg.args))
+            util.debug(self.cfg.args['debug_flag'], 'Command Func: ' +
+                       command_func_str + '(cfg)')
             command_func = getattr(commands, command_func_str)
-            command_func(self.args, self.cfg)
+            command_func(self.cfg)
         except AttributeError as e:
                 print('CliError: Unrecognized command: ' + self.cmd)
-                if self.args['debug_flag']:
+                if self.cfg.args['debug_flag']:
                         traceback.print_exc()
                         raise e
 
@@ -183,12 +193,6 @@ def main():
     try:
         cli = RiakMesosCli(args)
         return cli.run()
-    except requests.exceptions.ConnectionError as e:
-        print('ConnectionError: ' + str(e))
-        if debug:
-            traceback.print_exc()
-            raise e
-        return 1
     except CliError as e:
         print('CliError: ' + str(e))
         if debug:

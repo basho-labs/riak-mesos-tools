@@ -20,12 +20,12 @@ from __future__ import print_function
 import json
 import traceback
 
-import requests
 from riak_mesos import util
 
 
 class RiakMesosConfig(object):
-    def __init__(self, override_file=None):
+    def __init__(self, override_file=None, args=None):
+        self.args = args
         with open(override_file) as data_file:
             self._config = json.load(data_file)
 
@@ -184,7 +184,8 @@ class RiakMesosConfig(object):
                 print("No URL found in zk")
             return False
         except:
-            traceback.print_exc()
+            if self.args['debug_flag']:
+                traceback.print_exc()
             return False
 
     def marathon_api_url(self):
@@ -199,7 +200,8 @@ class RiakMesosConfig(object):
                 print("Task not running in Marathon")
             return False
         except:
-            traceback.print_exc()
+            if self.args['debug_flag']:
+                traceback.print_exc()
             return False
 
     def dcos_api_url(self):
@@ -213,12 +215,13 @@ class RiakMesosConfig(object):
             service_url = dcos.util.get_config().get('core.dcos_url')
             service_url.rstrip('/')
             service_url += '/service/' + framework + '/'
-            r = requests.get(service_url + 'healthcheck')
+            r = util.http_request('get', service_url + 'healthcheck')
             if r.status_code == 200:
                 return service_url
             return False
         except:
-            traceback.print_exc()
+            if self.args['debug_flag']:
+                traceback.print_exc()
             return False
 
     def config_api_url(self):

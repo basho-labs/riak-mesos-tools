@@ -15,26 +15,25 @@
 
 import json
 
-import requests
 from riak_mesos import util
 from riak_mesos.util import CliError
 
 
-def config(args, cfg):
+def config(cfg):
     print(cfg.string())
 
 
-def framework(args, cfg):
-    framework_config(args, cfg)
+def framework(cfg):
+    framework_config(cfg)
 
 
-def framework_config(args, cfg):
+def framework_config(cfg):
     obj = cfg.framework_marathon_string()
     print(obj)
     return
 
 
-def framework_install(args, cfg):
+def framework_install(cfg):
     framework_json = cfg.framework_marathon_json()
     client = util.marathon_client(cfg.get('marathon'))
     client.add_app(framework_json)
@@ -42,22 +41,22 @@ def framework_install(args, cfg):
     return
 
 
-def framework_status(args, cfg):
+def framework_status(cfg):
     client = util.marathon_client(cfg.get('marathon'))
     result = client.get_app('/' + cfg.get('framework-name'))
     print(json.dumps(result))
 
 
-def framework_wait_for_service(args, cfg):
-    if util.wait_for_framework(cfg, args['debug_flag'], args['timeout']):
+def framework_wait_for_service(cfg):
+    if util.wait_for_framework(cfg):
         print('Riak Mesos Framework is ready.')
         return
     print('Riak Mesos Framework did not respond within ' +
-          str(args['timeout']) + ' seconds.')
+          str(cfg.args['timeout']) + ' seconds.')
     return
 
 
-def framework_uninstall(args, cfg):
+def framework_uninstall(cfg):
     print('Uninstalling framework...')
     client = util.marathon_client(cfg.get('marathon'))
     client.remove_app('/' + cfg.get('framework-name'))
@@ -66,9 +65,9 @@ def framework_uninstall(args, cfg):
     return
 
 
-def framework_clean_metadata(args, cfg):
+def framework_clean_metadata(cfg):
     fn = cfg.get('framework-name')
-    if args['force_flag']:
+    if cfg.args['force_flag']:
         print('\nRemoving zookeeper information\n')
         result = util.zookeeper_command(cfg.get('zk'), 'delete',
                                         '/riak/frameworks/' + fn)
@@ -85,80 +84,68 @@ def framework_clean_metadata(args, cfg):
     return
 
 
-def framework_teardown(args, cfg):
-    r = requests.get('http://' + cfg.get('master') + '/master/state.json')
-    util.debug_request(args['debug_flag'], r)
+def framework_teardown(cfg):
+    r = util.http_request('get', 'http://' + cfg.get('master') +
+                          '/master/state.json')
+    util.debug_request(cfg.args['debug_flag'], r)
     if r.status_code != 200:
         print('Failed to get state.json from master.')
         return
     js = json.loads(r.text)
     for fw in js['frameworks']:
         if fw['name'] == cfg.get('framework-name'):
-            r = requests.post(
-                'http://' + cfg.get('master') + '/master/teardown',
-                data='frameworkId='+fw['id'])
-            util.debug_request(args['debug_flag'], r)
+            r = util.http_request('post',
+                                  'http://' + cfg.get('master') +
+                                  '/master/teardown',
+                                  data='frameworkId='+fw['id'])
+            util.debug_request(cfg.args['debug_flag'], r)
             print('Finished teardown.')
     return
 
 
-def director_config(args, cfg):
-    director(args, cfg)
+def director_config(cfg):
+    director(cfg)
 
 
-def director(args, cfg):
-    print(cfg.director_marathon_string(args['cluster']))
+def director(cfg):
+    print(cfg.director_marathon_string(cfg.args['cluster']))
     return
 
 
-def director_wait_for_service(args, cfg):
-    # Passing 1 for timeout to only check once
-    if util.wait_for_framework(cfg, args['debug_flag'], 1):
-        client = util.marathon_client(cfg.get('marathon'))
-        app = client.get_app(args['cluster'] +
-                             '-director')
-        if len(app['tasks']) == 0:
-            print("Director is not installed.")
-            return
-        task = app['tasks'][0]
-        ports = task['ports']
-        hostname = task['host']
-        if util.wait_for_url('http://' + hostname + ':' +
-                             str(ports[0]), args['debug_flag'],
-                             args['timeout'] - 1):
-            print("Director is ready.")
-            return
-        print('Director did not respond in ' + args['timeout'] + ' seconds.')
+def director_wait_for_service(cfg):
+    if util.wait_for_framework(cfg):
+        util.wait_for_director(cfg)
         return
-    print('Riak Mesos Framework did not respond.')
+    print('Riak Mesos Framework did not respond within ' +
+          str(cfg.args['timeout']) + 'seconds.')
     return
 
 
-def director_install(args, cfg):
-    director_json = cfg.director_marathon_json(args['cluster'])
+def director_install(cfg):
+    director_json = cfg.director_marathon_json(cfg.args['cluster'])
     client = util.marathon_client(cfg.get('marathon'))
     client.add_app(director_json)
     print('Finished adding ' + director_json['id'] + ' to marathon.')
     return
 
 
-def director_uninstall(args, cfg):
+def director_uninstall(cfg):
     client = util.marathon_client(cfg.get('marathon'))
-    client.remove_app('/' + args['cluster'] + '-director')
-    print('Finished removing ' + '/' + args['cluster'] + '-director' +
+    client.remove_app('/' + cfg.args['cluster'] + '-director')
+    print('Finished removing ' + '/' + cfg.args['cluster'] + '-director' +
           ' from marathon')
     return
 
 
-def director_endpoints(args, cfg):
+def director_endpoints(cfg):
     client = util.marathon_client(cfg.get('marathon'))
-    app = client.get_app('/' + args['cluster'] + '-director')
+    app = client.get_app('/' + cfg.args['cluster'] + '-director')
     task = app['tasks'][0]
     ports = task['ports']
     hostname = task['host']
     endpoints = {
         'framework': cfg.get('framework-name'),
-        'cluster': args['cluster'],
+        'cluster': cfg.args['cluster'],
         'riak_http': hostname + ':' + str(ports[0]),
         'riak_pb': hostname + ':' + str(ports[1]),
         'director_http': hostname + ':' + str(ports[2])
@@ -167,89 +154,79 @@ def director_endpoints(args, cfg):
     return
 
 
-def proxy_wait_for_service(args, cfg):
-    director_wait_for_service(args, cfg)
+def proxy_wait_for_service(cfg):
+    director_wait_for_service(cfg)
 
 
-def proxy_config(args, cfg):
-    director(args, cfg)
+def proxy_config(cfg):
+    director(cfg)
 
 
-def proxy(args, cfg):
-    director(args, cfg)
+def proxy(cfg):
+    director(cfg)
 
 
-def proxy_install(args, cfg):
-    director_install(args, cfg)
+def proxy_install(cfg):
+    director_install(cfg)
 
 
-def proxy_uninstall(args, cfg):
-    director_uninstall(args, cfg)
+def proxy_uninstall(cfg):
+    director_uninstall(cfg)
 
 
-def proxy_endpoints(args, cfg):
-    director_endpoints(args, cfg)
+def proxy_endpoints(cfg):
+    director_endpoints(cfg)
 
 
-def node_wait_for_service(args, cfg):
-    if args['node'] == '':
+def node_wait_for_service(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    util.wait_for_node(cfg, args['cluster'], args['debug_flag'],
-                       args['node'], args['timeout'])
+    util.wait_for_node(cfg, cfg.args['node'])
     return
 
 
-def cluster_wait_for_service(args, cfg):
-    # Uses 1 second timeout to just test once to see if Framework up
-    if util.wait_for_framework(cfg, args['debug_flag'], 1):
-        service_url = cfg.api_url()
-        r = requests.get(service_url + 'clusters/' + args['cluster'] +
-                         '/nodes')
-        util.debug_request(args['debug_flag'], r)
+def cluster_wait_for_service(cfg):
+    if util.wait_for_framework(cfg):
+        r = util.api_request(cfg, 'get', 'clusters/' +
+                             cfg.args['cluster'] + '/nodes')
         js = json.loads(r.text)
         # Timeout must be at least 1 second
         num_nodes = len(js['nodes'])
+        total_timeout = cfg.args['timeout']
         if num_nodes > 0:
-            node_timeout = max(args['timeout'] / num_nodes, 1)
+            cfg.args['timeout'] = max(total_timeout / num_nodes, 1)
             for k in js['nodes']:
-                util.wait_for_node(cfg, args['cluster'], args['debug_flag'],
-                                   k, node_timeout)
-        if num_nodes >= args['num_nodes']:
+                util.wait_for_node(cfg, k)
+        if num_nodes >= cfg.args['num_nodes']:
             # Okay, need to divide up the timeout properly
-            util.wait_for_node_status_valid(cfg,
-                                            args['cluster'],
-                                            args['debug_flag'],
-                                            js['nodes'][0],
-                                            args['num_nodes'],
-                                            args['timeout'])
+            cfg.args['timeout'] = total_timeout
+            util.wait_for_node_status_valid(cfg, js['nodes'][0])
         return
-    print('Riak Mesos Framework did not respond.')
+    print('Riak Mesos Framework did not respond within ' +
+          str(cfg.args['timeout']) + 'seconds.')
     return
 
 
-def cluster_endpoints(args, cfg):
-    if util.wait_for_framework(cfg, args['debug_flag'], 60):
-        service_url = cfg.api_url()
-        r = requests.get(service_url + 'clusters/' + args['cluster'] +
-                         '/nodes')
-        util.debug_request(args['debug_flag'], r)
+def cluster_endpoints(cfg):
+    if util.wait_for_framework(cfg):
+        r = util.api_request(cfg, 'get', 'clusters/' +
+                             cfg.args['cluster'] + '/nodes')
         cluster_data = {}
         if r.status_code == 200:
             js = json.loads(r.text)
             for k in js["nodes"]:
-                cluster_data[k] = util.node_info(cfg, args['cluster'],
-                                                 args['debug_flag'], k)
+                cluster_data[k] = util.node_info(cfg, k)
             print(json.dumps(cluster_data))
             return
         else:
             print(r.text)
             return
-    print('Riak Mesos Framework did not respond within 60 '
-          'seconds.')
+    print('Riak Mesos Framework did not respond within ' +
+          str(cfg.args['timeout']) + 'seconds.')
     return
 
 
-def framework_endpoints(args, cfg):
+def framework_endpoints(cfg):
     service_url = cfg.api_url()
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
@@ -257,121 +234,87 @@ def framework_endpoints(args, cfg):
     return
 
 
-def cluster_info(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-
-    r = requests.get(service_url + 'clusters/' + args['cluster'])
-    util.debug_request(args['debug_flag'], r)
+def cluster_info(cfg):
+    r = util.api_request(cfg, 'get', 'clusters/' + cfg.args['cluster'])
     print(r.text)
     return
 
 
-def cluster_config(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['riak_file'] == '':
-        r = requests.get(service_url + 'clusters/' + args['cluster'] +
-                         '/config')
-        util.debug_request(args['debug_flag'], r)
+def cluster_config(cfg):
+    if cfg.args['riak_file'] == '':
+        r = util.api_request(cfg, 'get', 'clusters/' +
+                             cfg.args['cluster'] + '/config')
         print(r.text)
     else:
-        with open(args['riak_file']) as data_file:
-            r = requests.put(service_url + 'clusters/' + args['cluster'] +
-                             '/config', data=data_file)
-            util.debug_request(args['debug_flag'], r)
+        with open(cfg.args['riak_file']) as data_file:
+            r = util.api_request(cfg, 'put', 'clusters/' +
+                                 cfg.args['cluster'] + '/config',
+                                 data=data_file)
             print(r.text)
     return
 
 
-def cluster_config_advanced(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['riak_file'] == '':
-        r = requests.get(service_url + 'clusters/' + args['cluster'] +
-                         '/advancedConfig')
-        util.debug_request(args['debug_flag'], r)
+def cluster_config_advanced(cfg):
+    if cfg.args['riak_file'] == '':
+        r = util.api_request(cfg, 'get', 'clusters/' +
+                             cfg.args['cluster'] + '/advancedConfig')
         print(r.text)
     else:
-        with open(args['riak_file']) as data_file:
-            r = requests.put(service_url + 'clusters/' + args['cluster'] +
-                             '/advancedConfig', data=data_file)
-            util.debug_request(args['debug_flag'], r)
+        with open(cfg.args['riak_file']) as data_file:
+            r = util.api_request(cfg, 'put', 'clusters/' +
+                                 cfg.args['cluster'] + '/advancedConfig',
+                                 data=data_file)
             print(r.text)
     return
 
 
-def cluster_list(args, cfg):
-    cluster(args, cfg)
+def cluster_list(cfg):
+    cluster(cfg)
 
 
-def cluster(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    r = requests.get(service_url + 'clusters')
-    util.debug_request(args['debug_flag'], r)
+def cluster(cfg):
+    r = util.api_request(cfg, 'get', 'clusters')
     print(r.text)
     return
 
 
-def cluster_create(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    r = requests.put(service_url + 'clusters/' + args['cluster'], data='')
-    util.debug_request(args['debug_flag'], r)
+def cluster_create(cfg):
+    r = util.api_request(cfg, 'put', 'clusters/' + cfg.args['cluster'],
+                         data='')
     print(r.text)
     return
 
 
-def cluster_restart(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    r = requests.post(service_url + 'clusters/' + args['cluster'] + '/restart',
-                      data='')
-    util.debug_request(args['debug_flag'], r)
+def cluster_restart(cfg):
+    r = util.api_request(cfg, 'post', 'clusters/' + cfg.args['cluster'] +
+                         '/restart', data='')
     print(r.text)
     return
 
 
-def cluster_destroy(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    r = requests.delete(service_url + 'clusters/' + args['cluster'], data='')
-    util.debug_request(args['debug_flag'], r)
+def cluster_destroy(cfg):
+    r = util.api_request(cfg, 'delete', 'clusters/' +
+                         cfg.args['cluster'], data='')
     print(r.text)
     return
 
 
-def node_list(args, cfg):
-    node(args, cfg)
+def node_list(cfg):
+    node(cfg)
 
 
-def node(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes')
-    util.debug_request(args['debug_flag'], r)
+def node(cfg):
+    r = util.api_request(cfg, 'get', 'clusters/' + cfg.args['cluster'] +
+                         '/nodes')
     print(r.text)
     return
 
 
-def node_info(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
-                     args['node'])
-    util.debug_request(args['debug_flag'], r)
+def node_info(cfg):
+    r = util.api_request(cfg, 'get', 'clusters/' +
+                         cfg.args['cluster'] + '/nodes/' + cfg.args['node'])
+    print(r.text)
     # TODO: Parse the relevant parts of the node info
-    print(r.text)
     # node_json = try_json(r.text)
     # if (node_json is not False):
     #     print('HTTP: http://' + node_json[node]['Hostname'] + ':' +
@@ -384,119 +327,90 @@ def node_info(args, cfg):
     return
 
 
-def node_add(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    for x in range(0, args['num_nodes']):
-        r = requests.post(service_url + 'clusters/' + args['cluster'] +
-                          '/nodes', data='')
-        util.debug_request(args['debug_flag'], r)
+def node_add(cfg):
+    for x in range(0, cfg.args['num_nodes']):
+        r = util.api_request(cfg, 'post', 'clusters/' +
+                             cfg.args['cluster'] + '/nodes', data='')
         print(r.text)
     return
 
 
-def node_remove(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_remove(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    requrl = service_url + 'clusters/'
-    requrl += args['cluster'] + '/nodes/' + args['node']
-    if args['force_flag']:
+    requrl = 'clusters/'
+    requrl += cfg.args['cluster'] + '/nodes/' + cfg.args['node']
+    if cfg.args['force_flag']:
         requrl += '?force=true'
-    r = requests.delete(requrl, data='')
-    util.debug_request(args['debug_flag'], r)
+    r = util.api_request(cfg, 'delete',  requrl, data='')
     print(r.text)
     return
 
 
 # TODO Maybe just proxy the riak explorer commands straight to nodes
-def node_aae_status(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_aae_status(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
-                     args['node'] + '/aae')
-    util.debug_request(args['debug_flag'], r)
+    r = util.api_request(cfg, 'get', 'clusters/' + cfg.args['cluster'] +
+                         '/nodes/' + cfg.args['node'] + '/aae')
     print(r.text)
     return
 
 
-def node_status(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_status(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
-                     args['node'] + '/status')
-    util.debug_request(args['debug_flag'], r)
+    r = util.api_request(cfg, 'get', 'clusters/' + cfg.args['cluster'] +
+                         '/nodes/' + cfg.args['node'] + '/status')
     print(r.text)
     return
 
 
-def node_ringready(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_ringready(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
-                     args['node'] + '/ringready')
-    util.debug_request(args['debug_flag'], r)
+    r = util.api_request(cfg, 'get', 'clusters/' + cfg.args['cluster'] +
+                         '/nodes/' + cfg.args['node'] + '/ringready')
     print(r.text)
     return
 
 
-def node_transfers(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_transfers(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
-                     args['node'] + '/transfers')
-    util.debug_request(args['debug_flag'], r)
+    r = util.api_request(cfg, 'get', 'clusters/' + cfg.args['cluster'] +
+                         '/nodes/' + cfg.args['node'] + '/transfers')
     print(r.text)
     return
 
 
-def node_transfers_wait_for_service(args, cfg):
-    if args['node'] == '':
+def node_transfers_wait_for_service(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    util.wait_for_node_transfers(cfg, args['cluster'], args['debug_flag'],
-                                 args['node'], args['timeout'])
+    util.wait_for_node_transfers(cfg, cfg.args['node'])
     return
 
 
-def node_bucket_type_create(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '' or args['bucket_type'] == '' or args['props'] == '':
-        raise CliError('Node name, bucket-type, props must be '
-                       'specified')
-    r = requests.post(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
-                      args['node'] + '/types/' + args['bucket_type'],
-                      data=args['props'])
-    util.debug_request(args['debug_flag'], r)
+def node_bucket_type_create(cfg):
+    if cfg.args['node'] == '':
+        raise CliError('Node name must be specified')
+    if cfg.args['bucket_type'] == '':
+        raise CliError('Bucket-Type must be specified')
+    if cfg.args['props'] == '':
+        raise CliError('Props must be specified')
+    r = util.api_request(cfg, 'post', 'clusters/' + cfg.args['cluster'] +
+                         '/nodes/' + cfg.args['node'] +
+                         '/types/' + cfg.args['bucket_type'],
+                         data=cfg.args['props'])
     print(r.text)
     return
 
 
-def node_bucket_type_list(args, cfg):
-    service_url = cfg.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_bucket_type_list(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    r = requests.get(service_url + 'clusters/' + args['cluster'] + '/nodes/' +
-                     args['node'] + '/types')
-    util.debug_request(args['debug_flag'], r)
+    r = util.api_request(cfg, 'get', 'clusters/' + cfg.args['cluster'] +
+                         '/nodes/' + cfg.args['node'] + '/types')
     print(r.text)
     return
 
@@ -508,19 +422,13 @@ def try_json(data):
         return False
 
 
-def node_log_list(args, cfg):
-    service_url = cfg.scheduler_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_log_list(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    node_name = util.get_node_name(cfg, args['cluster'],
-                                   args['debug_flag'],
-                                   args['node'])
-    r = requests.get(service_url + 'explore/clusters/' +
-                     args['cluster'] + '/nodes/' +
-                     node_name + '/log/files')
-    util.debug_request(args['debug_flag'], r)
+    node_name = util.get_node_name(cfg, cfg.args['node'])
+    r = util.api_request(cfg, 'get', 'explore/clusters/' +
+                         cfg.args['cluster'] + '/nodes/' +
+                         node_name + '/log/files')
     if r.status_code != 200:
         print('Failed to get log files, status_code: ' +
               str(r.status_code))
@@ -529,23 +437,17 @@ def node_log_list(args, cfg):
     return
 
 
-def node_log(args, cfg):
-    service_url = cfg.scheduler_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_log(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-    if args['riak_file'] == '':
+    if cfg.args['riak_file'] == '':
         raise CliError('Log file must be specified')
-    node_name = util.get_node_name(cfg, args['cluster'],
-                                   args['debug_flag'],
-                                   args['node'])
-    r = requests.get(service_url + 'explore/clusters/' +
-                     args['cluster'] + '/nodes/' +
-                     node_name + '/log/files/' +
-                     args['riak_file'] + '?rows=' +
-                     args['lines'])
-    util.debug_request(args['debug_flag'], r)
+    node_name = util.get_node_name(cfg, cfg.args['node'])
+    r = util.api_request(cfg, 'get', 'explore/clusters/' +
+                         cfg.args['cluster'] + '/nodes/' +
+                         node_name + '/log/files/' +
+                         cfg.args['riak_file'] + '?rows=' +
+                         cfg.args['lines'])
     if r.status_code != 200:
         print('Failed to get log files, status_code: ' +
               str(r.status_code))
@@ -554,16 +456,11 @@ def node_log(args, cfg):
     return
 
 
-def node_stats(args, cfg):
-    service_url = cfg.scheduler_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    if args['node'] == '':
+def node_stats(cfg):
+    if cfg.args['node'] == '':
         raise CliError('Node name must be specified')
-
-    r = requests.get(service_url + 'riak/nodes/' +
-                     args['node'] + '/stats')
-    util.debug_request(args['debug_flag'], r)
+    r = util.api_request(cfg, 'get', 'riak/nodes/' +
+                         cfg.args['node'] + '/stats')
     if r.status_code != 200:
         print('Failed to get stats, status_code: ' +
               str(r.status_code))

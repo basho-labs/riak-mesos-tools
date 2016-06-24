@@ -18,8 +18,10 @@
 import json
 import time
 
-import requests
-from dcos import marathon
+from dcos import marathon, http
+from dcos.errors import (DCOSAuthenticationException,
+                         DCOSAuthorizationException, DCOSException,
+                         DCOSHTTPException)
 from kazoo.client import KazooClient
 
 
@@ -31,42 +33,78 @@ class CliError(Exception):
         return repr(self.message)
 
 
-def wait_for_url(url, debug_flag, seconds):
-        if seconds == 0:
-            return False
+def api_request(config, method, path, **kwargs):
+    service_url = config.api_url()
+    if service_url is False:
+        raise CliError("Riak Mesos Framework is not running.")
+
+    verify_flag = config.args.get('verify_ssl_flag')
+    r = http_request(method,
+                     service_url + path,
+                     verify=verify_flag,
+                     **kwargs)
+    debug_request(config.args['debug_flag'], r)
+    return r
+
+
+def wait_for_director(config):
+    timeout = config.args['timeout']
+
+    def inner_wait_for_director(seconds):
         try:
-            r = requests.get(url)
-            debug_request(debug_flag, r)
+            if seconds == 0:
+                print('Director did not respond in ' + config.args['timeout'] +
+                      ' seconds.')
+
+            client = marathon_client(config.get('marathon'))
+            app = client.get_app(config.args['cluster'] +
+                                 '-director')
+            if len(app['tasks']) == 0:
+                print("Director is not installed.")
+                return
+            task = app['tasks'][0]
+            ports = task['ports']
+            hostname = task['host']
+            url = 'http://' + hostname + ':' + str(ports[0])
+            r = http_request('get', url)
             if r.status_code == 200:
-                return True
-        except Exception as e:
-            debug(debug_flag, str(e))
+                print("Director is ready.")
+                return
+        except:
             pass
         time.sleep(1)
-        return wait_for_url(url, debug_flag, seconds - 1)
+        return inner_wait_for_director(seconds - 1)
+
+    return inner_wait_for_director(timeout)
 
 
-def wait_for_framework(config, debug_flag, seconds):
-    if seconds == 0:
-        return False
-    try:
-        healthcheck_url = config.api_url() + 'clusters'
-        debug(debug_flag, "Trying " + healthcheck_url)
-        if wait_for_url(healthcheck_url, debug_flag, 1):
-            return True
-    except:
-        pass
-    time.sleep(1)
-    return wait_for_framework(config, debug_flag, seconds - 1)
+def wait_for_framework(config):
+    timeout = config.args['timeout']
+
+    def inner_wait_for_framework(seconds):
+        try:
+            if seconds == 0:
+                return False
+            r = api_request(config, 'get', 'clusters')
+            if r.status_code == 200:
+                return True
+        except:
+            pass
+        time.sleep(1)
+        return inner_wait_for_framework(seconds - 1)
+
+    return inner_wait_for_framework(timeout)
 
 
-def wait_for_node(config, cluster, debug_flag, node, timeout):
+def wait_for_node(config, node):
+    timeout = config.args['timeout']
+
     def inner_wait_for_node(seconds):
         if seconds == 0:
             print('Node ' + node + ' did not respond in ' +
                   str(timeout) + 'seconds.')
             return
-        node_data = node_info(config, cluster, debug_flag, node)
+        node_data = node_info(config, node)
         if node_data['alive'] and node_data['status'] == 'started':
             print('Node ' + node + ' is ready.')
             return
@@ -76,16 +114,17 @@ def wait_for_node(config, cluster, debug_flag, node, timeout):
     return inner_wait_for_node(timeout)
 
 
-def wait_for_node_transfers(config, cluster, debug_flag, node, timeout):
+def wait_for_node_transfers(config, node):
+    timeout = config.args['timeout']
+    cluster = config.args['cluster']
+
     def inner_wait_for_node_transfers(seconds):
         if seconds == 0:
             print('Node ' + node + ' transfers did not complete in ' +
                   str(timeout) + 'seconds.')
             return
-        service_url = config.api_url()
-        r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
-                         node + '/transfers')
-        debug_request(debug_flag, r)
+        r = api_request(config, 'get', 'clusters/' + cluster +
+                        '/nodes/' + node + '/transfers')
         node_json = json.loads(r.text)
         waiting = len(node_json['transfers']['waiting_to_handoff'])
         active = len(node_json['transfers']['active'])
@@ -98,15 +137,18 @@ def wait_for_node_transfers(config, cluster, debug_flag, node, timeout):
     return inner_wait_for_node_transfers(timeout)
 
 
-def wait_for_node_status_valid(config, cluster, debug_flag,
-                               node, num_valid_nodes, timeout):
+def wait_for_node_status_valid(config, node):
+    timeout = config.args['timeout']
+    num_valid_nodes = config.args['num_nodes']
+    cluster = config.args['cluster']
+
     def inner_wait_for_node_status_valid(seconds):
         if seconds == 0:
             print('Cluster ' + cluster + ' did not respond with ' +
                   str(num_valid_nodes) + ' valid nodes in ' +
                   str(timeout) + ' seconds.')
             return
-        status = node_status(config, cluster, debug_flag, node)
+        status = node_status(config, node)
         if status['status']['valid'] >= num_valid_nodes:
             print('Cluster ' + cluster + ' is ready.')
             return
@@ -116,29 +158,29 @@ def wait_for_node_status_valid(config, cluster, debug_flag,
     return inner_wait_for_node_status_valid(timeout)
 
 
-def node_status(config, cluster, debug_flag, node):
-    service_url = config.api_url()
-    r = requests.get(service_url + 'clusters/' + cluster +
-                     '/nodes/' + node + '/status/')
-    debug_request(debug_flag, r)
+def node_status(config, node):
+    cluster = config.args['cluster']
+    r = api_request(config, 'get', 'clusters/' + cluster +
+                    '/nodes/' + node + '/status')
     node_json = json.loads(r.text)
     return node_json
 
 
-def node_info(config, cluster, debug_flag, node):
-    service_url = config.api_url()
-    r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node)
-    debug_request(debug_flag, r)
+def node_info(config, node):
+    cluster = config.args['cluster']
+    fw = config.get('framework-name')
+    debug_flag = config.args['debug_flag']
+    r = api_request(config, 'get', 'clusters/' + cluster +
+                    '/nodes/' + node)
     node_json = json.loads(r.text)
     http_port = str(node_json[node]['location']['http_port'])
     pb_port = str(node_json[node]['location']['pb_port'])
     direct_host = node_json[node]['location']['hostname']
-    fw = config.get('framework-name')
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
     alive = False
     if direct_host != '' and http_port != 'undefined':
         try:
-            r = requests.get('http://' + direct_host + ':' + http_port)
+            r = http_request('get', 'http://' + direct_host + ':' + http_port)
             debug_request(debug_flag, r)
             alive = r.status_code == 200
         except:
@@ -152,6 +194,14 @@ def node_info(config, cluster, debug_flag, node):
         'alive': alive
     }
     return node_data
+
+
+def get_node_name(config, node):
+    cluster = config.args['cluster']
+    r = api_request(config, 'get', 'clusters/' + cluster +
+                    '/nodes/' + node)
+    node_json = json.loads(r.text)
+    return node_json[node]['location']['node_name']
 
 
 def marathon_client(marathon_url=None):
@@ -221,9 +271,18 @@ def ppfact(description, json_str, key, failure):
         print(description + failure)
 
 
-def get_node_name(config, cluster, debug_flag, node):
-    service_url = config.api_url()
-    r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node)
-    debug_request(debug_flag, r)
-    node_json = json.loads(r.text)
-    return node_json[node]['location']['node_name']
+def http_request(method,
+                 url,
+                 **kwargs):
+    try:
+        return http.request(method, url, **kwargs)
+    except DCOSAuthenticationException as e:
+        raise CliError('HTTP Authentication Exception: ' + e.message)
+    except DCOSAuthorizationException as e:
+        raise CliError('HTTP Authorization Exception: ' + e.message)
+    except DCOSHTTPException as e:
+        raise CliError('HTTP Exception: ' + e.message)
+    except DCOSException as e:
+        raise CliError(e.message)
+    except Exception as e:
+        raise CliError(e.message)
