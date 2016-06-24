@@ -15,7 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+
 import json
+import traceback
 
 import requests
 from riak_mesos import util
@@ -177,8 +180,11 @@ class RiakMesosConfig(object):
             url = util.zookeeper_command(self.get('zk'), 'get', path)
             if url:
                 return url.strip() + '/'
+            else:
+                print("No URL found in zk")
             return False
         except:
+            traceback.print_exc()
             return False
 
     def marathon_api_url(self):
@@ -189,25 +195,30 @@ class RiakMesosConfig(object):
                 host = tasks[0]['host']
                 port = tasks[0]['ports'][0]
                 return 'http://' + host + ':' + str(port) + '/'
+            else:
+                print("Task not running in Marathon")
             return False
         except:
+            traceback.print_exc()
             return False
 
     def dcos_api_url(self):
         try:
-            from dcos import util
+            import dcos.util
             framework = self.get('framework-name')
             client = util.marathon_client(self.get('marathon'))
             tasks = client.get_tasks(self.get('framework-name'))
             if len(tasks) == 0:
                 raise util.CliError('Riak Mesos Framework is not running.')
-            service_url = util.get_config().get('core.dcos_url').rstrip('/')
+            service_url = dcos.util.get_config().get('core.dcos_url')
+            service_url.rstrip('/')
             service_url += '/service/' + framework + '/'
             r = requests.get(service_url + 'healthcheck')
             if r.status_code == 200:
                 return service_url
             return False
         except:
+            traceback.print_exc()
             return False
 
     def config_api_url(self):
