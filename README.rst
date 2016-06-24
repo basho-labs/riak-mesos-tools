@@ -5,6 +5,8 @@ CLI and other tools for interacting with the Riak Mesos Framework.
 
 |image|
 
+--------------
+
 Requirements
 ------------
 
@@ -18,24 +20,20 @@ tutorial:
    `configuration <#create-a-configuration-file>`__ section for more
    information.
 
-If using DCOS, the following additional requirements apply:
-
--  DCOS version ``0.3.2`` (Later versions of DCOS use a different
-   configuration format which is not yet supported by the Riak Mesos
-   Framework).
-
 Note to DCOS Users
-==================
+~~~~~~~~~~~~~~~~~~
 
 All of the below instructions will work for the ``dcos riak`` command,
 just replace ``riak-mesos`` with ``dcos riak``. Some other differences
 will be pointed out in the corresponding sections.
 
+--------------
+
 Installation
-============
+------------
 
 Pip Install
------------
+~~~~~~~~~~~
 
 Install the latest tag
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -59,23 +57,37 @@ Install the latest tag
 
        sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@master#egg=riak_mesos
 
-DCOS Install
-------------
+DCOS v0.4.x Install
+~~~~~~~~~~~~~~~~~~~
 
 -  `Create a Configuration File <#create-a-configuration-file>`__ and
    store it in ``/etc/riak-mesos/config.json``
--  Get the latest version of the ``riak-mesos-dcos-repo`` project:
+-  Add the DCOS Riak package to your DCOS repository sources:
 
    ::
 
-       LATEST_REPO=$(curl -s https://github.com/basho-labs/riak-mesos-dcos-repo/tags | \
-           grep 'tag-name' | awk '/tag-name/{print $3;exit}' FS='[<>]')
+       dcos package repo add Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.4.x.zip
+
+   NB: you may need to remove and re-add ``Universe`` afterwards for the
+   Riak package to show up in ``dcos package search riak``
+
+-  Install the ``dcos riak`` subcommand:
+
+   ::
+
+       dcos package install riak --options /etc/riak-mesos/config.json
+
+DCOS v0.3.2 Install
+~~~~~~~~~~~~~~~~~~~
+
+-  `Create a Configuration File <#create-a-configuration-file>`__ and
+   store it in ``/etc/riak-mesos/config.json``
 
 -  Append the DCOS Riak package repo to your DCOS repo sources:
 
    ::
 
-       dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/${LATEST_REPO}.zip
+       dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.3.x.zip
 
 -  Update packages:
 
@@ -83,7 +95,7 @@ DCOS Install
 
        dcos package update
 
--  Install the dcos riak subcommand:
+-  Install the ``dcos riak`` subcommand:
 
    ::
 
@@ -109,8 +121,11 @@ Create a Configuration File
    file <https://raw.githubusercontent.com/basho-labs/riak-mesos-dcos-repo/master/repo/packages/R/riak/0/config.json>`__
    for field descriptions.
 
--  The artifact urls for additional operating systems and Mesos versions
-   can be found in the following locations:
+-  The example config files expect an environment based on Riak-KV and
+   mesos-0.28.1 running on ubuntu-14.04. Change the various ``url`` and
+   ``package`` fields to point to the relevant artifacts for your mesos
+   and OS setup, or to switch to Riak TS. Available packages for each
+   corresponding configuration item are located as follows:
 
    -  ``riak.scheduler.url``:
       `riak-mesos-scheduler/releases <https://github.com/basho-labs/riak-mesos-scheduler/releases>`__
@@ -147,7 +162,6 @@ Try executing ``riak-mesos``, ``riak-mesos -h``, or
         framework install
         framework status
         framework wait-for-service [--timeout <seconds>]
-        framework clean-metadata
         framework teardown
         framework uninstall
         framework endpoints
@@ -572,12 +586,6 @@ The following commands can be used to remove part or all of the RMF.
 
        riak-mesos framework teardown
 
--  Remove Zookeeper Metadata
-
-   ::
-
-       riak-mesos framework clean-metadata
-
 -  Remove the pip package
 
    ::
@@ -593,7 +601,6 @@ Follow these steps to cleanly remove riak from a DCOS cluster:
 
     dcos riak director uninstall
     dcos riak cluster destroy
-    dcos riak framework clean-metadata
     dcos package uninstall riak
 
 .. |image| image:: https://secure.travis-ci.org/basho-labs/riak-mesos-tools.svg
