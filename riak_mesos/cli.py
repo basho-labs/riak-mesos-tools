@@ -17,6 +17,7 @@
 """Riak Mesos Framework CLI"""
 
 import os
+import pwd
 import sys
 import traceback
 
@@ -87,8 +88,9 @@ class RiakMesosCli(object):
         args = {}
 
         def_conf_file = None
+        user_home = pwd.getpwuid(os.getuid()).pw_dir
         sys_conf_file = '/etc/riak-mesos/config.json'
-        usr_conf_file = '~/.config/riak-mesos/config.json'
+        usr_conf_file = user_home + '/.config/riak-mesos/config.json'
         lcl_conf_file = '.config/riak-mesos/config.json'
         if os.path.isfile(lcl_conf_file):
             def_conf_file = lcl_conf_file
@@ -129,7 +131,7 @@ class RiakMesosCli(object):
                    str(args['num_nodes']))
         util.debug(args['debug_flag'], 'Command: ' + self.cmd)
 
-        if not os.path.isfile(config_file):
+        if config_file is None or not os.path.isfile(config_file):
                 raise CliError('No config file found')
 
         self.cfg = RiakMesosConfig(config_file, args)

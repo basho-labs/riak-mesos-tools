@@ -281,7 +281,7 @@ def http_request(method,
     except DCOSAuthorizationException as e:
         raise CliError('HTTP Authorization Exception: ' + e.message)
     except DCOSHTTPException as e:
-        raise CliError('HTTP Exception: ' + e.message)
+        raise CliError('HTTP Exception: ' + str(e))
     except DCOSException as e:
         raise CliError(e.message)
     except Exception as e:
