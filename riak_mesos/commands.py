@@ -178,13 +178,6 @@ def proxy_endpoints(cfg):
     director_endpoints(cfg)
 
 
-def node_wait_for_service(cfg):
-    if cfg.args['node'] == '':
-        raise CliError('Node name must be specified')
-    util.wait_for_node(cfg, cfg.args['node'])
-    return
-
-
 def cluster_wait_for_service(cfg):
     if util.wait_for_framework(cfg):
         r = util.api_request(cfg, 'get', 'clusters/' +
@@ -296,6 +289,13 @@ def cluster_destroy(cfg):
     r = util.api_request(cfg, 'delete', 'clusters/' +
                          cfg.args['cluster'], data='')
     print(r.text)
+    return
+
+
+def node_wait_for_service(cfg):
+    if cfg.args['node'] == '':
+        raise CliError('Node name must be specified')
+    util.wait_for_node(cfg, cfg.args['node'])
     return
 
 

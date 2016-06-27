@@ -15,19 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
-
 import json
-import traceback
-
-from riak_mesos import util
 
 
 class RiakMesosConfig(object):
-    def __init__(self, override_file=None, args=None):
-        self.args = args
-        with open(override_file) as data_file:
-            self._config = json.load(data_file)
+    def __init__(self, config_file):
+        if config_file is not None:
+            with open(config_file) as data_file:
+                self._config = json.load(data_file)
+        else:
+            self._config = {}
 
     def framework_marathon_json(self):
         mj = {}
@@ -173,85 +170,3 @@ class RiakMesosConfig(object):
                         self._config[k][j] = override[k][j]
             else:
                 self._config[k] = override[k]
-
-    def zk_api_url(self):
-        try:
-            path = '/riak/frameworks/' + self.get('framework-name') + '/uri'
-            url = util.zookeeper_command(self.get('zk'), 'get', path)
-            if url:
-                return url.strip() + '/'
-            else:
-                print("No URL found in zk")
-            return False
-        except:
-            if self.args['debug_flag']:
-                traceback.print_exc()
-            return False
-
-    def marathon_api_url(self):
-        try:
-            client = util.marathon_client(self.get('marathon'))
-            tasks = client.get_tasks(self.get('framework-name'))
-            if len(tasks) != 0:
-                host = tasks[0]['host']
-                port = tasks[0]['ports'][0]
-                return 'http://' + host + ':' + str(port) + '/'
-            else:
-                print("Task not running in Marathon")
-            return False
-        except:
-            if self.args['debug_flag']:
-                traceback.print_exc()
-            return False
-
-    def dcos_api_url(self):
-        try:
-            import dcos.util
-            framework = self.get('framework-name')
-            client = util.marathon_client(self.get('marathon'))
-            tasks = client.get_tasks(self.get('framework-name'))
-            if len(tasks) == 0:
-                raise util.CliError('Riak Mesos Framework is not running.')
-            service_url = dcos.util.get_config().get('core.dcos_url')
-            service_url.rstrip('/')
-            service_url += '/service/' + framework + '/'
-            r = util.http_request('get', service_url + 'healthcheck')
-            if r.status_code == 200:
-                return service_url
-            return False
-        except:
-            if self.args['debug_flag']:
-                traceback.print_exc()
-            return False
-
-    def config_api_url(self):
-        try:
-            service_url = self.get('framework-url')
-            if service_url != '':
-                return service_url
-            return False
-        except:
-            return False
-
-    def api_url(self):
-        scheduler_url = self.scheduler_url()
-        return scheduler_url + "api/v1/"
-
-    def scheduler_url(self):
-        try:
-            service_url = self.config_api_url()
-            if service_url:
-                return 'http://' + service_url + '/'
-            service_url = self.dcos_api_url()
-            if service_url:
-                return service_url + '/'
-            service_url = self.marathon_api_url()
-            if service_url:
-                return service_url
-            service_url = self.zk_api_url()
-            if service_url:
-                return service_url + '/'
-            error = 'Unable to connect to DCOS Server, Marathon, or Zookeeper.'
-            raise util.CliError(error)
-        except Exception as e:
-            raise util.CliError('Unable to find api url: ' + e.message)

@@ -112,8 +112,8 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'riak-mesos=riak_mesos.cli:main',
-            'dcos-riak=riak_mesos.cli:main'
+            'riak-mesos=riak_mesos.cli:cli',
+            'dcos-riak=riak_mesos.cli:cli'
         ],
     },
 )

@@ -33,31 +33,33 @@ class CliError(Exception):
         return repr(self.message)
 
 
-def api_request(config, method, path, **kwargs):
-    service_url = config.api_url()
+def api_request(ctx, method, path, **kwargs):
+    service_url = ctx.api_url()
     if service_url is False:
         raise CliError("Riak Mesos Framework is not running.")
 
-    verify_flag = config.args.get('verify_ssl_flag')
+    verify = True
+    if ctx.insecure_ssl:
+        verify = False
     r = http_request(method,
                      service_url + path,
-                     verify=verify_flag,
+                     verify=verify,
                      **kwargs)
-    debug_request(config.args['debug_flag'], r)
+    ctx.vlog_request(r)
     return r
 
 
-def wait_for_director(config):
-    timeout = config.args['timeout']
+def wait_for_director(ctx):
+    timeout = ctx.args['timeout']
 
     def inner_wait_for_director(seconds):
         try:
             if seconds == 0:
-                print('Director did not respond in ' + config.args['timeout'] +
+                print('Director did not respond in ' + ctx.args['timeout'] +
                       ' seconds.')
 
-            client = marathon_client(config.get('marathon'))
-            app = client.get_app(config.args['cluster'] +
+            client = marathon_client(ctx.get('marathon'))
+            app = client.get_app(ctx.args['cluster'] +
                                  '-director')
             if len(app['tasks']) == 0:
                 print("Director is not installed.")
@@ -78,14 +80,14 @@ def wait_for_director(config):
     return inner_wait_for_director(timeout)
 
 
-def wait_for_framework(config):
-    timeout = config.args['timeout']
+def wait_for_framework(ctx):
+    timeout = ctx.args['timeout']
 
     def inner_wait_for_framework(seconds):
         try:
             if seconds == 0:
                 return False
-            r = api_request(config, 'get', 'clusters')
+            r = api_request(ctx, 'get', 'clusters')
             if r.status_code == 200:
                 return True
         except:
@@ -96,15 +98,15 @@ def wait_for_framework(config):
     return inner_wait_for_framework(timeout)
 
 
-def wait_for_node(config, node):
-    timeout = config.args['timeout']
+def wait_for_node(ctx, node):
+    timeout = ctx.args['timeout']
 
     def inner_wait_for_node(seconds):
         if seconds == 0:
             print('Node ' + node + ' did not respond in ' +
                   str(timeout) + 'seconds.')
             return
-        node_data = node_info(config, node)
+        node_data = node_info(ctx, node)
         if node_data['alive'] and node_data['status'] == 'started':
             print('Node ' + node + ' is ready.')
             return
@@ -114,16 +116,16 @@ def wait_for_node(config, node):
     return inner_wait_for_node(timeout)
 
 
-def wait_for_node_transfers(config, node):
-    timeout = config.args['timeout']
-    cluster = config.args['cluster']
+def wait_for_node_transfers(ctx, node):
+    timeout = ctx.args['timeout']
+    cluster = ctx.args['cluster']
 
     def inner_wait_for_node_transfers(seconds):
         if seconds == 0:
             print('Node ' + node + ' transfers did not complete in ' +
                   str(timeout) + 'seconds.')
             return
-        r = api_request(config, 'get', 'clusters/' + cluster +
+        r = api_request(ctx, 'get', 'clusters/' + cluster +
                         '/nodes/' + node + '/transfers')
         node_json = json.loads(r.text)
         waiting = len(node_json['transfers']['waiting_to_handoff'])
@@ -137,10 +139,10 @@ def wait_for_node_transfers(config, node):
     return inner_wait_for_node_transfers(timeout)
 
 
-def wait_for_node_status_valid(config, node):
-    timeout = config.args['timeout']
-    num_valid_nodes = config.args['num_nodes']
-    cluster = config.args['cluster']
+def wait_for_node_status_valid(ctx, node):
+    timeout = ctx.args['timeout']
+    num_valid_nodes = ctx.args['num_nodes']
+    cluster = ctx.args['cluster']
 
     def inner_wait_for_node_status_valid(seconds):
         if seconds == 0:
@@ -148,7 +150,7 @@ def wait_for_node_status_valid(config, node):
                   str(num_valid_nodes) + ' valid nodes in ' +
                   str(timeout) + ' seconds.')
             return
-        status = node_status(config, node)
+        status = node_status(ctx, node)
         if status['status']['valid'] >= num_valid_nodes:
             print('Cluster ' + cluster + ' is ready.')
             return
@@ -158,19 +160,19 @@ def wait_for_node_status_valid(config, node):
     return inner_wait_for_node_status_valid(timeout)
 
 
-def node_status(config, node):
-    cluster = config.args['cluster']
-    r = api_request(config, 'get', 'clusters/' + cluster +
+def node_status(ctx, node):
+    cluster = ctx.args['cluster']
+    r = api_request(ctx, 'get', 'clusters/' + cluster +
                     '/nodes/' + node + '/status')
     node_json = json.loads(r.text)
     return node_json
 
 
-def node_info(config, node):
-    cluster = config.args['cluster']
-    fw = config.get('framework-name')
-    debug_flag = config.args['debug_flag']
-    r = api_request(config, 'get', 'clusters/' + cluster +
+def node_info(ctx, node):
+    cluster = ctx.args['cluster']
+    fw = ctx.get('framework-name')
+    debug_flag = ctx.args['debug_flag']
+    r = api_request(ctx, 'get', 'clusters/' + cluster +
                     '/nodes/' + node)
     node_json = json.loads(r.text)
     http_port = str(node_json[node]['location']['http_port'])
@@ -196,9 +198,9 @@ def node_info(config, node):
     return node_data
 
 
-def get_node_name(config, node):
-    cluster = config.args['cluster']
-    r = api_request(config, 'get', 'clusters/' + cluster +
+def get_node_name(ctx, node):
+    cluster = ctx.args['cluster']
+    r = api_request(ctx, 'get', 'clusters/' + cluster +
                     '/nodes/' + node)
     node_json = json.loads(r.text)
     return node_json[node]['location']['node_name']
