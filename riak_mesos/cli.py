@@ -87,6 +87,8 @@ class RiakMesosCli(object):
     def __init__(self, cli_args):
         args = {}
 
+        # TODO: when in dcos cli env, "~/.dcos/dcos.toml" will have the dcos service url which we can use to find marathon, master, and service urls.
+
         def_conf_file = None
         user_home = pwd.getpwuid(os.getuid()).pw_dir
         sys_conf_file = '/etc/riak-mesos/config.json'
