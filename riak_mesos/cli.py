@@ -73,7 +73,7 @@ class Context(object):
         self.json = False
 
     def init_args(self, verbose, debug, home, config, info, version,
-                  config_schema, json, cluster, node, **kwargs):
+                  config_schema, json, insecure_ssl, cluster, node, **kwargs):
         if info:
             click.echo('Start and manage Riak nodes in Mesos.')
             exit(0)
@@ -86,6 +86,7 @@ class Context(object):
 
         self.verbose = verbose
         self.json = json
+        self.insecure_ssl = insecure_ssl
 
         if self.debug is None:
             self.debug = debug
@@ -333,7 +334,9 @@ _common_options = [
     click.option('--node',
                  help='Changes the node to operate on.'),
     click.option('--json', is_flag=True,
-                 help='Enables json output.')
+                 help='Enables json output.'),
+    click.option('--insecure-ssl', is_flag=True,
+                 help='Turns SSL verification off on HTTP requests')
 ]
 
 
@@ -378,136 +381,3 @@ def cli(ctx, **kwargs):
     This utility provides tools for modifying and accessing your Riak
     on Mesos installation."""
     ctx.init_args(**kwargs)
-
-
-# class RiakMesosCli(object):
-#     def __init__(self, cli_args):
-#         args = {}
-
-#         # TODO: when in dcos cli env, "~/.dcos/dcos.toml" will have the dcos
-#         # service url which we can use to find marathon, master, and service
-#         # urls.
-
-#         def_conf_file = None
-#         user_home = pwd.getpwuid(os.getuid()).pw_dir
-#         sys_conf_file = '/etc/riak-mesos/config.json'
-#         usr_conf_file = user_home + '/.config/riak-mesos/config.json'
-#         lcl_conf_file = '.config/riak-mesos/config.json'
-#         if os.path.isfile(lcl_conf_file):
-#             def_conf_file = lcl_conf_file
-#         elif os.path.isfile(usr_conf_file):
-#             def_conf_file = usr_conf_file
-#         elif os.path.isfile(sys_conf_file):
-#             def_conf_file = sys_conf_file
-
-#         cli_args, config_file = extract_option(cli_args, '--config',
-#                                                def_conf_file)
-#         cli_args, args['riak_file'] = extract_option(cli_args, '--file',
-#                                                      '')
-#         cli_args, args['lines'] = extract_option(cli_args, '--lines',
-#                                                  '1000')
-#         cli_args, args['force_flag'] = extract_flag(cli_args, '--force')
-#         cli_args, args['json_flag'] = extract_flag(cli_args, '--json')
-#         cli_args, args['verify_ssl_flag'] = extract_flag(cli_args,
-#                                                          '--verify-ssl')
-#         cli_args, args['help_flag'] = extract_flag(cli_args, '--help')
-#         cli_args, args['debug_flag'] = extract_flag(cli_args, '--debug')
-#         cli_args, args['cluster'] = extract_option(cli_args, '--cluster',
-#                                                    'default')
-#         cli_args, args['node'] = extract_option(cli_args, '--node', '')
-#         cli_args, args['bucket_type'] = extract_option(cli_args,
-#                                                        '--bucket-type',
-#                                                        'default')
-#         cli_args, args['props'] = extract_option(cli_args, '--props', '')
-#         cli_args, timeout = extract_option(cli_args, '--timeout',
-#                                            '60', 'integer')
-#         args['timeout'] = int(timeout)
-#         cli_args, num_nodes = extract_option(cli_args, '--nodes', '1',
-#                                              'integer')
-#         args['num_nodes'] = int(num_nodes)
-#         self.cmd = ' '.join(cli_args)
-#         util.debug(args['debug_flag'], 'Cluster: ' + args['cluster'])
-#         util.debug(args['debug_flag'], 'Node: ' + args['node'])
-#         util.debug(args['debug_flag'], 'Nodes: ' +
-#                    str(args['num_nodes']))
-#         util.debug(args['debug_flag'], 'Command: ' + self.cmd)
-
-#         if config_file is None or not os.path.isfile(config_file):
-#                 raise CliError('No config file found')
-
-#         self.cfg = RiakMesosConfig(config_file, args)
-
-#     def run(self):
-#         cmd_desc = help(self.cmd)
-
-#         if self.cfg.args['help_flag'] and not cmd_desc:
-#             print(constants.usage)
-#             return 0
-#         elif self.cfg.args['help_flag']:
-#             print(cmd_desc)
-#             return 0
-
-#         if self.cmd == '':
-#             print('No commands executed')
-#             return
-#         elif self.cmd.startswith('-'):
-#             raise CliError('Unrecognized option: ' + self.cmd)
-#         elif not cmd_desc:
-#             raise CliError('Unrecognized command: ' + self.cmd)
-
-#         try:
-#             command_func_str = self.cmd.replace(' ', '_')
-#             command_func_str = command_func_str.replace('-', '_')
-#             util.debug(self.cfg.args['debug_flag'], 'Args: ' +
-#                        str(self.cfg.args))
-#             util.debug(self.cfg.args['debug_flag'], 'Command Func: ' +
-#                        command_func_str + '(cfg)')
-#             command_func = getattr(commands, command_func_str)
-#             command_func(self.cfg)
-#         except AttributeError as e:
-#                 print('CliError: Unrecognized command: ' + self.cmd)
-#                 if self.cfg.args['debug_flag']:
-#                         traceback.print_exc()
-#                         raise e
-
-#         return 0
-
-
-# def main():
-#     args = sys.argv[1:]
-#     if len(sys.argv) >= 2 and sys.argv[1] == 'riak':
-#         args = sys.argv[2:]
-#     if len(args) == 0:
-#         print(constants.usage)
-#         return 0
-#     if '--info' in args:
-#         print('Start and manage Riak nodes')
-#         return 0
-#     if '--version' in args:
-#         print('Riak Mesos Framework Version ' + constants.version)
-#         return 0
-#     if '--config-schema' in args:
-#         print('{}')
-#         return 0
-#     debug = False
-#     if '--debug' in args:
-#         debug = True
-
-#     try:
-#         cli = RiakMesosCli(args)
-#         return cli.run()
-#     except CliError as e:
-#         print('CliError: ' + str(e))
-#         if debug:
-#             traceback.print_exc()
-#             raise e
-#         return 1
-#     except Exception as e:
-#         print(e)
-#         if debug:
-#             traceback.print_exc()
-#             raise e
-#         return 1
-
-# if __name__ == '__main__':
-#     main()

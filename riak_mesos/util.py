@@ -114,33 +114,3 @@ def get_node_name(ctx, node):
                         '/nodes/' + node)
     node_json = json.loads(r.text)
     return node_json[node]['location']['node_name']
-
-
-# def pparr(description, json_str, failure):
-#     try:
-#         obj_arr = json.loads(json_str)
-#         click.echo(description + '[' + ', '.join(obj_arr.keys()) + ']')
-#     except:
-#         click.echo(description + failure)
-
-
-# def ppobj(description, json_str, key, failure):
-#     try:
-#         obj = json.loads(json_str)
-#         if key == '':
-#             click.echo(description + json.dumps(obj))
-#         else:
-#             click.echo(description + json.dumps(obj[key]))
-#     except:
-#         click.echo(description + failure)
-
-
-# def ppfact(description, json_str, key, failure):
-#     try:
-#         obj = json.loads(json_str)
-#         if key == '':
-#             click.echo(description + json.dumps(obj))
-#         else:
-#             click.echo(description + json.dumps(obj[key]))
-#     except:
-#         click.echo(description + failure)
