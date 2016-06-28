@@ -15,10 +15,9 @@
 
 import click
 import json
+import time
 
 from riak_mesos.cli import pass_context
-from riak_mesos import util
-from riak_mesos.util import CliError
 
 
 @click.group()
@@ -36,17 +35,14 @@ def config(ctx):
 @cli.command()
 @pass_context
 def endpoints(ctx):
-    service_url = ctx.config.api_url()
-    if service_url is False:
-        raise CliError("Riak Mesos Framework is not running.")
-    print("Framework HTTP API: " + service_url)
+    print("Framework HTTP API: " + ctx.framework_url)
 
 
 @cli.command()
 @pass_context
 def install(ctx):
     framework_json = ctx.config.framework_marathon_json()
-    client = util.marathon_client(ctx.config.get('marathon'))
+    client = ctx.marathon_client()
     client.add_app(framework_json)
     click.echo('Finished adding ' + framework_json['id'] + ' to marathon.')
 
@@ -54,41 +50,48 @@ def install(ctx):
 @cli.command()
 @pass_context
 def status(ctx):
-    client = util.marathon_client(ctx.config.get('marathon'))
-    result = client.get_app('/' + ctx.config.get('framework-name'))
+    client = ctx.marathon_client()
+    result = client.get_app('/' + ctx.framework)
     click.echo(json.dumps(result))
 
 
 @cli.command('wait-for-service')
 @pass_context
 def wait_for_service(ctx):
-    if util.wait_for_framework(ctx):
-        click.echo('Riak Mesos Framework is ready.')
-        return
-    click.echo('Riak Mesos Framework did not respond within ' +
-               str(ctx.config.args['timeout']) + ' seconds.')
-    return
+    def inner_wait_for_framework(seconds):
+        if seconds == 0:
+            click.echo('Riak Mesos Framework did not respond within ' +
+                       str(ctx.timeout) + ' seconds.')
+        r = ctx.framework_request('get', 'healthcheck', False)
+        if r.status_code == 200:
+            click.echo('Riak Mesos Framework is ready.')
+            return
+        time.sleep(1)
+        return inner_wait_for_framework(seconds - 1)
+
+    return inner_wait_for_framework(ctx.timeout)
 
 
 @cli.command()
 @pass_context
 def uninstall(ctx):
     click.echo('Uninstalling framework...')
-    client = util.marathon_client(ctx.config.get('marathon'))
-    client.remove_app('/' + ctx.config.get('framework-name'))
-    click.echo('Finished removing ' + '/' + ctx.config.get('framework-name') +
+    client = ctx.marathon_client()
+    client.remove_app('/' + ctx.framework)
+    click.echo('Finished removing ' + '/' + ctx.framework +
                ' from marathon')
     return
 
 
 @cli.command('clean-metadata')
+@click.option('-f', '--force', is_flag=True,
+              help='Forcefully remove zookeeper data.')
 @pass_context
-def clean_metadata(ctx):
+def clean_metadata(ctx, force):
     fn = ctx.config.get('framework-name')
-    if ctx.config.args['force_flag']:
+    if force:
         click.echo('\nRemoving zookeeper information\n')
-        result = util.zookeeper_command(ctx.config.get('zk'), 'delete',
-                                        '/riak/frameworks/' + fn)
+        result = ctx.zk_command('delete', '/riak/frameworks/' + fn)
         if result:
             click.echo(result)
         else:
@@ -105,19 +108,16 @@ def clean_metadata(ctx):
 @cli.command()
 @pass_context
 def teardown(ctx):
-    r = util.http_request('get', 'http://' + ctx.config.get('master') +
-                          '/master/state.json')
-    util.debug_request(ctx.config.args['debug_flag'], r)
+    r = ctx.master_request('get', '/master/state.json', False)
+    ctx.vlog_request(r)
     if r.status_code != 200:
         click.echo('Failed to get state.json from master.')
         return
     js = json.loads(r.text)
     for fw in js['frameworks']:
-        if fw['name'] == ctx.config.get('framework-name'):
-            r = util.http_request('post',
-                                  'http://' + ctx.config.get('master') +
-                                  '/master/teardown',
-                                  data='frameworkId='+fw['id'])
-            util.debug_request(ctx.config.args['debug_flag'], r)
+        if fw['name'] == ctx.framework:
+            r = ctx.master_request('post', '/master/teardown',
+                                   data='frameworkId='+fw['id'])
+            ctx.vlog_request(r)
             click.echo('Finished teardown.')
     return

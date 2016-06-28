@@ -18,16 +18,38 @@
 
 import click
 import dcos
-import json
 import os
 import sys
 import traceback
 
-from riak_mesos import util
+from dcos import http, util, marathon
 from riak_mesos.config import RiakMesosConfig
+from kazoo.client import KazooClient
 
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='RIAK_MESOS')
+
+
+class SubFailedRequest(object):
+    def __init__(self, method):
+        self.method = method
+        self.body = ''
+
+
+class FailedRequest(object):
+    def __init__(self, method, url):
+        self.status_code = 0
+        self.url = url
+        self.request = SubFailedRequest(method)
+        self.text = ''
+
+
+class CliError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
 
 
 class Context(object):
@@ -39,52 +61,13 @@ class Context(object):
         self.config = None
         self.insecure_ssl = False
         self.timeout = 60
-        self.master_url = 'leader.mesos:5050'
-        self.zk_url = 'leader.mesos:2181'
-        self.marathon_url = 'marathon.mesos:8080'
+        self.master_url = None
+        self.zk_url = None
+        self.marathon_url = None
         self.framework_url = None
         self.framework = 'riak'
         self.cluster = 'default'
         self.node = 'riak-default-1'
-
-    def load_urls(self):
-        dcos_url = dcos.util.get_config().get('core.dcos_url')
-        dcos_url.rstrip('/')
-
-        _dcos_marathon = dcos_url + '/service/marathon/'
-        _dcos_mesos = dcos_url + '/service/mesos/'
-        _dcos_framework_url = dcos_url + '/service/' + self.framework + '/'
-
-        _cfg_marathon = self.config.get('marathon')
-        _cfg_master = self.config.get('master')
-        _cfg_zk = self.config.get('zk')
-        _cfg_framework_url = self.config.get('framework-url')
-
-        r = util.http_request('get', _dcos_framework_url + 'healthcheck')
-        if r.status_code == 200:
-            self.framework_url = _dcos_framework_url
-        r = util.http_request('get', _dcos_marathon + 'ping')
-        if r.status_code == 200:
-            self.marathon_url = _dcos_marathon
-        r = util.http_request('get', _dcos_mesos)
-        if r.status_code == 200:
-            self.master_url = _dcos_mesos
-
-        if _cfg_marathon != '':
-            self.marathon_url = _cfg_marathon
-        if _cfg_master != '':
-            self.master_url = _cfg_master
-        if _cfg_zk != '':
-            self.zk_url = _cfg_zk
-        if _cfg_framework_url != '':
-            self.framework_url = _cfg_framework_url
-
-        client = util.marathon_client(ctx.marathon_url)
-        tasks = client.get_tasks(ctx.framework)
-        if len(tasks) != 0:
-            host = tasks[0]['host']
-            port = tasks[0]['ports'][0]
-            return 'http://' + host + ':' + str(port) + '/'
 
     def log(self, msg, *args):
         """Logs a message to stderr."""
@@ -109,14 +92,147 @@ class Context(object):
         if self.verbose:
             traceback.print_exc()
 
-    def api_url(self):
-        scheduler_url = self.scheduler_url()
-        return scheduler_url + "api/v1/"
+    def _init_master(self):
+        dcos_url = util.get_config().get('core.dcos_url')
+        dcos_url.rstrip('/')
+        _dcos_mesos = dcos_url + '/service/mesos/'
+        _cfg_master = self.config.get('master')
+        r = self.http_request('get', _dcos_mesos, False)
+        if r.status_code == 200:
+            self.master_url = _dcos_mesos
+            return
+        if _cfg_master == '':
+            _cfg_master = 'leader.mesos:5050'
+        r = self.http_request('get', _cfg_master, False)
+        if r.status_code == 200:
+            self.master_url = _cfg_master
+            return
+        self.log("Unable to find Mesos Url using DCOS or " +
+                 "Configuration")
+        exit(1)
 
-    def scheduler_url(self):
+    def master_request(self, method, path, exit_on_failure=True, **kwargs):
+        if self.master_url is None:
+            self._init_master()
+        return self.http_request(method, self.master_url + path,
+                                 exit_on_failure, **kwargs)
+
+    def _init_api(self):
+        dcos_url = util.get_config().get('core.dcos_url')
+        dcos_url.rstrip('/')
+        _dcos_framework_url = dcos_url + '/service/' + self.framework + '/'
+        _cfg_framework_url = self.config.get('framework-url')
+        r = self.http_request('get',
+                              _dcos_framework_url + 'healthcheck', False)
+        self.vlog_request(r)
+        if r.status_code == 200:
+            self.framework_url = _dcos_framework_url
+            return
+        if _cfg_framework_url != '':
+            r = self.http_request('get',
+                                  _cfg_framework_url + 'healthcheck', False)
+            self.vlog_request(r)
+            if r.status_code == 200:
+                self.framework_url = _cfg_framework_url
+                return
+        client = self.marathon_client()
+        tasks = client.get_tasks(self.framework)
+        if len(tasks) != 0:
+            host = tasks[0]['host']
+            port = tasks[0]['ports'][0]
+            self.framework_url = 'http://' + host + ':' + str(port) + '/'
+            return
+        self.log("Unable to find Framework API Url using DCOS, " +
+                 "Configuration, or Marathon")
+        exit(1)
+
+    def api_request(self, method, path, exit_on_failure=True, **kwargs):
         if self.framework_url is None:
-            self.framework_url = find_framework_url(self)
-        return self.framework_url
+            self._init_api()
+        return self.http_request(method,
+                                 self.framework_url + "api/v1/" + path,
+                                 exit_on_failure,
+                                 **kwargs)
+
+    def framework_request(self, method, path, exit_on_failure=True, **kwargs):
+        if self.framework_url is None:
+            self._init_api()
+        return self.http_request(method,
+                                 self.framework_url + path,
+                                 exit_on_failure,
+                                 **kwargs)
+
+    def _init_marathon(self):
+        dcos_url = util.get_config().get('core.dcos_url')
+        dcos_url.rstrip('/')
+        _dcos_marathon = dcos_url + '/service/marathon/'
+        _cfg_marathon = self.config.get('marathon')
+        r = self.http_request('get', _dcos_marathon + 'ping', False)
+        if r.status_code == 200:
+            self.marathon_url = _dcos_marathon
+            return
+        if _cfg_marathon == '':
+            _cfg_marathon = 'marathon.mesos:8080'
+        _cfg_marathon = 'http://' + _cfg_marathon + '/'
+        r = self.http_request('get',
+                              _cfg_marathon + 'ping', False)
+        if r.status_code == 200:
+            self.marathon_url = _cfg_marathon
+            return
+        self.log("Unable to find Marathon Url using DCOS or " +
+                 "Configuration")
+        exit(1)
+
+    def marathon_client(self):
+        if self.marathon_url is None:
+            self._init_marathon()
+        self.vlog("Using Marathon URL: " + self.marathon_url)
+        return marathon.Client(self.marathon_url)
+
+    def _init_zk(self):
+        _cfg_zk = self.config.get('zk')
+        if _cfg_zk != '':
+            self.zk_url = _cfg_zk
+            return
+        self.zk_url = 'leader.mesos:2181'
+        return
+
+    def zk_command(self, command, path):
+        if self.zk_url is None:
+            self._init_zk()
+        try:
+            zk = KazooClient(hosts=self.zk_url)
+            zk.start()
+            if command == 'get':
+                data, stat = zk.get(path)
+                return data.decode("utf-8")
+            elif command == 'delete':
+                zk.delete(path, recursive=True)
+                return 'Successfully deleted ' + path
+            else:
+                return False
+            zk.stop()
+        except Exception as e:
+            self.vlog(e)
+            return False
+
+    def http_request(self, method, url, exit_on_failure=True, **kwargs):
+        try:
+            verify = True
+            if self.insecure_ssl:
+                verify = False
+            r = http.request(method,
+                             url,
+                             verify=verify,
+                             **kwargs)
+            self.vlog_request(r)
+            return r
+        except Exception as e:
+            if exit_on_failure:
+                raise e
+            else:
+                self.vlog(e)
+                return FailedRequest(method, url)
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
@@ -170,7 +286,6 @@ def cli(ctx, verbose, home, config):
     _framework = ctx.config.get('framework-name')
     if _framework != '':
         ctx.framework = _framework
-    ctx.load_urls()
 
 
 def find_config(home):
@@ -181,28 +296,6 @@ def find_config(home):
     elif os.path.isfile(sys_conf_file):
         return sys_conf_file
     return None
-
-
-def find_framework_url(ctx):
-    try:
-        service_url = marathon_api_url(ctx)
-        if service_url:
-            return service_url
-        error = 'Unable to connect to DCOS Server, Marathon, or Zookeeper.'
-        raise util.CliError(error)
-    except Exception as e:
-        raise util.CliError('Unable to find api url: ' + e.message)
-
-
-def marathon_api_url(ctx):
-    try:
-        
-        else:
-            print("Task not running in Marathon")
-        return False
-    except:
-        ctx.vtraceback()
-        return False
 
 
 # class RiakMesosCli(object):
