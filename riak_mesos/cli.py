@@ -22,7 +22,8 @@ import os
 import sys
 import traceback
 
-from dcos import http, util, marathon
+from dcos import http, marathon
+from dcos import config as dcos_config
 from riak_mesos.config import RiakMesosConfig
 from kazoo.client import KazooClient
 from riak_mesos import constants
@@ -157,7 +158,7 @@ class Context(object):
             traceback.print_exc()
 
     def _init_master(self):
-        dcos_url = util.get_config().get('core.dcos_url')
+        dcos_url = dcos_config.get_config().get('core.dcos_url')
         dcos_url.rstrip('/')
         _dcos_mesos = dcos_url + '/service/mesos/'
         _cfg_master = self.config.get('master')
@@ -183,7 +184,7 @@ class Context(object):
                                  exit_on_failure, **kwargs)
 
     def _init_api(self):
-        dcos_url = util.get_config().get('core.dcos_url')
+        dcos_url = dcos_config.get_config().get('core.dcos_url')
         dcos_url.rstrip('/')
         _dcos_framework_url = dcos_url + '/service/' + self.framework + '/'
         _cfg_framework_url = self.config.get('framework-url')
@@ -228,7 +229,7 @@ class Context(object):
                                  **kwargs)
 
     def _init_marathon(self):
-        dcos_url = util.get_config().get('core.dcos_url')
+        dcos_url = dcos_config.get_config().get('core.dcos_url')
         dcos_url.rstrip('/')
         _dcos_marathon = dcos_url + '/service/marathon/'
         _cfg_marathon = self.config.get('marathon')
@@ -363,10 +364,12 @@ class RiakMesosCLI(click.MultiCommand):
         rv.sort()
         return rv
 
-    def get_command(self, ctx, name=""):
+    def get_command(self, ctx, name):
         try:
             if sys.version_info[0] == 2:
                 name = name.encode('ascii', 'replace')
+	    if name == "riak":
+		return cli
             mod = __import__('riak_mesos.commands.cmd_' + name,
                              None, None, ['cli'])
         except ImportError:
