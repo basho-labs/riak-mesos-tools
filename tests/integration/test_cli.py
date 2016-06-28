@@ -19,7 +19,7 @@ def test_help():
     c, o, e = _c(['riak-mesos', 'config', '--help'])
     assert c == 0
     assert e == b''
-    assert o.strip() == b'Displays configuration'
+    assert b'Displays configuration' in o.strip()
 
 
 def test_config():

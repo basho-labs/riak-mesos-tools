@@ -15,62 +15,102 @@
 
 import click
 import json
+import time
 
 from riak_mesos.cli import pass_context
-from riak_mesos import util
 
 
 @click.group()
-def cli():
-    pass
+@pass_context
+def cli(ctx, **kwargs):
+    """Interact with an instance of Riak Mesos Director smart proxy"""
+    ctx.init_args(**kwargs)
 
 
 @cli.command()
 @pass_context
-def config(ctx):
-    click.echo(ctx.config.director_marathon_string(ctx.config.args['cluster']))
+def config(ctx, **kwargs):
+    """Generates a marathon json config using --zookeeper (default is
+    leader.mesos:2181) and --cluster (default is default)"""
+    ctx.init_args(**kwargs)
+    click.echo(ctx.config.director_marathon_string(ctx.cluster))
 
 
 @cli.command('wait-for-service')
+@click.option('--timeout', type=int,
+              help='Number of seconds to wait for a response.')
 @pass_context
-def wait_for_service(ctx):
-    if util.wait_for_framework(ctx):
-        util.wait_for_director(ctx)
-        return
-    click.echo('Riak Mesos Framework did not respond within ' +
-               str(ctx.config.args['timeout']) + 'seconds.')
+def wait_for_service(ctx, **kwargs):
+    """Waits --timeout seconds or until director is running"""
+    ctx.init_args(**kwargs)
+
+    def inner_wait_for_director(seconds):
+        try:
+            if seconds == 0:
+                click.echo('Director did not respond in ' + str(ctx.timeout) +
+                           ' seconds.')
+
+            client = ctx.marathon_client()
+            app = client.get_app('/' + ctx.cluster + '-director')
+            if len(app['tasks']) == 0:
+                click.echo("Director is not installed.")
+                return
+            task = app['tasks'][0]
+            ports = task['ports']
+            hostname = task['host']
+            url = 'http://' + hostname + ':' + str(ports[0])
+            r = ctx.http_request('get', url, False)
+            if r.status_code == 200:
+                click.echo("Director is ready.")
+                return
+        except:
+            pass
+        time.sleep(1)
+        return inner_wait_for_director(seconds - 1)
+
+    return inner_wait_for_director(ctx.timeout)
 
 
 @cli.command()
 @pass_context
-def install(ctx):
+def install(ctx, **kwargs):
+    """Installs a riak-mesos-director marathon app on the public Mesos node
+    using --cluster (default is default)"""
+    ctx.init_args(**kwargs)
     director_json = ctx.config.director_marathon_json(
-        ctx.config.args['cluster'])
-    client = util.marathon_client(ctx.config.get('marathon'))
+        ctx.cluster)
+    client = ctx.marathon_client()
     client.add_app(director_json)
     click.echo('Finished adding ' + director_json['id'] + ' to marathon.')
 
 
 @cli.command()
 @pass_context
-def uninstall(ctx):
-    client = util.marathon_client(ctx.config.get('marathon'))
-    client.remove_app('/' + ctx.config.args['cluster'] + '-director')
-    click.echo('Finished removing ' + '/' + ctx.config.args['cluster'] +
+def uninstall(ctx, **kwargs):
+    """Uninstalls the riak-mesos-director marathon app"""
+    ctx.init_args(**kwargs)
+    client = ctx.marathon_client()
+    client.remove_app('/' + ctx.cluster + '-director')
+    click.echo('Finished removing ' + '/' + ctx.cluster +
                '-director' + ' from marathon')
 
 
 @cli.command()
 @pass_context
-def endpoints(ctx):
-    client = util.marathon_client(ctx.config.get('marathon'))
-    app = client.get_app('/' + ctx.config.args['cluster'] + '-director')
+def endpoints(ctx, **kwargs):
+    """Lists the endpoints exposed by a riak-mesos-director marathon app"""
+    ctx.init_args(**kwargs)
+    client = ctx.marathon_client()
+    app = client.get_app('/' + ctx.cluster + '-director')
+    if len(app['tasks']) == 0:
+        click.echo("Director is not installed.")
+        return
     task = app['tasks'][0]
     ports = task['ports']
     hostname = task['host']
     endpoints = {
-        'framework': ctx.config.get('framework-name'),
-        'cluster': ctx.config.args['cluster'],
+        'framework': ctx.framework,
+        'cluster': ctx.cluster,
         'riak_http': hostname + ':' + str(ports[0]),
         'riak_pb': hostname + ':' + str(ports[1]),
         'director_http': hostname + ':' + str(ports[2])

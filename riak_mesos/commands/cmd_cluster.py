@@ -17,129 +17,157 @@ import click
 import json
 
 from riak_mesos.cli import pass_context
-from riak_mesos import util
+from riak_mesos.util import wait_for_node, wait_for_node_status_valid, \
+    node_info
 
 
 @click.group()
-@click.option('--cluster',
-              help='Changes the cluster to operate on.')
 @pass_context
-def cli(ctx, cluster):
-    if cluster is not None:
-        ctx.cluster = cluster
+def cli(ctx, **kwargs):
+    """Interact with Riak clusters"""
+    ctx.init_args(**kwargs)
 
 
 @cli.command('wait-for-service')
+@click.option('--nodes', type=int,
+              help='Number of nodes to wait for.')
+@click.option('--timeout', type=int,
+              help='Number of seconds to wait for a response.')
 @pass_context
-def wait_for_service(ctx):
-    if util.wait_for_framework(ctx):
-        r = util.api_request(ctx, 'get', 'clusters/' +
-                             ctx.cluster + '/nodes')
+def wait_for_service(ctx, nodes, **kwargs):
+    """Iterates over all nodes in cluster and executes node wait-for-service.
+    Optionally waits until the number of nodes (specified by --nodes) at
+    minimum are joined to the cluster"""
+    ctx.init_args(**kwargs)
+    r = ctx.api_request('get', 'clusters/' + ctx.cluster + '/nodes')
+    js = json.loads(r.text)
+    num_nodes = len(js['nodes'])
+    total_timeout = ctx.timeout
+    if num_nodes > 0:
+        ctx.timeout = max(total_timeout / num_nodes, 1)
+        for k in js['nodes']:
+            wait_for_node(ctx, k)
+    if num_nodes >= nodes:
+        # Okay, need to divide up the timeout properly
+        ctx.timeout = total_timeout
+        wait_for_node_status_valid(ctx, js['nodes'][0], nodes)
+
+
+@cli.command()
+@pass_context
+def endpoints(ctx, **kwargs):
+    """Iterates over all nodes in cluster and prints connection information"""
+    ctx.init_args(**kwargs)
+    r = ctx.api_request('get', 'clusters/' +
+                        ctx.cluster + '/nodes')
+    cluster_data = {}
+    if r.status_code == 200:
         js = json.loads(r.text)
-        # Timeout must be at least 1 second
-        num_nodes = len(js['nodes'])
-        total_timeout = ctx.args['timeout']
-        if num_nodes > 0:
-            ctx.args['timeout'] = max(total_timeout / num_nodes, 1)
-            for k in js['nodes']:
-                util.wait_for_node(ctx, k)
-        if num_nodes >= ctx.args['num_nodes']:
-            # Okay, need to divide up the timeout properly
-            ctx.args['timeout'] = total_timeout
-            util.wait_for_node_status_valid(ctx, js['nodes'][0])
-        return
-    click.echo('Riak Mesos Framework did not respond within ' +
-               str(ctx.args['timeout']) + 'seconds.')
-    return
+        for k in js["nodes"]:
+            cluster_data[k] = node_info(ctx, k)
+        click.echo(json.dumps(cluster_data))
+    else:
+        click.echo(r.text)
 
 
 @cli.command()
 @pass_context
-def endpoints(ctx):
-    if util.wait_for_framework(ctx):
-        r = util.api_request(ctx, 'get', 'clusters/' +
-                             ctx.cluster + '/nodes')
-        cluster_data = {}
-        if r.status_code == 200:
-            js = json.loads(r.text)
-            for k in js["nodes"]:
-                cluster_data[k] = util.node_info(ctx, k)
-            click.echo(json.dumps(cluster_data))
-            return
-        else:
-            click.echo(r.text)
-            return
-    click.echo('Riak Mesos Framework did not respond within ' +
-               str(ctx.args['timeout']) + 'seconds.')
-
-
-@cli.command()
-@pass_context
-def info(ctx):
-    r = util.api_request(ctx, 'get', 'clusters/' +
-                         ctx.cluster)
+def info(ctx, **kwargs):
+    """Gets current metadata about a cluster"""
+    ctx.init_args(**kwargs)
+    r = ctx.api_request('get', 'clusters/' +
+                        ctx.cluster)
     click.echo(r.text)
 
 
 @cli.command()
+@click.option('--file',
+              type=click.Path(exists=True, file_okay=True,
+                              resolve_path=True),
+              help='Cluster riak.conf file to save.')
 @pass_context
-def config(ctx):
-    if ctx.args['riak_file'] == '':
-        r = util.api_request(ctx, 'get', 'clusters/' +
-                             ctx.cluster + '/config')
+def config(ctx, file, **kwargs):
+    """Gets or sets the riak.conf configuration for a cluster, specify cluster
+    id with --cluster and config file location with --file"""
+    ctx.init_args(**kwargs)
+    if file is None:
+        r = ctx.api_request('get', 'clusters/' +
+                            ctx.cluster + '/config',
+                            headers={'Accept': '*/*'})
         click.echo(r.text)
     else:
-        with open(ctx.args['riak_file']) as data_file:
-            r = util.api_request(ctx, 'put', 'clusters/' +
-                                 ctx.cluster + '/config',
-                                 data=data_file)
+        with open(file) as data_file:
+            r = ctx.api_request('put', 'clusters/' +
+                                ctx.cluster + '/config',
+                                data=data_file,
+                                headers={'Accept': 'plain/text'})
             click.echo(r.text)
 
 
-@cli.command()
+@cli.command('config-advanced')
+@click.option('--file',
+              type=click.Path(exists=True, file_okay=True,
+                              resolve_path=True),
+              help='Cluster advanced.config file to save.')
 @pass_context
-def config_advanced(ctx):
-    if ctx.args['riak_file'] == '':
-        r = util.api_request(ctx, 'get', 'clusters/' +
-                             ctx.cluster + '/advancedConfig')
+def config_advanced(ctx, file, **kwargs):
+    """Gets or sets the advanced.config configuration for a cluster, specify
+    cluster id with --cluster and config file location with --file"""
+    ctx.init_args(**kwargs)
+    if file is None:
+        r = ctx.api_request('get', 'clusters/' +
+                            ctx.cluster + '/advancedConfig',
+                            headers={'Accept': '*/*'})
         click.echo(r.text)
     else:
-        with open(ctx.args['riak_file']) as data_file:
-            r = util.api_request(ctx, 'put', 'clusters/' +
-                                 ctx.cluster +
-                                 '/advancedConfig',
-                                 data=data_file)
+        with open(file) as data_file:
+            r = ctx.api_request('put', 'clusters/' +
+                                ctx.cluster +
+                                '/advancedConfig',
+                                data=data_file,
+                                headers={'Accept': 'plain/text'})
             click.echo(r.text)
 
 
 @cli.command()
 @pass_context
-def list(ctx):
-    r = util.api_request(ctx, 'get', 'clusters')
+def list(ctx, **kwargs):
+    """Retrieves a list of cluster names"""
+    ctx.init_args(**kwargs)
+    r = ctx.api_request('get', 'clusters')
     click.echo(r.text)
 
 
 @cli.command()
 @pass_context
-def create(ctx):
-    r = util.api_request(ctx, 'put',
-                         'clusters/' + ctx.cluster,
-                         data='')
+def create(ctx, **kwargs):
+    """Creates a new cluster. Specify the name with --cluster (default is
+    default)"""
+    ctx.init_args(**kwargs)
+    r = ctx.api_request('put',
+                        'clusters/' + ctx.cluster,
+                        data='')
     click.echo(r.text)
 
 
 @cli.command()
 @pass_context
-def restart(ctx):
-    r = util.api_request(ctx, 'post',
-                         'clusters/' + ctx.cluster +
-                         '/restart', data='')
+def restart(ctx, **kwargs):
+    """Performs a rolling restart on a cluster. Specify the name with
+    --cluster (default is default)"""
+    ctx.init_args(**kwargs)
+    r = ctx.api_request('post',
+                        'clusters/' + ctx.cluster +
+                        '/restart', data='')
     click.echo(r.text)
 
 
 @cli.command()
 @pass_context
-def destroy(ctx):
-    r = util.api_request(ctx, 'delete', 'clusters/' +
-                         ctx.cluster, data='')
+def destroy(ctx, **kwargs):
+    """Destroys a cluster. Specify the name with --cluster (default is
+    default)"""
+    ctx.init_args(**kwargs)
+    r = ctx.api_request('delete', 'clusters/' +
+                        ctx.cluster, data='')
     click.echo(r.text)

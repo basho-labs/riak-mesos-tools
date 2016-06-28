@@ -17,7 +17,7 @@
 """Riak Mesos Framework CLI"""
 
 import click
-import dcos
+import logging
 import os
 import sys
 import traceback
@@ -25,6 +25,7 @@ import traceback
 from dcos import http, util, marathon
 from riak_mesos.config import RiakMesosConfig
 from kazoo.client import KazooClient
+from riak_mesos import constants
 
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='RIAK_MESOS')
@@ -37,11 +38,11 @@ class SubFailedRequest(object):
 
 
 class FailedRequest(object):
-    def __init__(self, method, url):
-        self.status_code = 0
+    def __init__(self, status, method, url, text=''):
+        self.status_code = status
         self.url = url
         self.request = SubFailedRequest(method)
-        self.text = ''
+        self.text = text
 
 
 class CliError(Exception):
@@ -56,6 +57,7 @@ class Context(object):
 
     def __init__(self):
         self.verbose = False
+        self.debug = None
         self.home = os.getcwd()
         self.config_file = None
         self.config = None
@@ -68,6 +70,67 @@ class Context(object):
         self.framework = 'riak'
         self.cluster = 'default'
         self.node = 'riak-default-1'
+        self.json = False
+
+    def init_args(self, verbose, debug, home, config, info, version,
+                  config_schema, json, cluster, node, **kwargs):
+        if info:
+            click.echo('Start and manage Riak nodes in Mesos.')
+            exit(0)
+        if version:
+            click.echo('Riak Mesos Framework Version ' + constants.version)
+            exit(0)
+        if config_schema:
+            click.echo('{}')
+            exit(0)
+
+        self.verbose = verbose
+        self.json = json
+
+        if self.debug is None:
+            self.debug = debug
+            if self.debug:
+                logging.basicConfig(level=0)
+                self.verbose = True
+            elif self.verbose:
+                logging.basicConfig(level=20)
+            else:
+                logging.basicConfig(level=50)
+
+        if home is not None:
+            self.home = home
+        if self.config is None or config is not None:
+            if config is not None:
+                self.config_file = config
+            else:
+                usr_conf_file = self.home + '/.config/riak-mesos/config.json'
+                sys_conf_file = '/etc/riak-mesos/config.json'
+                if os.path.isfile(usr_conf_file):
+                    self.config_file = usr_conf_file
+                elif os.path.isfile(sys_conf_file):
+                    self.config_file = sys_conf_file
+                else:
+                    from os.path import expanduser
+                    usr_home = expanduser("~")
+                    usr_home_conf_file = \
+                        usr_home + '/.config/riak-mesos/config.json'
+                    if os.path.isfile(usr_home_conf_file):
+                        self.config_file = usr_home_conf_file
+                    else:
+                        self.config_file = None
+            self.config = RiakMesosConfig(self.config_file)
+
+        if cluster is not None:
+            self.cluster = cluster
+        if node is not None:
+            self.node = node
+
+        _framework = self.config.get('framework-name')
+        if _framework != '':
+            self.framework = _framework
+
+        if 'timeout' in kwargs and kwargs['timeout'] is not None:
+            self.timeout = kwargs['timeout']
 
     def log(self, msg, *args):
         """Logs a message to stderr."""
@@ -103,6 +166,7 @@ class Context(object):
             return
         if _cfg_master == '':
             _cfg_master = 'leader.mesos:5050'
+        _cfg_master = 'http://' + _cfg_master + '/'
         r = self.http_request('get', _cfg_master, False)
         if r.status_code == 200:
             self.master_url = _cfg_master
@@ -224,23 +288,68 @@ class Context(object):
             r = http.request(method,
                              url,
                              verify=verify,
+                             is_success=_default_is_success,
                              **kwargs)
             self.vlog_request(r)
+            if r.status_code == 404:
+                return FailedRequest(
+                    404, method, url,
+                    'Resource at ' + url + ' was not found (Status Code: 404)')
             return r
         except Exception as e:
             if exit_on_failure:
                 raise e
             else:
                 self.vlog(e)
-                return FailedRequest(method, url)
+                return FailedRequest(0, method, url)
 
 
-pass_context = click.make_pass_decorator(Context, ensure=True)
+def _default_is_success(status_code):
+    return 200 <= status_code <= 404
+
+
 cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                           'commands'))
+_common_options = [
+    click.make_pass_decorator(Context, ensure=True),
+    click.option('--home',
+                 type=click.Path(exists=True, file_okay=False,
+                                 resolve_path=True),
+                 help='Changes the folder to operate on.'),
+    click.option('--config',
+                 type=click.Path(exists=True, file_okay=True,
+                                 resolve_path=True),
+                 help='Path to JSON configuration file.'),
+    click.option('-v', '--verbose', is_flag=True,
+                 help='Enables verbose mode.'),
+    click.option('--debug', is_flag=True,
+                 help='Enables very verbose / debug mode.'),
+    click.option('--info', is_flag=True, help='Display information.'),
+    click.option('--version', is_flag=True, help='Display version.'),
+    click.option('--config-schema', is_flag=True,
+                 help='Display config schema.'),
+    click.option('--cluster',
+                 help='Changes the cluster to operate on.'),
+    click.option('--node',
+                 help='Changes the node to operate on.'),
+    click.option('--json', is_flag=True,
+                 help='Enables json output.')
+]
+
+
+def pass_context(func):
+    for option in reversed(_common_options):
+        func = option(func)
+    return func
 
 
 class RiakMesosCLI(click.MultiCommand):
+
+    def __init__(self, *args, **kwargs):
+        click.MultiCommand.__init__(self, *args,
+                                    invoke_without_command=True,
+                                    no_args_is_help=True,
+                                    **kwargs)
 
     def list_commands(self, ctx):
         rv = []
@@ -251,7 +360,7 @@ class RiakMesosCLI(click.MultiCommand):
         rv.sort()
         return rv
 
-    def get_command(self, ctx, name):
+    def get_command(self, ctx, name=""):
         try:
             if sys.version_info[0] == 2:
                 name = name.encode('ascii', 'replace')
@@ -262,40 +371,13 @@ class RiakMesosCLI(click.MultiCommand):
         return mod.cli
 
 
-@click.command(cls=RiakMesosCLI, context_settings=CONTEXT_SETTINGS)
-@click.option('--home', type=click.Path(exists=True, file_okay=False,
-                                        resolve_path=True),
-              help='Changes the folder to operate on.')
-@click.option('--config', type=click.Path(exists=True, file_okay=True,
-                                          resolve_path=True),
-              help='Path to JSON configuration file.')
-@click.option('-v', '--verbose', is_flag=True,
-              help='Enables verbose mode.')
+@click.group(cls=RiakMesosCLI, context_settings=CONTEXT_SETTINGS)
 @pass_context
-def cli(ctx, verbose, home, config):
-    """A complex command line interface."""
-    ctx.verbose = verbose
-    if home is not None:
-        ctx.home = home
-    if config is not None:
-        ctx.config_file = config
-    else:
-        ctx.config_file = find_config(ctx.home)
-    ctx.config = RiakMesosConfig(ctx.config_file)
-
-    _framework = ctx.config.get('framework-name')
-    if _framework != '':
-        ctx.framework = _framework
-
-
-def find_config(home):
-    usr_conf_file = home + '/.config/riak-mesos/config.json'
-    sys_conf_file = '/etc/riak-mesos/config.json'
-    if os.path.isfile(usr_conf_file):
-        return usr_conf_file
-    elif os.path.isfile(sys_conf_file):
-        return sys_conf_file
-    return None
+def cli(ctx, **kwargs):
+    """Command line utility for the Riak Mesos Framework / DCOS Service.
+    This utility provides tools for modifying and accessing your Riak
+    on Mesos installation."""
+    ctx.init_args(**kwargs)
 
 
 # class RiakMesosCli(object):

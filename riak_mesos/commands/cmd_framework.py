@@ -21,26 +21,36 @@ from riak_mesos.cli import pass_context
 
 
 @click.group()
-def cli():
-    pass
+@pass_context
+def cli(ctx, **kwargs):
+    """Interact with an instance of Riak Mesos Framework"""
+    ctx.init_args(**kwargs)
 
 
 @cli.command()
+@click.option('--json', is_flag=True,
+              help='Enables json output.')
 @pass_context
-def config(ctx):
+def config(ctx, **kwargs):
+    """Displays configration for riak marathon app"""
+    ctx.init_args(**kwargs)
     obj = ctx.config.framework_marathon_string()
     click.echo(obj)
 
 
 @cli.command()
 @pass_context
-def endpoints(ctx):
+def endpoints(ctx, **kwargs):
+    """Retrieves useful endpoints for the framework"""
+    ctx.init_args(**kwargs)
     print("Framework HTTP API: " + ctx.framework_url)
 
 
 @cli.command()
 @pass_context
-def install(ctx):
+def install(ctx, **kwargs):
+    """Generates and installs a marathon app for the framework"""
+    ctx.init_args(**kwargs)
     framework_json = ctx.config.framework_marathon_json()
     client = ctx.marathon_client()
     client.add_app(framework_json)
@@ -49,15 +59,23 @@ def install(ctx):
 
 @cli.command()
 @pass_context
-def status(ctx):
+def status(ctx, **kwargs):
+    """Prints the current marathon app status for the framework."""
+    ctx.init_args(**kwargs)
     client = ctx.marathon_client()
     result = client.get_app('/' + ctx.framework)
     click.echo(json.dumps(result))
 
 
 @cli.command('wait-for-service')
+@click.option('--timeout', type=int,
+              help='Number of seconds to wait for a response.')
 @pass_context
-def wait_for_service(ctx):
+def wait_for_service(ctx, **kwargs):
+    """Waits timeout seconds (default is 60) or until Framework is running.
+    Specify timeout with --timeout."""
+    ctx.init_args(**kwargs)
+
     def inner_wait_for_framework(seconds):
         if seconds == 0:
             click.echo('Riak Mesos Framework did not respond within ' +
@@ -74,7 +92,9 @@ def wait_for_service(ctx):
 
 @cli.command()
 @pass_context
-def uninstall(ctx):
+def uninstall(ctx, **kwargs):
+    """Removes the Riak Mesos Framework application from Marathon"""
+    ctx.init_args(**kwargs)
     click.echo('Uninstalling framework...')
     client = ctx.marathon_client()
     client.remove_app('/' + ctx.framework)
@@ -87,7 +107,9 @@ def uninstall(ctx):
 @click.option('-f', '--force', is_flag=True,
               help='Forcefully remove zookeeper data.')
 @pass_context
-def clean_metadata(ctx, force):
+def clean_metadata(ctx, force, *args, **kwargs):
+    """Deletes all metadata for the selected Riak Mesos Framework instance"""
+    ctx.init_args(**kwargs)
     fn = ctx.config.get('framework-name')
     if force:
         click.echo('\nRemoving zookeeper information\n')
@@ -107,8 +129,11 @@ def clean_metadata(ctx, force):
 
 @cli.command()
 @pass_context
-def teardown(ctx):
-    r = ctx.master_request('get', '/master/state.json', False)
+def teardown(ctx, **kwargs):
+    """Issues a teardown command for each of the matching frameworkIds
+    to the Mesos master"""
+    ctx.init_args(**kwargs)
+    r = ctx.master_request('get', 'master/state.json', False)
     ctx.vlog_request(r)
     if r.status_code != 200:
         click.echo('Failed to get state.json from master.')
@@ -116,7 +141,7 @@ def teardown(ctx):
     js = json.loads(r.text)
     for fw in js['frameworks']:
         if fw['name'] == ctx.framework:
-            r = ctx.master_request('post', '/master/teardown',
+            r = ctx.master_request('post', 'master/teardown',
                                    data='frameworkId='+fw['id'])
             ctx.vlog_request(r)
             click.echo('Finished teardown.')
