@@ -57,7 +57,7 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
 		dcos package install riak --options /etc/riak-mesos/config.json
 
-### DCOS v0.3.2 Install
+## DCOS v0.3.2 Install ##
 
 
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
@@ -74,8 +74,7 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
         dcos package install riak --options /etc/riak-mesos/config.json
 
-Create a Configuration File
----------------------------
+#  #
 
 - Copy the contents of [config.example.json](config/config.example.json) ([config.dcos.json](config/config.dcos.json) for DCOS users) into a local file at the path `/etc/riak-mesos/config.json`:
 
@@ -92,78 +91,64 @@ Create a Configuration File
     - `riak.node.explorer-url`: [riak_explorer/releases](https://github.com/basho-labs/riak_explorer/releases)
     - `riak.director.url`: [riak-mesos-director/releases](https://github.com/basho-labs/riak-mesos-director/releases)
 
-Usage
-=====
+#### ===== ####
 
 Try executing `riak-mesos`, `riak-mesos -h`, or `riak-mesos --help` to output the usage instructions like so:
 
 ```
 riak-mesos --help
 
-Command line utility for the Riak Mesos Framework / DCOS Service.
-This utility provides tools for modifying and accessing your Riak
-on Mesos installation.
+Usage: riak-mesos [OPTIONS] COMMAND [ARGS]...
 
-Usage: riak-mesos <subcommands> [options]
+  Command line utility for the Riak Mesos Framework / DCOS Service. This
+  utility provides tools for modifying and accessing your Riak on Mesos
+  installation.
 
-Subcommands:
-    config
-    framework config
-    framework install
-    framework status
-    framework wait-for-service [--timeout <seconds>]
-    framework teardown
-    framework uninstall
-    framework endpoints
-    cluster info
-    cluster config [--file]
-    cluster config advanced [--file]
-    cluster list [--json]
-    cluster create
-    cluster wait-for-service [--timeout <seconds>]
-    cluster endpoints
-    cluster restart
-    cluster destroy
-    node info --node <name>
-    node aae-status --node <name>
-    node status --node <name>
-    node ringready --node <name>
-    node transfers --node <name>
-    node transfers wait-for-service --node <name> [--timeout <seconds>]
-    node bucket-type create --node <name> --bucket-type <name>
-                            --props "<json>"
-    node bucket-type list --node <name>
-    node list [--json]
-    node remove --node <name> [--force]
-    node add [--nodes <number>]
-    node wait-for-service --node <name> [--timeout <seconds>]
-    node log list --node <name>
-    node log  --node <name> --file <log_file> [--lines <num_lines>]
-    node stats  --node <name>
-    director config
-    director install
-    director uninstall
-    director endpoints
-    director wait-for-service [--timeout <seconds>]
+Options:
+  --home DIRECTORY  Changes the folder to operate on.
+  --config PATH     Path to JSON configuration file.
+  -v, --verbose     Enables verbose mode.
+  --debug           Enables very verbose / debug mode.
+  --info            Display information.
+  --version         Display version.
+  --config-schema   Display config schema.
+  --cluster TEXT    Changes the cluster to operate on.
+  --node TEXT       Changes the node to operate on.
+  --json            Enables json output.
+  --insecure-ssl    Turns SSL verification off on HTTP requests
+  --help            Show this message and exit.
 
-Options (available on most commands):
-    --config <json-file> (/etc/riak-mesos/config.json)
-    --cluster <cluster-name> (default)
-    --debug
-    --help
-    --info
-    --version
+Commands:
+  cluster    Interact with Riak clusters
+  config     Displays configuration
+  director   Interact with an instance of Riak Mesos...
+  framework  Interact with an instance of Riak Mesos...
+  node       Interact with a Riak node
 ```
 
 To get information about a sub-command, try `riak-mesos <command> --help`:
 
 ```
-riak-mesos cluster create --help
-Creates a new cluster. Specify the name with --cluster (default is default).
+riak-mesos cluster --help
+Usage: riak-mesos cluster [OPTIONS] COMMAND [ARGS]...
+
+  Interact with Riak clusters
+
+...
+
+Commands:
+  config            Gets or sets the riak.conf configuration for...
+  config-advanced   Gets or sets the advanced.config...
+  create            Creates a new cluster.
+  destroy           Destroys a cluster.
+  endpoints         Iterates over all nodes in cluster and prints...
+  info              Gets current metadata about a cluster
+  list              Retrieves a list of cluster names
+  restart           Performs a rolling restart on a cluster.
+  wait-for-service  Iterates over all nodes in cluster and...
 ```
 
-Install the RMF
----------------
+#  #
 
 **NOTE:** This step is unecessary for DCOS users since the `dcos package install` automatically performs this step.
 
@@ -175,15 +160,14 @@ To make deployment scripting easier, use the `wait-for-service` command to block
 
     riak-mesos framework wait-for-service
 
-Create a cluster
-----------------
+#  #
 
 Let's start with a 3 node cluster. First check if any clusters have already been created, and then verify the configuration:
 
 
     riak-mesos cluster list
     riak-mesos cluster config
-    riak-mesos cluster config advanced
+    riak-mesos cluster config-advanced
 
 Create the cluster object in the RMF metadata, and then instruct the scheduler to create 3 Riak nodes:
 
@@ -230,8 +214,7 @@ The output should look similar to this:
 }
 ```
 
-Inspecting Nodes
-----------------
+#  #
 
 Now that the cluster is running, let's perform some checks on individual nodes. This first command will show the hostname and ports for http and protobufs, as well as the metadata stored by the RMF:
 
@@ -279,31 +262,27 @@ Other useful information can be found by executing these commands:
     riak-mesos node ringready --node riak-default-1
     riak-mesos node transfers --node riak-default-1
 
-Update the Cluster Configuration
---------------------------------
+#  #
 
 You can customize the `riak.conf` and `advanced.config` for a cluster if necessary. Use [riak-mesos-scheduler/master/priv/riak.conf.default](https://raw.githubusercontent.com/basho-labs/riak-mesos-scheduler/master/priv/riak.conf.default) and [riak-mesos-scheduler/master/priv/advanced.config.default](https://raw.githubusercontent.com/basho-labs/riak-mesos-scheduler/master/priv/advanced.config.default) as templates. It is important that all of the values specified with `{{...}}` remain intact.
 
 Once you have created your customized versions of these files, you can save them to the cluster using the following commands:
 
-Update riak.conf
-----------------
+#  #
 
 As an example, I've created a file called `riak.more_logging.conf` in which I've updated this line: `log.console.level = debug`
 
     riak-mesos cluster config --file riak.more_logging.conf
 
-Update advanced.config
-----------------------
+#  #
 
 Similarly the advanced.config can be updated like so:
 
-    riak-mesos cluster config advanced --file /path/to/your/advanced.config
+    riak-mesos cluster config-advanced --file /path/to/your/advanced.config
 
 **Note:** If you already have nodes running in a cluster, you'll need to perform a `riak-mesos cluster restart` to force the cluster to pick up the new changes.
 
-Restart the Cluster
--------------------
+#  #
 
 If your Riak cluster is in a stable state (no active transfers, ringready is true), there are certain situations where you might want to perform a rolling restart on your cluster. Execute the following to restart your cluster:
 
@@ -318,8 +297,7 @@ Situations where a cluster restart is required include:
 -   Upgrading to a new version of RMF scheduler or any of the other artifacts
 -   Upgrading to a new version of Riak
 
-Create Bucket Types
--------------------
+#  #
 
 Several newer features in Riak require the creation of bucket types. To see the current bucket types and their properties, use the following:
 
@@ -343,8 +321,7 @@ Which should give something like this back:
 
     {"mytype":{"success":true,"actions":{"update":"mytype updated"}}}
 
-Install the Director
------------------
+#  #
 
 There are a few ways to access the Riak nodes in your cluster, including hosting your own HAProxy and keeping the config updated to include the host names and ports for all of the nodes. This approach can be problematic because the HAProxy config would need to be updated every time there is a change to one of the nodes in the cluster resulting from restarts, task failures, etc.
 
@@ -354,8 +331,7 @@ To install the director as a marathon app with an id that matches your configure
 
     riak-mesos director install
 
-Add Some Data
--------------
+#  #
 
 Assuming that the director is now running, we can now find an endpoint to talk to Riak with this command:
 
@@ -379,8 +355,7 @@ Let's write a few keys to the cluster using the director:
     curl -XPUT $RIAK_HTTP/buckets/test/keys/one -d "this is data"
     curl -XPUT $RIAK_HTTP/buckets/test/keys/two -d "this is data too"
 
-Scale up
---------
+#  #
 
 When scaling a cluster up, you should attempt to do so days or even weeks before the additional load is expected to allow the cluster some time to transfer partitions around and stabilize. When you are ready to increase the node count, you can just run the node add command like so:
 
@@ -392,8 +367,7 @@ Check the status of the node and make sure it was successfully joined to the clu
 
     riak-mesos node status --node riak-default-4
 
-Scale down
-----------
+#  #
 
 Scaling down requires the same patience as scaling up in that you should be waiting for transfers to complete between each node removal.
 
@@ -439,8 +413,7 @@ The following commands can be used to remove part or all of the RMF.
 
         sudo pip uninstall riak-mesos
 
-DCOS Riak Uninstall
--------------------
+#  #
 
 Follow these steps to cleanly remove riak from a DCOS cluster:
 
