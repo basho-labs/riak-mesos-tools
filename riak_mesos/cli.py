@@ -159,13 +159,14 @@ class Context(object):
 
     def _init_master(self):
         dcos_url = dcos_config.get_config().get('core.dcos_url')
-        dcos_url.rstrip('/')
-        _dcos_mesos = dcos_url + '/service/mesos/'
+        if dcos_url is not None:
+            dcos_url.rstrip('/')
+            _dcos_mesos = dcos_url + '/service/mesos/'
+            r = self.http_request('get', _dcos_mesos, False)
+            if r.status_code == 200:
+                self.master_url = _dcos_mesos
+                return
         _cfg_master = self.config.get('master')
-        r = self.http_request('get', _dcos_mesos, False)
-        if r.status_code == 200:
-            self.master_url = _dcos_mesos
-            return
         if _cfg_master == '':
             _cfg_master = 'leader.mesos:5050'
         _cfg_master = 'http://' + _cfg_master + '/'
@@ -185,15 +186,16 @@ class Context(object):
 
     def _init_api(self):
         dcos_url = dcos_config.get_config().get('core.dcos_url')
-        dcos_url.rstrip('/')
-        _dcos_framework_url = dcos_url + '/service/' + self.framework + '/'
+        if dcos_url is not None:
+            dcos_url.rstrip('/')
+            _dcos_framework_url = dcos_url + '/service/' + self.framework + '/'
+            r = self.http_request('get',
+                                  _dcos_framework_url + 'healthcheck', False)
+            self.vlog_request(r)
+            if r.status_code == 200:
+                self.framework_url = _dcos_framework_url
+                return
         _cfg_framework_url = self.config.get('framework-url')
-        r = self.http_request('get',
-                              _dcos_framework_url + 'healthcheck', False)
-        self.vlog_request(r)
-        if r.status_code == 200:
-            self.framework_url = _dcos_framework_url
-            return
         if _cfg_framework_url != '':
             r = self.http_request('get',
                                   _cfg_framework_url + 'healthcheck', False)
@@ -230,13 +232,14 @@ class Context(object):
 
     def _init_marathon(self):
         dcos_url = dcos_config.get_config().get('core.dcos_url')
-        dcos_url.rstrip('/')
-        _dcos_marathon = dcos_url + '/service/marathon/'
+        if dcos_url is not None:
+            dcos_url.rstrip('/')
+            _dcos_marathon = dcos_url + '/service/marathon/'
+            r = self.http_request('get', _dcos_marathon + 'ping', False)
+            if r.status_code == 200:
+                self.marathon_url = _dcos_marathon
+                return
         _cfg_marathon = self.config.get('marathon')
-        r = self.http_request('get', _dcos_marathon + 'ping', False)
-        if r.status_code == 200:
-            self.marathon_url = _dcos_marathon
-            return
         if _cfg_marathon == '':
             _cfg_marathon = 'marathon.mesos:8080'
         _cfg_marathon = 'http://' + _cfg_marathon + '/'
