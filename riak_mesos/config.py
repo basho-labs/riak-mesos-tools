@@ -34,12 +34,12 @@ class RiakMesosConfig(object):
         mj['cpus'] = self.get('scheduler', 'cpus')
         mj['mem'] = self.get('scheduler', 'mem')
         mj['ports'] = [0]
-        mj['uris'] = []
-        mj['uris'].append(self.get('scheduler', 'url'))
-        mj['uris'].append(self.get('executor', 'url'))
-        mj['uris'].append(self.get('node', 'url'))
-        mj['uris'].append(self.get('node', 'patches-url'))
-        mj['uris'].append(self.get('node', 'explorer-url'))
+        mj['fetch'] = []
+        mj['fetch'].append({ 'uri': self.get('scheduler', 'url')})
+        mj['fetch'].append({ 'uri': self.get('executor', 'url'), 'extract': false })
+        mj['fetch'].append({ 'uri': self.get('node', 'url'), 'extract': false })
+        mj['fetch'].append({ 'uri': self.get('node', 'patches-url'), 'extract': false })
+        mj['fetch'].append({ 'uri': self.get('node', 'explorer-url'), 'extract': false })
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
