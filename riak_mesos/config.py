@@ -34,13 +34,13 @@ class RiakMesosConfig(object):
         mj['cpus'] = self.get('scheduler', 'cpus')
         mj['mem'] = self.get('scheduler', 'mem')
         mj['ports'] = [0]
-        mj['uris'] = []
-        mj['uris'].append(self.get('scheduler', 'url'))
-        mj['uris'].append(self.get('executor', 'url'))
-        mj['uris'].append(self.get('node', 'url'))
-        mj['uris'].append(self.get('node', 'patches-url'))
-        mj['uris'].append(self.get('node', 'explorer-url'))
-        mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
+        mj['fetch'] = []
+        mj['fetch'].append({ 'uri': self.get('scheduler', 'url')})
+        mj['fetch'].append({ 'uri': self.get('executor', 'url'), 'extract': False })
+        mj['fetch'].append({ 'uri': self.get('node', 'url'), 'extract': False })
+        mj['fetch'].append({ 'uri': self.get('node', 'patches-url'), 'extract': False })
+        mj['fetch'].append({ 'uri': self.get('node', 'explorer-url'), 'extract': False })
+        mj['cmd'] = './bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
         mj['env'] = {}
@@ -121,7 +121,7 @@ class RiakMesosConfig(object):
                 'DIRECTOR_FRAMEWORK': self.get('framework-name'),
                 'DIRECTOR_CLUSTER': cluster
             },
-            'uris': [self.get('director', 'url')],
+            'fetch': [{'uri': self.get('director', 'url')}],
             'healthChecks': [
                 {
                     'protocol': 'HTTP',
