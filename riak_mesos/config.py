@@ -121,7 +121,7 @@ class RiakMesosConfig(object):
                 'DIRECTOR_FRAMEWORK': self.get('framework-name'),
                 'DIRECTOR_CLUSTER': cluster
             },
-            'uris': [self.get('director', 'url')],
+            'fetch': [{'uri': self.get('director', 'url')}],
             'healthChecks': [
                 {
                     'protocol': 'HTTP',
