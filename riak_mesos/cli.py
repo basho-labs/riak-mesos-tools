@@ -378,18 +378,34 @@ class Context(object):
     def framework_request(self, method, path, exit_on_failure=True, **kwargs):
         if self.client is None:
             self._init_client()
-        framework_url = self.client.framework_url()
-        return self.http_request(method,
-                                 framework_url + path,
-                                 exit_on_failure,
-                                 **kwargs)
+        try:
+            framework_url = self.client.framework_url()
+            return self.http_request(method,
+                                     framework_url + path,
+                                     exit_on_failure,
+                                     **kwargs)
+        except Exception as e:
+            if exit_on_failure:
+                raise e
+            else:
+                self.vlog(e)
+                return FailedRequest(0, method,
+                                     'framework_url_not_available/' + path)
 
     def master_request(self, method, path, exit_on_failure=True, **kwargs):
         if self.client is None:
             self._init_client()
-        master_url = self.client.master_url()
-        return self.http_request(method, master_url + path,
-                                 exit_on_failure, **kwargs)
+        try:
+            master_url = self.client.master_url()
+            return self.http_request(method, master_url + path,
+                                     exit_on_failure, **kwargs)
+        except Exception as e:
+            if exit_on_failure:
+                raise e
+            else:
+                self.vlog(e)
+                return FailedRequest(0, method,
+                                     'master_url_not_available/' + path)
 
     def marathon_client(self):
         if self.client is None:
