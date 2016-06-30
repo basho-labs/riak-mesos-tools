@@ -82,22 +82,22 @@ def info(ctx, **kwargs):
 
 
 @cli.command()
-@click.option('--file',
+@click.option('--file', 'riak_file',
               type=click.Path(exists=True, file_okay=True,
                               resolve_path=True),
               help='Cluster riak.conf file to save.')
 @pass_context
-def config(ctx, file, **kwargs):
+def config(ctx, riak_file, **kwargs):
     """Gets or sets the riak.conf configuration for a cluster, specify cluster
     id with --cluster and config file location with --file"""
     ctx.init_args(**kwargs)
-    if file is None:
+    if riak_file is None:
         r = ctx.api_request('get', 'clusters/' +
                             ctx.cluster + '/config',
                             headers={'Accept': '*/*'})
         click.echo(r.text)
     else:
-        with open(file) as data_file:
+        with open(riak_file) as data_file:
             r = ctx.api_request('put', 'clusters/' +
                                 ctx.cluster + '/config',
                                 data=data_file,
@@ -106,22 +106,22 @@ def config(ctx, file, **kwargs):
 
 
 @cli.command('config-advanced')
-@click.option('--file',
+@click.option('--file', 'advanced_file',
               type=click.Path(exists=True, file_okay=True,
                               resolve_path=True),
               help='Cluster advanced.config file to save.')
 @pass_context
-def config_advanced(ctx, file, **kwargs):
+def config_advanced(ctx, advanced_file, **kwargs):
     """Gets or sets the advanced.config configuration for a cluster, specify
     cluster id with --cluster and config file location with --file"""
     ctx.init_args(**kwargs)
-    if file is None:
+    if advanced_file is None:
         r = ctx.api_request('get', 'clusters/' +
                             ctx.cluster + '/advancedConfig',
                             headers={'Accept': '*/*'})
         click.echo(r.text)
     else:
-        with open(file) as data_file:
+        with open(advanced_file) as data_file:
             r = ctx.api_request('put', 'clusters/' +
                                 ctx.cluster +
                                 '/advancedConfig',
@@ -130,9 +130,9 @@ def config_advanced(ctx, file, **kwargs):
             click.echo(r.text)
 
 
-@cli.command()
+@cli.command('list')
 @pass_context
-def list(ctx, **kwargs):
+def cluster_list(ctx, **kwargs):
     """Retrieves a list of cluster names"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get', 'clusters')

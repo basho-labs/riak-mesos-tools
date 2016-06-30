@@ -109,11 +109,11 @@ def endpoints(ctx, **kwargs):
     task = app['tasks'][0]
     ports = task['ports']
     hostname = task['host']
-    endpoints = {
+    director_endpoints = {
         'framework': ctx.framework,
         'cluster': ctx.cluster,
         'riak_http': hostname + ':' + str(ports[0]),
         'riak_pb': hostname + ':' + str(ports[1]),
         'director_http': hostname + ':' + str(ports[2])
     }
-    click.echo(json.dumps(endpoints))
+    click.echo(json.dumps(director_endpoints))

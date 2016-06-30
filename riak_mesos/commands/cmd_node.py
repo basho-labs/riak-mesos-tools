@@ -38,9 +38,9 @@ def wait_for_service(ctx, **kwargs):
     wait_for_node(ctx, ctx.node)
 
 
-@cli.command()
+@cli.command('list')
 @pass_context
-def list(ctx, **kwargs):
+def node_list(ctx, **kwargs):
     """Retrieves a list of node ids for a given --cluster (default is
     default)"""
     ctx.init_args(**kwargs)
@@ -161,23 +161,23 @@ def bucket_type(ctx, **kwargs):
 
 
 @bucket_type.command('create')
-@click.option('--bucket-type',
+@click.option('--bucket-type', 'b_type',
               help='Bucket type name.')
 @click.option('--props',
               help='Bucket type properties json.')
 @pass_context
-def bucket_type_create(ctx, bucket_type, props, **kwargs):
+def bucket_type_create(ctx, b_type, props, **kwargs):
     """Creates and activates a bucket type on a node, specify node id with
     --node, bucket type with --bucket-type, and JSON props with --props"""
     ctx.init_args(**kwargs)
-    if bucket_type is None:
+    if b_type is None:
         raise CliError('--bucket-type must be specified')
     if props is None:
         raise CliError('--props JSON must be specified')
     r = ctx.api_request('post',
                         'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node +
-                        '/types/' + bucket_type,
+                        '/types/' + b_type,
                         data=props)
     click.echo(r.text)
 
@@ -202,12 +202,12 @@ def log(ctx, **kwargs):
 
 
 @log.command('tail')
-@click.option('--file',
+@click.option('--file', 'log_file',
               help='Log file to view.', default='console.log')
 @click.option('--lines', type=int, default=500,
               help='Number of log lines to view.')
 @pass_context
-def log_tail(ctx, file, lines, **kwargs):
+def log_tail(ctx, log_file, lines, **kwargs):
     """Shows tail of log file for a node, specify node id with --node,
     filename with --file, and number of lines with --lines"""
     ctx.init_args(**kwargs)
@@ -215,7 +215,7 @@ def log_tail(ctx, file, lines, **kwargs):
     r = ctx.framework_request('get', 'explore/clusters/' +
                               ctx.cluster + '/nodes/' +
                               node_name + '/log/files/' +
-                              file + '?rows=' + str(lines),
+                              log_file + '?rows=' + str(lines),
                               headers={'Accept': '*/*'})
     if r.status_code != 200:
         click.echo('Failed to get log files, status_code: ' +
