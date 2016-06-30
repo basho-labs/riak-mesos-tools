@@ -16,20 +16,20 @@
 # limitations under the License.
 """Riak Mesos Framework CLI"""
 
-import click
 import logging
 import os
 import sys
 import traceback
+from os.path import expanduser
 
-from dcos import http, marathon, mesos
+import click
 from dcos import config as dcos_config
 from dcos import errors as dcos_errors
+from dcos import http, marathon, mesos
 from kazoo.client import KazooClient
-from os.path import expanduser
-from riak_mesos.config import RiakMesosConfig
-from riak_mesos import constants
 
+from riak_mesos import constants
+from riak_mesos.config import RiakMesosConfig
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='RIAK_MESOS')
 

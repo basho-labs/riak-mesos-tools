@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
 import json
 
+import click
+
 from riak_mesos.cli import pass_context
-from riak_mesos.util import wait_for_node, wait_for_node_status_valid, \
-    node_info
+from riak_mesos.util import (node_info, wait_for_node,
+                             wait_for_node_status_valid)
 
 
 @click.group()
