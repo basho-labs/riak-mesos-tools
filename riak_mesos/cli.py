@@ -99,7 +99,7 @@ class RiakMesosDCOSStrategy(object):
     def marathon_url(self):
         if self._marathon_url is not None:
             return self._marathon_url
-        _marathon = self.dcos_url + '/service/marathon/'
+        _marathon = self.client.get_dcos_url('marathon/')
         r = self.ctx.http_request('get', _marathon + 'ping', False)
         if r.status_code == 200:
             self._marathon_url = _marathon
@@ -111,7 +111,7 @@ class RiakMesosDCOSStrategy(object):
     def master_url(self):
         if self._master_url is not None:
             return self._master_url
-        _mesos = self.dcos_url + '/service/mesos/'
+        _mesos = self.client.master_url('')
         r = self.ctx.http_request('get', _mesos, False)
         if r.status_code == 200:
             self._master_url = _mesos
