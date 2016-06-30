@@ -22,10 +22,12 @@ import os
 import sys
 import traceback
 
-from dcos import http, marathon
+from dcos import http, marathon, mesos
 from dcos import config as dcos_config
-from riak_mesos.config import RiakMesosConfig
+from dcos import errors as dcos_errors
 from kazoo.client import KazooClient
+from os.path import expanduser
+from riak_mesos.config import RiakMesosConfig
 from riak_mesos import constants
 
 
@@ -54,50 +56,243 @@ class CliError(Exception):
         return repr(self.message)
 
 
+class RiakMesosDCOSStrategy(object):
+    def __init__(self, ctx):
+        self._master_url = None
+        self._zk_url = None
+        self._marathon_url = None
+        self._framework_url = None
+        self.ctx = ctx
+        try:
+            self.ctx.vlog('Attempting to create DCOSClient')
+            dcos_client = mesos.DCOSClient()
+            self.client = dcos_client
+            dcos_url = self.client.get_dcos_url('')
+            ssl_verify = dcos_config.get_config().get('core.ssl_verify')
+            self.ctx.vlog('DCOS core.ssl_verify value = ' + ssl_verify)
+            if ssl_verify is not None and (
+                    not ssl_verify or ssl_verify == 'false'):
+                self.ctx.vlog('Setting insecure_ssl to True')
+                self.ctx.insecure_ssl = True
+            if dcos_url is None:
+                raise Exception("Unable to find DCOS server URL")
+            dcos_url.rstrip('/')
+            self.dcos_url = dcos_url
+        except dcos_errors.DCOSException:
+            raise Exception("DCOS is not configured properly")
+
+    def framework_url(self):
+        if self._framework_url is not None:
+            return self._framework_url
+        # TODO: get framework name from dcos?
+        _framework_url = self.dcos_url + '/service/' + self.ctx.framework + '/'
+        r = self.ctx.http_request('get',
+                                  _framework_url + 'healthcheck',
+                                  False)
+        if r.status_code == 200:
+            self._framework_url = _framework_url
+            self.ctx.vlog("Setting framework URL to " +
+                          self._framework_url)
+            return self._framework_url
+        raise CliError("Unable to to find framework URL")
+
+    def marathon_url(self):
+        if self._marathon_url is not None:
+            return self._marathon_url
+        _marathon = self.dcos_url + '/service/marathon/'
+        r = self.ctx.http_request('get', _marathon + 'ping', False)
+        if r.status_code == 200:
+            self._marathon_url = _marathon
+            self.ctx.vlog("Setting marathon URL to " +
+                          self._marathon_url)
+            return self._marathon_url
+        raise CliError("Unable to to find marathon URL")
+
+    def master_url(self):
+        if self._master_url is not None:
+            return self._master_url
+        _mesos = self.dcos_url + '/service/mesos/'
+        r = self.ctx.http_request('get', _mesos, False)
+        if r.status_code == 200:
+            self._master_url = _mesos
+            self.ctx.vlog("Setting master URL to " +
+                          self._master_url)
+            return self._master_url
+        raise CliError("Unable to to find master URL")
+
+    def zk_url(self):
+        if self._zk_url is not None:
+            return self._zk_url
+        _zk = 'leader.mesos:2181'
+        # TODO: Get from dcos, and verify?
+        self._zk_url = _zk
+        self.ctx.vlog("Setting zookeeper URL to " +
+                      self._zk_url)
+        return self._zk_url
+
+
+class RiakMesosClient(object):
+    def __init__(self, ctx, _strategy=None):
+        self._master_url = None
+        self._zk_url = None
+        self._marathon_url = None
+        self._framework_url = None
+        self.ctx = ctx
+
+        if _strategy is not None:
+            strategy = _strategy(ctx)
+            if strategy.framework_url is not None:
+                self.framework_url = strategy.framework_url
+            if strategy.master_url is not None:
+                self.master_url = strategy.master_url
+            if strategy.zk_url is not None:
+                self.zk_url = strategy.zk_url
+            if strategy.marathon_url is not None:
+                self.marathon_url = strategy.marathon_url
+        else:
+            self.ctx.vlog("Defaulting to configuration based URLs")
+
+    def framework_url(self):
+        if self._framework_url is not None:
+            return self._framework_url
+        _framework_url = self.ctx.config.get('framework-url')
+        if _framework_url != '':
+            _framework_url.rstrip('/')
+            _framework_url = 'http://' + _framework_url + '/'
+            r = self.ctx.http_request('get',
+                                      _framework_url + 'healthcheck',
+                                      False)
+            if r.status_code == 200:
+                self._framework_url = _framework_url
+                self.ctx.vlog("Setting framework URL to " +
+                              self._framework_url)
+                return self._framework_url
+        return self.marathon_framework_url()
+
+    def marathon_framework_url(self):
+        client = self.ctx.marathon_client()
+        tasks = client.get_tasks(self.ctx.framework)
+        if len(tasks) != 0:
+            host = tasks[0]['host']
+            port = tasks[0]['ports'][0]
+            _framework_url = 'http://' + host + ':' + str(port) + '/'
+            r = self.ctx.http_request('get',
+                                      _framework_url + 'healthcheck',
+                                      False)
+            if r.status_code == 200:
+                self._framework_url = _framework_url
+                self.ctx.vlog("Setting framework URL to " +
+                              self._framework_url)
+                return self._framework_url
+        raise CliError("Unable to to find framework URL")
+
+    def marathon_url(self):
+        if self._marathon_url is not None:
+            return self._marathon_url
+        _marathon = self.ctx.config.get('marathon')
+        if _marathon == '':
+            _marathon = 'marathon.mesos:8080'
+        _marathon = 'http://' + _marathon + '/'
+        r = self.ctx.http_request('get',
+                                  _marathon + 'ping', False)
+        if r.status_code == 200:
+            self._marathon_url = _marathon
+            self.ctx.vlog("Setting marathon URL to " +
+                          self._marathon_url)
+            return self._marathon_url
+        raise CliError("Unable to to find marathon URL")
+
+    def master_url(self):
+        if self._master_url is not None:
+            return self._master_url
+        _master = self.ctx.config.get('master')
+        if _master == '':
+            _master = 'leader.mesos:5050'
+        _master = 'http://' + _master + '/'
+        r = self.ctx.http_request('get', _master, False)
+        if r.status_code == 200:
+            self._master_url = _master
+            self.ctx.vlog("Setting master URL to " +
+                          self._master_url)
+            return self._master_url
+        raise CliError("Unable to to find master URL")
+
+    def zk_url(self):
+        if self._zk_url is not None:
+            return self._zk_url
+        _zk = self.ctx.config.get('zk')
+        if _zk != '':
+            self._zk_url = _zk
+            self.ctx.vlog("Setting zookeeper URL to " +
+                          self._zk_url)
+            return self._zk_url
+        raise CliError("Unable to to find zk URL")
+
+
 class Context(object):
 
     def __init__(self):
+        # Flags
         self.verbose = False
-        self.debug = None
+        self.debug = False
+        self.insecure_ssl = False
+        self.json = False
+        self.flags_set = False
+        # Paths
         self.home = os.getcwd()
         self.config_file = None
+        # JSON Config (optional for dcos)
         self.config = None
-        self.insecure_ssl = False
-        self.timeout = 60
-        self.master_url = None
-        self.zk_url = None
-        self.marathon_url = None
-        self.framework_url = None
+        # Conditional options
         self.framework = 'riak'
         self.cluster = 'default'
         self.node = 'riak-default-1'
-        self.json = False
+        self.timeout = 60
+        # RiakMesosClient
+        self.client = None
 
-    def init_args(self, verbose, debug, home, config, info, version,
-                  config_schema, json, insecure_ssl, cluster, node, **kwargs):
-        if info:
+    def _init_flags(self, verbose, debug, info, version,
+                    config_schema, json, insecure_ssl, **kwargs):
+        # Exit immediately if any of these are found
+        if self.flags_set:
+            return
+        args = sys.argv[1:]
+        if info or '--info' in args:
             click.echo('Start and manage Riak nodes in Mesos.')
             exit(0)
-        if version:
+        if version or '--version' in args:
             click.echo('Riak Mesos Framework Version ' + constants.version)
             exit(0)
-        if config_schema:
+        if config_schema or '--config-schema' in args:
             click.echo('{}')
             exit(0)
+        # Process remaining flags for all future command invocations
+        if self.verbose or '--verbose' in args or '-v' in args:
+            self.verbose = True
+        else:
+            self.verbose = verbose
+        if self.insecure_ssl or '--insecure-ssl' in args:
+            self.insecure_ssl = True
+        else:
+            self.insecure_ssl = insecure_ssl
+        self.json = True if self.json or '--json' in args else json
+        self.debug = True if self.debug or '--debug' in args else debug
+        # Configure logging for 3rd party libs
+        if self.debug:
+            logging.basicConfig(level=0)
+            self.verbose = True
+        elif self.verbose:
+            logging.basicConfig(level=20)
+        else:
+            logging.basicConfig(level=50)
+        self.flags_set = True
+        self.vlog("Insecure SSL Mode: " + str(self.insecure_ssl))
+        self.vlog("Verbose Mode: " + str(self.verbose))
+        self.vlog("Debug Mode: " + str(self.debug))
+        self.vlog("JSON Mode: " + str(self.json))
 
-        self.verbose = verbose
-        self.json = json
-        self.insecure_ssl = insecure_ssl
-
-        if self.debug is None:
-            self.debug = debug
-            if self.debug:
-                logging.basicConfig(level=0)
-                self.verbose = True
-            elif self.verbose:
-                logging.basicConfig(level=20)
-            else:
-                logging.basicConfig(level=50)
+    def init_args(self, home, config, framework, cluster, node, **kwargs):
+        self._init_flags(**kwargs)
 
         if home is not None:
             self.home = home
@@ -107,19 +302,23 @@ class Context(object):
             else:
                 usr_conf_file = self.home + '/.config/riak-mesos/config.json'
                 sys_conf_file = '/etc/riak-mesos/config.json'
+                usr_home = expanduser("~")
+                usr_home_conf_file = \
+                    usr_home + '/.config/riak-mesos/config.json'
                 if os.path.isfile(usr_conf_file):
                     self.config_file = usr_conf_file
+                elif os.path.isfile(usr_home_conf_file):
+                    self.config_file = usr_home_conf_file
                 elif os.path.isfile(sys_conf_file):
                     self.config_file = sys_conf_file
                 else:
-                    from os.path import expanduser
-                    usr_home = expanduser("~")
-                    usr_home_conf_file = \
-                        usr_home + '/.config/riak-mesos/config.json'
-                    if os.path.isfile(usr_home_conf_file):
-                        self.config_file = usr_home_conf_file
-                    else:
-                        self.config_file = None
+                    self.config_file = None
+            if self.config_file is not None:
+                self.vlog('Using config file: ' + self.config_file)
+            else:
+                self.vlog('Couldn\'t find config file in ' + usr_conf_file +
+                          ', ' + usr_home_conf_file + ', or ' + sys_conf_file)
+
             self.config = RiakMesosConfig(self.config_file)
 
         if cluster is not None:
@@ -127,8 +326,10 @@ class Context(object):
         if node is not None:
             self.node = node
 
+        if framework is not None:
+            self.framework = framework
         _framework = self.config.get('framework-name')
-        if _framework != '':
+        if self.framework is None and _framework != '':
             self.framework = _framework
 
         if 'timeout' in kwargs and kwargs['timeout'] is not None:
@@ -147,130 +348,61 @@ class Context(object):
 
     def vlog_request(self, r, *args):
         """Logs request info to stderr only if verbose is enabled."""
-        self.vlog('HTTP URL: ' + r.url)
-        self.vlog('HTTP Method: ' + r.request.method)
-        self.vlog('HTTP Body: ' + str(r.request.body))
-        self.vlog('HTTP Status: ' + str(r.status_code))
-        self.vlog('HTTP Response Text: ' + r.text)
+        if self.debug:
+            self.vlog('HTTP URL: ' + r.url)
+            self.vlog('HTTP Method: ' + r.request.method)
+            self.vlog('HTTP Body: ' + str(r.request.body))
+            self.vlog('HTTP Status: ' + str(r.status_code))
+            self.vlog('HTTP Response Text: ' + r.text)
 
     def vtraceback(self):
         if self.verbose:
             traceback.print_exc()
 
-    def _init_master(self):
-        dcos_url = dcos_config.get_config().get('core.dcos_url')
-        if dcos_url is not None:
-            dcos_url.rstrip('/')
-            _dcos_mesos = dcos_url + '/service/mesos/'
-            r = self.http_request('get', _dcos_mesos, False)
-            if r.status_code == 200:
-                self.master_url = _dcos_mesos
-                return
-        _cfg_master = self.config.get('master')
-        if _cfg_master == '':
-            _cfg_master = 'leader.mesos:5050'
-        _cfg_master = 'http://' + _cfg_master + '/'
-        r = self.http_request('get', _cfg_master, False)
-        if r.status_code == 200:
-            self.master_url = _cfg_master
+    def _init_client(self):
+        try:
+            ctx = self
+            _client = RiakMesosClient(ctx, RiakMesosDCOSStrategy)
+            self.client = _client
             return
-        self.log("Unable to find Mesos Url using DCOS or " +
-                 "Configuration")
-        exit(1)
-
-    def master_request(self, method, path, exit_on_failure=True, **kwargs):
-        if self.master_url is None:
-            self._init_master()
-        return self.http_request(method, self.master_url + path,
-                                 exit_on_failure, **kwargs)
-
-    def _init_api(self):
-        dcos_url = dcos_config.get_config().get('core.dcos_url')
-        if dcos_url is not None:
-            dcos_url.rstrip('/')
-            _dcos_framework_url = dcos_url + '/service/' + self.framework + '/'
-            r = self.http_request('get',
-                                  _dcos_framework_url + 'healthcheck', False)
-            self.vlog_request(r)
-            if r.status_code == 200:
-                self.framework_url = _dcos_framework_url
-                return
-        _cfg_framework_url = self.config.get('framework-url')
-        if _cfg_framework_url != '':
-            r = self.http_request('get',
-                                  _cfg_framework_url + 'healthcheck', False)
-            self.vlog_request(r)
-            if r.status_code == 200:
-                self.framework_url = _cfg_framework_url
-                return
-        client = self.marathon_client()
-        tasks = client.get_tasks(self.framework)
-        if len(tasks) != 0:
-            host = tasks[0]['host']
-            port = tasks[0]['ports'][0]
-            self.framework_url = 'http://' + host + ':' + str(port) + '/'
-            return
-        self.log("Unable to find Framework API Url using DCOS, " +
-                 "Configuration, or Marathon")
-        exit(1)
-
-    def api_request(self, method, path, exit_on_failure=True, **kwargs):
-        if self.framework_url is None:
-            self._init_api()
-        return self.http_request(method,
-                                 self.framework_url + "api/v1/" + path,
-                                 exit_on_failure,
-                                 **kwargs)
-
-    def framework_request(self, method, path, exit_on_failure=True, **kwargs):
-        if self.framework_url is None:
-            self._init_api()
-        return self.http_request(method,
-                                 self.framework_url + path,
-                                 exit_on_failure,
-                                 **kwargs)
-
-    def _init_marathon(self):
-        dcos_url = dcos_config.get_config().get('core.dcos_url')
-        if dcos_url is not None:
-            dcos_url.rstrip('/')
-            _dcos_marathon = dcos_url + '/service/marathon/'
-            r = self.http_request('get', _dcos_marathon + 'ping', False)
-            if r.status_code == 200:
-                self.marathon_url = _dcos_marathon
-                return
-        _cfg_marathon = self.config.get('marathon')
-        if _cfg_marathon == '':
-            _cfg_marathon = 'marathon.mesos:8080'
-        _cfg_marathon = 'http://' + _cfg_marathon + '/'
-        r = self.http_request('get',
-                              _cfg_marathon + 'ping', False)
-        if r.status_code == 200:
-            self.marathon_url = _cfg_marathon
-            return
-        self.log("Unable to find Marathon Url using DCOS or " +
-                 "Configuration")
-        exit(1)
-
-    def marathon_client(self):
-        if self.marathon_url is None:
-            self._init_marathon()
-        self.vlog("Using Marathon URL: " + self.marathon_url)
-        return marathon.Client(self.marathon_url)
-
-    def _init_zk(self):
-        _cfg_zk = self.config.get('zk')
-        if _cfg_zk != '':
-            self.zk_url = _cfg_zk
-            return
-        self.zk_url = 'leader.mesos:2181'
+        except Exception as e:
+            self.vlog(e.message)
+        _client = RiakMesosClient(ctx)
+        self.client = _client
         return
 
+    def api_request(self, method, path, exit_on_failure=True, **kwargs):
+        return self.framework_request(method, 'api/v1/' + path,
+                                      exit_on_failure, **kwargs)
+
+    def framework_request(self, method, path, exit_on_failure=True, **kwargs):
+        if self.client is None:
+            self._init_client()
+        framework_url = self.client.framework_url()
+        return self.http_request(method,
+                                 framework_url + path,
+                                 exit_on_failure,
+                                 **kwargs)
+
+    def master_request(self, method, path, exit_on_failure=True, **kwargs):
+        if self.client is None:
+            self._init_client()
+        master_url = self.client.master_url()
+        return self.http_request(method, master_url + path,
+                                 exit_on_failure, **kwargs)
+
+    def marathon_client(self):
+        if self.client is None:
+            self._init_client()
+        marathon_url = self.client.marathon_url()
+        return marathon.Client(marathon_url)
+
     def zk_command(self, command, path):
-        if self.zk_url is None:
-            self._init_zk()
+        if self.client is None:
+            self._init_client()
+        zk_url = self.client.zk_url()
         try:
-            zk = KazooClient(hosts=self.zk_url)
+            zk = KazooClient(hosts=zk_url)
             zk.start()
             if command == 'get':
                 data, stat = zk.get(path)
@@ -333,6 +465,8 @@ _common_options = [
     click.option('--version', is_flag=True, help='Display version.'),
     click.option('--config-schema', is_flag=True,
                  help='Display config schema.'),
+    click.option('--framework',
+                 help='Changes the framework instance to operate on.'),
     click.option('--cluster',
                  help='Changes the cluster to operate on.'),
     click.option('--node',
@@ -371,8 +505,8 @@ class RiakMesosCLI(click.MultiCommand):
         try:
             if sys.version_info[0] == 2:
                 name = name.encode('ascii', 'replace')
-	    if name == "riak":
-		return cli
+            if name == "riak":
+                return cli
             mod = __import__('riak_mesos.commands.cmd_' + name,
                              None, None, ['cli'])
         except ImportError:
