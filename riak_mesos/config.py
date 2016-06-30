@@ -34,12 +34,28 @@ class RiakMesosConfig(object):
         mj['cpus'] = self.get('scheduler', 'cpus')
         mj['mem'] = self.get('scheduler', 'mem')
         mj['ports'] = [0]
-        mj['fetch'] = []
-        mj['fetch'].append({ 'uri': self.get('scheduler', 'url')})
-        mj['fetch'].append({ 'uri': self.get('executor', 'url'), 'extract': False })
-        mj['fetch'].append({ 'uri': self.get('node', 'url'), 'extract': False })
-        mj['fetch'].append({ 'uri': self.get('node', 'patches-url'), 'extract': False })
-        mj['fetch'].append({ 'uri': self.get('node', 'explorer-url'), 'extract': False })
+        # TODO: Change these once scheduler is updated
+        # mj['fetch'] = []
+        # mj['fetch'].append(
+        #     {'uri': self.get('scheduler', 'url')})
+        # mj['fetch'].append(
+        #     {'uri': self.get('executor', 'url'),
+        #      'extract': False})
+        # mj['fetch'].append(
+        #     {'uri': self.get('node', 'url'),
+        #      'extract': False})
+        # mj['fetch'].append(
+        #     {'uri': self.get('node', 'patches-url'),
+        #      'extract': False})
+        # mj['fetch'].append(
+        #     {'uri': self.get('node', 'explorer-url'),
+        #      'extract': False})
+        mj['uris'] = []
+        mj['uris'].append(self.get('scheduler', 'url'))
+        mj['uris'].append(self.get('executor', 'url'))
+        mj['uris'].append(self.get('node', 'url'))
+        mj['uris'].append(self.get('node', 'patches-url'))
+        mj['uris'].append(self.get('node', 'explorer-url'))
         mj['cmd'] = './bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
