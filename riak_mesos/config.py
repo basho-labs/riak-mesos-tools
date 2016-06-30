@@ -50,13 +50,14 @@ class RiakMesosConfig(object):
         # mj['fetch'].append(
         #     {'uri': self.get('node', 'explorer-url'),
         #      'extract': False})
+        # mj['cmd'] = './bin/ermf-scheduler'
         mj['uris'] = []
         mj['uris'].append(self.get('scheduler', 'url'))
         mj['uris'].append(self.get('executor', 'url'))
         mj['uris'].append(self.get('node', 'url'))
         mj['uris'].append(self.get('node', 'patches-url'))
         mj['uris'].append(self.get('node', 'explorer-url'))
-        mj['cmd'] = './bin/ermf-scheduler'
+        mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
         mj['env'] = {}
@@ -137,7 +138,8 @@ class RiakMesosConfig(object):
                 'DIRECTOR_FRAMEWORK': self.get('framework-name'),
                 'DIRECTOR_CLUSTER': cluster
             },
-            'fetch': [{'uri': self.get('director', 'url')}],
+            # 'fetch': [{'uri': self.get('director', 'url')}],
+            'uris': [self.get('director', 'url')],
             'healthChecks': [
                 {
                     'protocol': 'HTTP',
