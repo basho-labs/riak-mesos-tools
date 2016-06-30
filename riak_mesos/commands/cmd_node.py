@@ -136,8 +136,7 @@ def transfers(ctx, **kwargs):
 
 
 @cli.command('transfers wait-for-service')
-@pass_context
-def _transfers_wait_for_service(ctx, **kwargs):
+def _transfers_wait_for_service():
     """Waits for transfers to complete, specify node id with --node"""
     pass
 

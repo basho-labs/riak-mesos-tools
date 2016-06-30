@@ -316,8 +316,7 @@ class Context(object):
             if self.config_file is not None:
                 self.vlog('Using config file: ' + self.config_file)
             else:
-                self.vlog('Couldn\'t find config file in ' + usr_conf_file +
-                          ', ' + usr_home_conf_file + ', or ' + sys_conf_file)
+                self.vlog('Couldn\'t find config file')
 
             self.config = RiakMesosConfig(self.config_file)
 
@@ -346,7 +345,7 @@ class Context(object):
         if self.verbose:
             self.log(msg, *args)
 
-    def vlog_request(self, r, *args):
+    def vlog_request(self, r):
         """Logs request info to stderr only if verbose is enabled."""
         if self.debug:
             self.vlog('HTTP URL: ' + r.url)
@@ -360,8 +359,8 @@ class Context(object):
             traceback.print_exc()
 
     def _init_client(self):
+        ctx = self
         try:
-            ctx = self
             _client = RiakMesosClient(ctx, RiakMesosDCOSStrategy)
             self.client = _client
             return
@@ -420,15 +419,15 @@ class Context(object):
         try:
             zk = KazooClient(hosts=zk_url)
             zk.start()
+            res = False
             if command == 'get':
                 data, stat = zk.get(path)
-                return data.decode("utf-8")
+                res = data.decode("utf-8")
             elif command == 'delete':
                 zk.delete(path, recursive=True)
-                return 'Successfully deleted ' + path
-            else:
-                return False
+                res = 'Successfully deleted ' + path
             zk.stop()
+            return res
         except Exception as e:
             self.vlog(e)
             return False

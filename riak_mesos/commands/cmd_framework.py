@@ -108,7 +108,7 @@ def uninstall(ctx, **kwargs):
 @click.option('-f', '--force', is_flag=True,
               help='Forcefully remove zookeeper data.')
 @pass_context
-def clean_metadata(ctx, force, *args, **kwargs):
+def clean_metadata(ctx, force, **kwargs):
     """Deletes all metadata for the selected Riak Mesos Framework instance"""
     ctx.init_args(**kwargs)
     fn = ctx.config.get('framework-name')
