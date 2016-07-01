@@ -98,10 +98,13 @@ def config(ctx, riak_file, **kwargs):
         click.echo(r.text)
     else:
         with open(riak_file) as data_file:
-            r = ctx.api_request('put', 'clusters/' +
-                                ctx.cluster + '/config',
-                                data=data_file,
-                                headers={'Accept': 'plain/text'})
+            payload = data_file.read()
+            r = ctx.api_request(
+                'put', 'clusters/' +
+                ctx.cluster + '/config',
+                data=payload,
+                headers={'Accept': '*/*',
+                         'Content-Type': 'plain/text'})
             click.echo(r.text)
 
 
@@ -122,11 +125,13 @@ def config_advanced(ctx, advanced_file, **kwargs):
         click.echo(r.text)
     else:
         with open(advanced_file) as data_file:
+            payload = data_file.read()
             r = ctx.api_request('put', 'clusters/' +
                                 ctx.cluster +
                                 '/advancedConfig',
-                                data=data_file,
-                                headers={'Accept': 'plain/text'})
+                                data=payload,
+                                headers={'Accept': '*/*',
+                                         'Content-Type': 'plain/text'})
             click.echo(r.text)
 
 
