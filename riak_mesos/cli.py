@@ -251,6 +251,9 @@ class Context(object):
         # RiakMesosClient
         self.client = None
 
+    def cli_error(self, message):
+        raise CliError(message)
+
     def _init_flags(self, verbose, debug, info, version,
                     config_schema, json, insecure_ssl, **kwargs):
         # Exit immediately if any of these are found

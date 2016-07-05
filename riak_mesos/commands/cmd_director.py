@@ -34,6 +34,7 @@ def config(ctx, **kwargs):
     """Generates a marathon json config using --zookeeper (default is
     leader.mesos:2181) and --cluster (default is default)"""
     ctx.init_args(**kwargs)
+    ctx.config.from_marathon(ctx)
     click.echo(ctx.config.director_marathon_string(ctx.cluster))
 
 
@@ -78,6 +79,7 @@ def install(ctx, **kwargs):
     """Installs a riak-mesos-director marathon app on the public Mesos node
     using --cluster (default is default)"""
     ctx.init_args(**kwargs)
+    ctx.config.from_marathon(ctx)
     director_json = ctx.config.director_marathon_json(
         ctx.cluster)
     client = ctx.marathon_client()

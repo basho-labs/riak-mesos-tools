@@ -26,6 +26,72 @@ class RiakMesosConfig(object):
         else:
             self._config = {}
 
+    def _from_conf(self, key, subkey, env_name, conf):
+        if env_name not in conf:
+            return
+        if 'riak' not in self._config:
+            self._config['riak'] = {}
+        if subkey is not None:
+            if key not in self._config['riak']:
+                self._config['riak'][key] = {}
+            self._config['riak'][key][subkey] = conf[env_name]
+        else:
+            self._config['riak'][key] = conf[env_name]
+
+    def from_marathon(self, ctx):
+        client = ctx.marathon_client()
+        app = {}
+        try:
+            app = client.get_app(ctx.framework)
+        except Exception as e:
+            ctx.cli_error("Unable to to find installed framework in marathon ("
+                          + e.message + ")")
+        conf = app['env']
+        # TODO: Get urls from uris, not needed yet
+        self._from_conf('framework-name', None, 'RIAK_MESOS_NAME', conf)
+        self._from_conf('zk', None, 'RIAK_MESOS_ZK', conf)
+        self._from_conf('master', None, 'RIAK_MESOS_MASTER', conf)
+        self._from_conf('user', None, 'RIAK_MESOS_USER', conf)
+        self._from_conf('role', None, 'RIAK_MESOS_ROLE', conf)
+        self._from_conf('hostname', None, 'RIAK_MESOS_HOSTNAME', conf)
+        self._from_conf('ip', None, 'RIAK_MESOS_IP', conf)
+        self._from_conf('failover-timeout', None,
+                        'RIAK_MESOS_FAILOVER_TIMEOUT', conf)
+        self._from_conf('auth-provider', None, 'RIAK_MESOS_PROVIDER', conf)
+        self._from_conf('auth-principal', None, 'RIAK_MESOS_PRINCIPAL', conf)
+        self._from_conf('auth-secret-file', None,
+                        'RIAK_MESOS_SECRET_FILE', conf)
+        self._from_conf('director', 'url', 'RIAK_MESOS_DIRECTOR_URL', conf)
+        if 'RIAK_MESOS_DIRECTOR_CPUS' in conf:
+            self._config['riak']['director']['cpus'] = \
+                float(conf['RIAK_MESOS_DIRECTOR_CPUS'])
+        if 'RIAK_MESOS_DIRECTOR_MEM' in conf:
+            self._config['riak']['director']['mem'] = \
+                float(conf['RIAK_MESOS_DIRECTOR_MEM'])
+        if 'RIAK_MESOS_DIRECTOR_PUBLIC' in conf:
+            if conf['RIAK_MESOS_DIRECTOR_PUBLIC'] == 'true':
+                self._config['riak']['director']['use-public'] = True
+            else:
+                self._config['riak']['director']['use-public'] = False
+        self._from_conf('scheduler', 'package',
+                        'RIAK_MESOS_SCHEDULER_PKG', conf)
+        self._from_conf('scheduler', 'constraints',
+                        'RIAK_MESOS_CONSTRAINTS', conf)
+        self._from_conf('executor', 'package',
+                        'RIAK_MESOS_EXECUTOR_PKG', conf)
+        self._from_conf('executor', 'cpus',
+                        'RIAK_MESOS_EXECUTOR_CPUS', conf)
+        self._from_conf('executor', 'mem',
+                        'RIAK_MESOS_EXECUTOR_MEM', conf)
+        self._from_conf('node', 'cpus', 'RIAK_MESOS_NODE_CPUS', conf)
+        self._from_conf('node', 'mem', 'RIAK_MESOS_NODE_MEM', conf)
+        self._from_conf('node', 'disk', 'RIAK_MESOS_NODE_DISK', conf)
+        self._from_conf('node', 'package', 'RIAK_MESOS_RIAK_PKG', conf)
+        self._from_conf('node', 'patches-package',
+                        'RIAK_MESOS_PATCHES_PKG', conf)
+        self._from_conf('node', 'explorer-package',
+                        'RIAK_MESOS_EXPLORER_PKG', conf)
+
     def framework_marathon_json(self):
         mj = {}
         mj['id'] = self.get('framework-name')
@@ -61,6 +127,15 @@ class RiakMesosConfig(object):
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
         mj['env'] = {}
+        mj['env']['RIAK_MESOS_DIRECTOR_URL'] = self.get('director', 'url')
+        mj['env']['RIAK_MESOS_DIRECTOR_CPUS'] = \
+            str(self.get('director', 'cpus'))
+        mj['env']['RIAK_MESOS_DIRECTOR_MEM'] = str(self.get('director', 'mem'))
+        if self.get('director', 'use-public') != '':
+            if self.get('director', 'use-public'):
+                mj['env']['RIAK_MESOS_DIRECTOR_PUBLIC'] = 'true'
+            else:
+                mj['env']['RIAK_MESOS_DIRECTOR_PUBLIC'] = 'false'
         mj['env']['RIAK_MESOS_NAME'] = self.get('framework-name')
         mj['env']['RIAK_MESOS_ZK'] = self.get('zk')
         mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
