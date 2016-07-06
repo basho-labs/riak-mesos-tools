@@ -20,8 +20,9 @@ import json
 
 class RiakMesosConfig(object):
     def __init__(self, config_file):
-        if config_file is not None:
-            with open(config_file) as data_file:
+        self.config_file = config_file
+        if self.config_file is not None:
+            with open(self.config_file) as data_file:
                 self._config = json.load(data_file)
         else:
             self._config = {}
@@ -39,6 +40,8 @@ class RiakMesosConfig(object):
             self._config['riak'][key] = conf[env_name]
 
     def from_marathon(self, ctx):
+        if self.config_file is not None:
+            return
         client = ctx.marathon_client()
         app = {}
         try:
