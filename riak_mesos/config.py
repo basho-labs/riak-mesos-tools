@@ -227,7 +227,7 @@ class RiakMesosConfig(object):
                 }
             ]
         }
-        if self.get('director', 'use-public'):
+        if self.get('director', 'use-public') is True:
             director_marathon_conf['acceptedResourceRoles'] = ['public']
         return director_marathon_conf
 
