@@ -44,7 +44,7 @@ def config(ctx, **kwargs):
 def endpoints(ctx, **kwargs):
     """Retrieves useful endpoints for the framework"""
     ctx.init_args(**kwargs)
-    print("Framework HTTP API: " + ctx.framework_url)
+    print("Framework HTTP API: " + ctx.get_framework_url())
 
 
 @cli.command()

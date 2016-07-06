@@ -31,7 +31,7 @@ def cli(ctx, **kwargs):
 
 @cli.command('wait-for-service')
 @click.option('--nodes', type=int,
-              help='Number of nodes to wait for.')
+              help='Number of nodes to wait for.', default=1)
 @click.option('--timeout', type=int,
               help='Number of seconds to wait for a response.')
 @pass_context
@@ -42,16 +42,19 @@ def wait_for_service(ctx, nodes, **kwargs):
     ctx.init_args(**kwargs)
     r = ctx.api_request('get', 'clusters/' + ctx.cluster + '/nodes')
     js = json.loads(r.text)
+    ctx.vlog(nodes)
     num_nodes = len(js['nodes'])
     total_timeout = ctx.timeout
     if num_nodes > 0:
         ctx.timeout = max(total_timeout / num_nodes, 1)
         for k in js['nodes']:
             wait_for_node(ctx, k)
-    if num_nodes >= nodes:
-        # Okay, need to divide up the timeout properly
-        ctx.timeout = total_timeout
-        wait_for_node_status_valid(ctx, js['nodes'][0], nodes)
+        if num_nodes >= nodes:
+            # Okay, need to divide up the timeout properly
+            ctx.timeout = total_timeout
+            wait_for_node_status_valid(ctx, js['nodes'][0], nodes)
+    else:
+        click.echo("No nodes have been added to cluster " + ctx.cluster)
 
 
 @cli.command()

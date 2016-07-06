@@ -373,6 +373,11 @@ class Context(object):
         self.client = _client
         return
 
+    def get_framework_url(self):
+        if self.client is None:
+            self._init_client()
+        return self.client.framework_url()
+
     def api_request(self, method, path, exit_on_failure=True, **kwargs):
         return self.framework_request(method, 'api/v1/' + path,
                                       exit_on_failure, **kwargs)
