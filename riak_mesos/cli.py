@@ -363,12 +363,13 @@ class Context(object):
 
     def _init_client(self):
         ctx = self
-        try:
-            _client = RiakMesosClient(ctx, RiakMesosDCOSStrategy)
-            self.client = _client
-            return
-        except Exception as e:
-            self.vlog(e.message)
+        if self.config_file is None:
+            try:
+                _client = RiakMesosClient(ctx, RiakMesosDCOSStrategy)
+                self.client = _client
+                return
+            except Exception as e:
+                self.vlog(e.message)
         _client = RiakMesosClient(ctx)
         self.client = _client
         return
