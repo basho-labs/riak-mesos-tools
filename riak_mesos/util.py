@@ -18,128 +18,40 @@
 import json
 import time
 
-import requests
-from dcos import marathon
-from kazoo.client import KazooClient
+import click
 
 
-class CliError(Exception):
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return repr(self.message)
-
-
-def wait_for_url(url, debug_flag, seconds):
-        if seconds == 0:
-            return False
-        try:
-            r = requests.get(url)
-            debug_request(debug_flag, r)
-            if r.status_code == 200:
-                return True
-        except Exception as e:
-            debug(debug_flag, str(e))
-            pass
-        time.sleep(1)
-        return wait_for_url(url, debug_flag, seconds - 1)
-
-
-def wait_for_framework(config, debug_flag, seconds):
-    if seconds == 0:
-        return False
-    try:
-        healthcheck_url = config.api_url() + 'clusters'
-        debug(debug_flag, "Trying " + healthcheck_url)
-        if wait_for_url(healthcheck_url, debug_flag, 1):
-            return True
-    except:
-        pass
-    time.sleep(1)
-    return wait_for_framework(config, debug_flag, seconds - 1)
-
-
-def wait_for_node(config, cluster, debug_flag, node, timeout):
+def wait_for_node(ctx, node):
     def inner_wait_for_node(seconds):
         if seconds == 0:
-            print('Node ' + node + ' did not respond in ' +
-                  str(timeout) + 'seconds.')
+            click.echo('Node ' + node + ' did not respond in ' +
+                       str(ctx.timeout) + 'seconds.')
             return
-        node_data = node_info(config, cluster, debug_flag, node)
+        node_data = node_info(ctx, node)
         if node_data['alive'] and node_data['status'] == 'started':
-            print('Node ' + node + ' is ready.')
+            click.echo('Node ' + node + ' is ready.')
             return
         time.sleep(1)
         return inner_wait_for_node(seconds - 1)
 
-    return inner_wait_for_node(timeout)
+    return inner_wait_for_node(ctx.timeout)
 
 
-def wait_for_node_transfers(config, cluster, debug_flag, node, timeout):
-    def inner_wait_for_node_transfers(seconds):
-        if seconds == 0:
-            print('Node ' + node + ' transfers did not complete in ' +
-                  str(timeout) + 'seconds.')
-            return
-        service_url = config.api_url()
-        r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' +
-                         node + '/transfers')
-        debug_request(debug_flag, r)
-        node_json = json.loads(r.text)
-        waiting = len(node_json['transfers']['waiting_to_handoff'])
-        active = len(node_json['transfers']['active'])
-        if waiting == 0 and active == 0:
-            print('Node ' + node + ' transfers complete.')
-            return
-        time.sleep(1)
-        return inner_wait_for_node_transfers(seconds - 1)
-
-    return inner_wait_for_node_transfers(timeout)
-
-
-def wait_for_node_status_valid(config, cluster, debug_flag,
-                               node, num_valid_nodes, timeout):
-    def inner_wait_for_node_status_valid(seconds):
-        if seconds == 0:
-            print('Cluster ' + cluster + ' did not respond with ' +
-                  str(num_valid_nodes) + ' valid nodes in ' +
-                  str(timeout) + ' seconds.')
-            return
-        status = node_status(config, cluster, debug_flag, node)
-        if status['status']['valid'] >= num_valid_nodes:
-            print('Cluster ' + cluster + ' is ready.')
-            return
-        time.sleep(1)
-        return inner_wait_for_node_status_valid(seconds - 1)
-
-    return inner_wait_for_node_status_valid(timeout)
-
-
-def node_status(config, cluster, debug_flag, node):
-    service_url = config.api_url()
-    r = requests.get(service_url + 'clusters/' + cluster +
-                     '/nodes/' + node + '/status/')
-    debug_request(debug_flag, r)
-    node_json = json.loads(r.text)
-    return node_json
-
-
-def node_info(config, cluster, debug_flag, node):
-    service_url = config.api_url()
-    r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node)
-    debug_request(debug_flag, r)
+def node_info(ctx, node):
+    cluster = ctx.cluster
+    fw = ctx.framework
+    r = ctx.api_request('get', 'clusters/' + cluster +
+                        '/nodes/' + node)
     node_json = json.loads(r.text)
     http_port = str(node_json[node]['location']['http_port'])
     pb_port = str(node_json[node]['location']['pb_port'])
     direct_host = node_json[node]['location']['hostname']
-    fw = config.get('framework-name')
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
     alive = False
     if direct_host != '' and http_port != 'undefined':
         try:
-            r = requests.get('http://' + direct_host + ':' + http_port)
-            debug_request(debug_flag, r)
+            r = ctx.http_request('get', 'http://' + direct_host + ':' +
+                                 http_port)
             alive = r.status_code == 200
         except:
             alive = False
@@ -154,76 +66,52 @@ def node_info(config, cluster, debug_flag, node):
     return node_data
 
 
-def marathon_client(marathon_url=None):
-    if marathon_url is not None:
-        return marathon.Client('http://' + marathon_url)
-    else:
-        return marathon.create_client()
+def wait_for_node_status_valid(ctx, node, num_nodes):
+    def inner_wait_for_node_status_valid(seconds):
+        if seconds == 0:
+            click.echo('Cluster ' + ctx.cluster + ' did not respond with ' +
+                       str(num_nodes) + ' valid nodes in ' +
+                       str(ctx.timeout) + ' seconds.')
+            return
+        status = node_status(ctx, node)
+        if status['status']['valid'] >= num_nodes:
+            click.echo('Cluster ' + ctx.cluster + ' is ready.')
+            return
+        time.sleep(1)
+        return inner_wait_for_node_status_valid(seconds - 1)
+
+    return inner_wait_for_node_status_valid(ctx.timeout)
 
 
-def zookeeper_command(hosts, command, path):
-    try:
-        zk = KazooClient(hosts=hosts)
-        zk.start()
-        if command == 'get':
-            data, stat = zk.get(path)
-            return data.decode("utf-8")
-        elif command == 'delete':
-            zk.delete(path, recursive=True)
-            return 'Successfully deleted ' + path
-        else:
-            return False
-        zk.stop()
-    except:
-        return False
+def node_status(ctx, node):
+    r = ctx.api_request('get', 'clusters/' + ctx.cluster +
+                        '/nodes/' + node + '/status')
+    node_json = json.loads(r.text)
+    return node_json
 
 
-def debug(debug_flag, debug_string):
-    if debug_flag:
-        print('[DEBUG]' + debug_string + '[/DEBUG]')
+def wait_for_node_transfers(ctx, node):
+    def inner_wait_for_node_transfers(seconds):
+        if seconds == 0:
+            click.echo('Node ' + node + ' transfers did not complete in ' +
+                       str(ctx.timeout) + 'seconds.')
+            return
+        r = ctx.api_request('get', 'clusters/' + ctx.cluster +
+                            '/nodes/' + node + '/transfers')
+        node_json = json.loads(r.text)
+        waiting = len(node_json['transfers']['waiting_to_handoff'])
+        active = len(node_json['transfers']['active'])
+        if waiting == 0 and active == 0:
+            click.echo('Node ' + node + ' transfers complete.')
+            return
+        time.sleep(1)
+        return inner_wait_for_node_transfers(seconds - 1)
+
+    return inner_wait_for_node_transfers(ctx.timeout)
 
 
-def debug_request(debug_flag, r):
-    debug(debug_flag, 'HTTP URL: ' + r.url)
-    debug(debug_flag, 'HTTP Method: ' + r.request.method)
-    debug(debug_flag, 'HTTP Body: ' + str(r.request.body))
-    debug(debug_flag, 'HTTP Status: ' + str(r.status_code))
-    debug(debug_flag, 'HTTP Response Text: ' + r.text)
-
-
-def pparr(description, json_str, failure):
-    try:
-        obj_arr = json.loads(json_str)
-        print(description + '[' + ', '.join(obj_arr.keys()) + ']')
-    except:
-        print(description + failure)
-
-
-def ppobj(description, json_str, key, failure):
-    try:
-        obj = json.loads(json_str)
-        if key == '':
-            print(description + json.dumps(obj))
-        else:
-            print(description + json.dumps(obj[key]))
-    except:
-        print(description + failure)
-
-
-def ppfact(description, json_str, key, failure):
-    try:
-        obj = json.loads(json_str)
-        if key == '':
-            print(description + json.dumps(obj))
-        else:
-            print(description + json.dumps(obj[key]))
-    except:
-        print(description + failure)
-
-
-def get_node_name(config, cluster, debug_flag, node):
-    service_url = config.api_url()
-    r = requests.get(service_url + 'clusters/' + cluster + '/nodes/' + node)
-    debug_request(debug_flag, r)
+def get_node_name(ctx, node):
+    r = ctx.api_request('get', 'clusters/' + ctx.cluster +
+                        '/nodes/' + node)
     node_json = json.loads(r.text)
     return node_json[node]['location']['node_name']

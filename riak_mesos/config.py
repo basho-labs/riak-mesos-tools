@@ -15,19 +15,85 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
-
 import json
-import traceback
-
-import requests
-from riak_mesos import util
 
 
 class RiakMesosConfig(object):
-    def __init__(self, override_file=None):
-        with open(override_file) as data_file:
-            self._config = json.load(data_file)
+    def __init__(self, config_file):
+        self.config_file = config_file
+        if self.config_file is not None:
+            with open(self.config_file) as data_file:
+                self._config = json.load(data_file)
+        else:
+            self._config = {}
+
+    def _from_conf(self, key, subkey, env_name, conf):
+        if env_name not in conf:
+            return
+        if 'riak' not in self._config:
+            self._config['riak'] = {}
+        if subkey is not None:
+            if key not in self._config['riak']:
+                self._config['riak'][key] = {}
+            self._config['riak'][key][subkey] = conf[env_name]
+        else:
+            self._config['riak'][key] = conf[env_name]
+
+    def from_marathon(self, ctx):
+        if self.config_file is not None:
+            return
+        client = ctx.marathon_client()
+        app = {}
+        try:
+            app = client.get_app(ctx.framework)
+        except Exception as e:
+            ctx.cli_error("Unable to to find installed framework in marathon ("
+                          + e.message + ")")
+        conf = app['env']
+        # TODO: Get urls from uris, not needed yet
+        self._from_conf('framework-name', None, 'RIAK_MESOS_NAME', conf)
+        self._from_conf('zk', None, 'RIAK_MESOS_ZK', conf)
+        self._from_conf('master', None, 'RIAK_MESOS_MASTER', conf)
+        self._from_conf('user', None, 'RIAK_MESOS_USER', conf)
+        self._from_conf('role', None, 'RIAK_MESOS_ROLE', conf)
+        self._from_conf('hostname', None, 'RIAK_MESOS_HOSTNAME', conf)
+        self._from_conf('ip', None, 'RIAK_MESOS_IP', conf)
+        self._from_conf('failover-timeout', None,
+                        'RIAK_MESOS_FAILOVER_TIMEOUT', conf)
+        self._from_conf('auth-provider', None, 'RIAK_MESOS_PROVIDER', conf)
+        self._from_conf('auth-principal', None, 'RIAK_MESOS_PRINCIPAL', conf)
+        self._from_conf('auth-secret-file', None,
+                        'RIAK_MESOS_SECRET_FILE', conf)
+        self._from_conf('director', 'url', 'RIAK_MESOS_DIRECTOR_URL', conf)
+        if 'RIAK_MESOS_DIRECTOR_CPUS' in conf:
+            self._config['riak']['director']['cpus'] = \
+                float(conf['RIAK_MESOS_DIRECTOR_CPUS'])
+        if 'RIAK_MESOS_DIRECTOR_MEM' in conf:
+            self._config['riak']['director']['mem'] = \
+                float(conf['RIAK_MESOS_DIRECTOR_MEM'])
+        if 'RIAK_MESOS_DIRECTOR_PUBLIC' in conf:
+            if conf['RIAK_MESOS_DIRECTOR_PUBLIC'] == 'true':
+                self._config['riak']['director']['use-public'] = True
+            else:
+                self._config['riak']['director']['use-public'] = False
+        self._from_conf('scheduler', 'package',
+                        'RIAK_MESOS_SCHEDULER_PKG', conf)
+        self._from_conf('scheduler', 'constraints',
+                        'RIAK_MESOS_CONSTRAINTS', conf)
+        self._from_conf('executor', 'package',
+                        'RIAK_MESOS_EXECUTOR_PKG', conf)
+        self._from_conf('executor', 'cpus',
+                        'RIAK_MESOS_EXECUTOR_CPUS', conf)
+        self._from_conf('executor', 'mem',
+                        'RIAK_MESOS_EXECUTOR_MEM', conf)
+        self._from_conf('node', 'cpus', 'RIAK_MESOS_NODE_CPUS', conf)
+        self._from_conf('node', 'mem', 'RIAK_MESOS_NODE_MEM', conf)
+        self._from_conf('node', 'disk', 'RIAK_MESOS_NODE_DISK', conf)
+        self._from_conf('node', 'package', 'RIAK_MESOS_RIAK_PKG', conf)
+        self._from_conf('node', 'patches-package',
+                        'RIAK_MESOS_PATCHES_PKG', conf)
+        self._from_conf('node', 'explorer-package',
+                        'RIAK_MESOS_EXPLORER_PKG', conf)
 
     def framework_marathon_json(self):
         mj = {}
@@ -37,6 +103,23 @@ class RiakMesosConfig(object):
         mj['cpus'] = self.get('scheduler', 'cpus')
         mj['mem'] = self.get('scheduler', 'mem')
         mj['ports'] = [0]
+        # TODO: Change these once scheduler is updated
+        # mj['fetch'] = []
+        # mj['fetch'].append(
+        #     {'uri': self.get('scheduler', 'url')})
+        # mj['fetch'].append(
+        #     {'uri': self.get('executor', 'url'),
+        #      'extract': False})
+        # mj['fetch'].append(
+        #     {'uri': self.get('node', 'url'),
+        #      'extract': False})
+        # mj['fetch'].append(
+        #     {'uri': self.get('node', 'patches-url'),
+        #      'extract': False})
+        # mj['fetch'].append(
+        #     {'uri': self.get('node', 'explorer-url'),
+        #      'extract': False})
+        # mj['cmd'] = './bin/ermf-scheduler'
         mj['uris'] = []
         mj['uris'].append(self.get('scheduler', 'url'))
         mj['uris'].append(self.get('executor', 'url'))
@@ -47,6 +130,15 @@ class RiakMesosConfig(object):
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
         mj['env'] = {}
+        mj['env']['RIAK_MESOS_DIRECTOR_URL'] = self.get('director', 'url')
+        mj['env']['RIAK_MESOS_DIRECTOR_CPUS'] = \
+            str(self.get('director', 'cpus'))
+        mj['env']['RIAK_MESOS_DIRECTOR_MEM'] = str(self.get('director', 'mem'))
+        if self.get('director', 'use-public') != '':
+            if self.get('director', 'use-public'):
+                mj['env']['RIAK_MESOS_DIRECTOR_PUBLIC'] = 'true'
+            else:
+                mj['env']['RIAK_MESOS_DIRECTOR_PUBLIC'] = 'false'
         mj['env']['RIAK_MESOS_NAME'] = self.get('framework-name')
         mj['env']['RIAK_MESOS_ZK'] = self.get('zk')
         mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
@@ -124,6 +216,7 @@ class RiakMesosConfig(object):
                 'DIRECTOR_FRAMEWORK': self.get('framework-name'),
                 'DIRECTOR_CLUSTER': cluster
             },
+            # 'fetch': [{'uri': self.get('director', 'url')}],
             'uris': [self.get('director', 'url')],
             'healthChecks': [
                 {
@@ -137,7 +230,7 @@ class RiakMesosConfig(object):
                 }
             ]
         }
-        if self.get('director', 'use-public'):
+        if self.get('director', 'use-public') is True:
             director_marathon_conf['acceptedResourceRoles'] = ['public']
         return director_marathon_conf
 
@@ -173,82 +266,3 @@ class RiakMesosConfig(object):
                         self._config[k][j] = override[k][j]
             else:
                 self._config[k] = override[k]
-
-    def zk_api_url(self):
-        try:
-            path = '/riak/frameworks/' + self.get('framework-name') + '/uri'
-            url = util.zookeeper_command(self.get('zk'), 'get', path)
-            if url:
-                return url.strip() + '/'
-            else:
-                print("No URL found in zk")
-            return False
-        except:
-            traceback.print_exc()
-            return False
-
-    def marathon_api_url(self):
-        try:
-            client = util.marathon_client(self.get('marathon'))
-            tasks = client.get_tasks(self.get('framework-name'))
-            if len(tasks) != 0:
-                host = tasks[0]['host']
-                port = tasks[0]['ports'][0]
-                return 'http://' + host + ':' + str(port) + '/'
-            else:
-                print("Task not running in Marathon")
-            return False
-        except:
-            traceback.print_exc()
-            return False
-
-    def dcos_api_url(self):
-        try:
-            import dcos.util
-            framework = self.get('framework-name')
-            client = util.marathon_client(self.get('marathon'))
-            tasks = client.get_tasks(self.get('framework-name'))
-            if len(tasks) == 0:
-                raise util.CliError('Riak Mesos Framework is not running.')
-            service_url = dcos.util.get_config().get('core.dcos_url')
-            service_url.rstrip('/')
-            service_url += '/service/' + framework + '/'
-            r = requests.get(service_url + 'healthcheck')
-            if r.status_code == 200:
-                return service_url
-            return False
-        except:
-            traceback.print_exc()
-            return False
-
-    def config_api_url(self):
-        try:
-            service_url = self.get('framework-url')
-            if service_url != '':
-                return service_url
-            return False
-        except:
-            return False
-
-    def api_url(self):
-        scheduler_url = self.scheduler_url()
-        return scheduler_url + "api/v1/"
-
-    def scheduler_url(self):
-        try:
-            service_url = self.config_api_url()
-            if service_url:
-                return 'http://' + service_url + '/'
-            service_url = self.dcos_api_url()
-            if service_url:
-                return service_url + '/'
-            service_url = self.marathon_api_url()
-            if service_url:
-                return service_url
-            service_url = self.zk_api_url()
-            if service_url:
-                return service_url + '/'
-            error = 'Unable to connect to DCOS Server, Marathon, or Zookeeper.'
-            raise util.CliError(error)
-        except Exception as e:
-            raise util.CliError('Unable to find api url: ' + e.message)

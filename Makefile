@@ -32,3 +32,12 @@ packages: deps
 
 docs:
 	cat README.md | pandoc --from markdown_github --to rst > README.rst
+
+# Syntax / Test Checklist
+# pip install pytest
+# py.test -vv tests/integration
+# pip install flake8
+# flake8 --verbose riak_mesos tests
+# pip install isort
+# isort --recursive --verbose riak_mesos tests
+# isort --recursive --check-only --diff --verbose riak_mesos tests

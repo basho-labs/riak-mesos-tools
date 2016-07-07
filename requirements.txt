@@ -1,4 +1,4 @@
-dcos>=0.2.0
+dcos>=0.4.6,<5.0
 futures>=3.0.3
 pluggy>=0.3.1
 requests>=2.8.1
@@ -14,3 +14,4 @@ portalocker>=0.5,<1.0
 gitpython>=1.0,<2.0
 pygments>=2.0,<3.0
 pager>=3.3,<4.0
+click>=6.0,<7.0

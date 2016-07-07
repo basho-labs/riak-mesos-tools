@@ -12,6 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""DCOS Riak Constants"""
 
-version = '1.0.0'
+import click
+
+from riak_mesos.cli import pass_context
+
+
+@click.command()
+@pass_context
+def cli(ctx, **kwargs):
+    """Displays configuration"""
+    ctx.init_args(**kwargs)
+    click.echo(ctx.config.string())
