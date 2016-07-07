@@ -31,14 +31,9 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
 ### Install the latest tag
 
-- Get the latest tag of this project:
-
-        LATEST_TOOLS=$(curl -s https://github.com/basho-labs/riak-mesos-tools/tags | \
-            grep 'tag-name' | awk '/tag-name/{print $3;exit}' FS='[<>]')
-
 - Install the latest version:
 
-        sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@${LATEST_TOOLS}#egg=riak_mesos
+        sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@riak-mesos-v1.1.x#egg=riak_mesos
 
 - Or install the current master branch:
 
