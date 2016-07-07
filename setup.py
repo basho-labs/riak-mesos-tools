@@ -85,7 +85,8 @@ setup(
         'docopt',
         'dcos',
         'kazoo',
-        'click'
+        'click',
+        'futures'
     ],
 
     # List additional groups of dependencies here (e.g. development
