@@ -18,8 +18,8 @@
         "healthcheck-max-consecutive-failures": 5,
         "constraints": [],
         "scheduler": {
-            "url": "https://github.com/basho-labs/riak-mesos-scheduler/releases/download/1.0.3/riak_mesos_scheduler-1.0.3-mesos-0.28.1-ubuntu-14.04.tar.gz",
-            "package": "riak_mesos_scheduler-1.0.3-mesos-0.28.1-ubuntu-14.04.tar.gz",
+            "url": "https://github.com/basho-labs/riak-mesos-scheduler/releases/download/1.1.0/riak_mesos_scheduler-1.1.0-mesos-0.28.1-ubuntu-14.04.tar.gz",
+            "package": "riak_mesos_scheduler-1.1.0-mesos-0.28.1-ubuntu-14.04.tar.gz",
             "cpus": 0.5,
             "mem": 2048.0,
             "constraints": []
@@ -42,7 +42,7 @@
             "disk": 20000.0
         },
         "director": {
-            "url": "https://github.com/basho-labs/riak-mesos-director/releases/download/1.0.0/riak_mesos_director-1.0.0-ubuntu-14.04.tar.gz",
+            "url": "https://github.com/basho-labs/riak-mesos-director/releases/download/1.0.1/riak_mesos_director-1.0.1-ubuntu-14.04.tar.gz",
             "use-public": false,
             "cpus": 0.5,
             "mem": 1024.0
