@@ -415,6 +415,10 @@ class Context(object):
                 return FailedRequest(0, method,
                                      'master_url_not_available/' + path)
 
+    def node_request(self, method, node, path, exit_on_failure=True, **kwargs):
+        return self.framework_request(method, 'riak/nodes/' + node + '/' + path,
+                                      exit_on_failure, **kwargs)
+
     def marathon_client(self):
         if self.client is None:
             self._init_client()

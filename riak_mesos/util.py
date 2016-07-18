@@ -47,14 +47,9 @@ def node_info(ctx, node):
     pb_port = str(node_json[node]['location']['pb_port'])
     direct_host = node_json[node]['location']['hostname']
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
-    alive = False
-    if direct_host != '' and http_port != 'undefined':
-        try:
-            r = ctx.http_request('get', 'http://' + direct_host + ':' +
-                                 http_port)
-            alive = r.status_code == 200
-        except:
-            alive = False
+    r = ctx.node_request('get', node, 'ping', False,
+                         headers={'Accept': '*/*'})
+    alive = r.status_code == 200
     node_data = {
         'http_direct': direct_host + ':' + http_port,
         'http_mesos_dns': mesos_dns_cluster + ':' + http_port,
@@ -101,6 +96,8 @@ def wait_for_node_transfers(ctx, node):
         node_json = json.loads(r.text)
         waiting = len(node_json['transfers']['waiting_to_handoff'])
         active = len(node_json['transfers']['active'])
+        if seconds % 5 == 0 and seconds != ctx.timeout:
+            click.echo(r.text)
         if waiting == 0 and active == 0:
             click.echo('Node ' + node + ' transfers complete.')
             return
