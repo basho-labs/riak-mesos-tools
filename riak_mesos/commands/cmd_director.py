@@ -57,12 +57,7 @@ def wait_for_service(ctx, **kwargs):
             if len(app['tasks']) == 0:
                 click.echo("Director is not installed.")
                 return
-            task = app['tasks'][0]
-            ports = task['ports']
-            hostname = task['host']
-            url = 'http://' + hostname + ':' + str(ports[0])
-            r = ctx.http_request('get', url, False)
-            if r.status_code == 200:
+            if app['tasksHealthy'] != 0:
                 click.echo("Director is ready.")
                 return
         except:
