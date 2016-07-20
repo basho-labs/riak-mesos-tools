@@ -25,7 +25,7 @@ def wait_for_node(ctx, node):
     def inner_wait_for_node(seconds):
         if seconds == 0:
             click.echo('Node ' + node + ' did not respond in ' +
-                       str(ctx.timeout) + 'seconds.')
+                       str(ctx.timeout) + ' seconds.')
             return
         node_data = node_info(ctx, node)
         if node_data['alive'] and node_data['status'] == 'started':
