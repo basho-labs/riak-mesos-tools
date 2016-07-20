@@ -2,9 +2,6 @@
     "riak": {
         "framework-name": "riak",
         "hostname": "riak.marathon.mesos",
-        "marathon": "marathon.mesos:8080",
-        "master": "leader.mesos:5050",
-        "zk": "leader.mesos:2181",
         "user": "root",
         "role": "riak",
         "auth-principal": "riak",
