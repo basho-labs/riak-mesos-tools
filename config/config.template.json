@@ -16,12 +16,11 @@
         "healthcheck-interval-seconds": 60,
         "healthcheck-timeout-seconds": 20,
         "healthcheck-max-consecutive-failures": 5,
-        "constraints": [],
         "scheduler": {
             "url": "{{scheduler_url}}",
             "cpus": 0.5,
             "mem": 2048.0,
-            "constraints": [["hostname", "UNIQUE"]]
+            "constraints": "[[\"hostname\", \"UNIQUE\"]]"
         },
         "executor": {
             "url": "{{executor_url}}",
