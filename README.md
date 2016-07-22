@@ -44,13 +44,15 @@ All of the below instructions will work for the `dcos riak` command, just replac
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
 - Add the DCOS Riak package to your DCOS repository sources:
 
-		dcos package repo add Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.4.x.zip
+		dcos package repo add --index=0 Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.4.x.zip
 
-	NB: you may need to remove and re-add `Universe` afterwards for the Riak package to show up in `dcos package search riak`
+	NB: the `--index=0` argument is required for the Riak package to show up in `dcos package search riak`
 
 - Install the `dcos riak` subcommand:
 
 		dcos package install riak --options /etc/riak-mesos/config.json
+
+    NB: the `--options foo.json` argument must come AFTER the package name, or dcos will silently ignore it.
 
 ### DCOS v0.3.2 Install
 
@@ -68,6 +70,8 @@ All of the below instructions will work for the `dcos riak` command, just replac
 -   Install the `dcos riak` subcommand:
 
         dcos package install riak --options /etc/riak-mesos/config.json
+
+    NB: the `--options foo.json` argument must come AFTER the package name, or dcos will silently ignore it.
 
 Create a Configuration File
 ---------------------------
