@@ -86,6 +86,7 @@ class RiakMesosConfig(object):
                         'RIAK_MESOS_EXECUTOR_CPUS', conf)
         self._from_conf('executor', 'mem',
                         'RIAK_MESOS_EXECUTOR_MEM', conf)
+        self._from_conf('node', 'network_interface_name', 'RIAK_MESOS_NODE_IFACE', conf)
         self._from_conf('node', 'cpus', 'RIAK_MESOS_NODE_CPUS', conf)
         self._from_conf('node', 'mem', 'RIAK_MESOS_NODE_MEM', conf)
         self._from_conf('node', 'disk', 'RIAK_MESOS_NODE_DISK', conf)
@@ -171,6 +172,8 @@ class RiakMesosConfig(object):
         if self.get('failover-timeout') != '':
             mj['env']['RIAK_MESOS_FAILOVER_TIMEOUT'] = str(self.get(
                 'failover-timeout'))
+        if self.get('node', 'network_interface_name') != '':
+            mj['env']['RIAK_MESOS_NODE_IFACE'] = str(self.get('node', 'network_interface_name'))
         if self.get('node', 'cpus') != '':
             mj['env']['RIAK_MESOS_NODE_CPUS'] = str(self.get('node', 'cpus'))
         if self.get('node', 'mem') != '':
