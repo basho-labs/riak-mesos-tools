@@ -173,7 +173,8 @@ class RiakMesosConfig(object):
             mj['env']['RIAK_MESOS_FAILOVER_TIMEOUT'] = str(self.get(
                 'failover-timeout'))
         if self.get('node', 'network_interface_name') != '':
-            mj['env']['RIAK_MESOS_NODE_IFACE'] = str(self.get('node', 'network_interface_name'))
+            mj['env']['RIAK_MESOS_NODE_IFACE'] = \
+                    str(self.get('node', 'network_interface_name'))
         if self.get('node', 'cpus') != '':
             mj['env']['RIAK_MESOS_NODE_CPUS'] = str(self.get('node', 'cpus'))
         if self.get('node', 'mem') != '':
@@ -254,7 +255,7 @@ class RiakMesosConfig(object):
             if (key in self._config and subkey1 in self._config[key] and
                     subkey2 in self._config[key][subkey1]):
                 return self._config[key][subkey1][subkey2]
-        if key in self._config and subkey1 in self._config[key]:
+        elif key in self._config and subkey1 in self._config[key]:
             return self._config[key][subkey1]
         return ''
 
