@@ -331,7 +331,7 @@ class Context(object):
         if framework is not None:
             self.framework = framework
         _framework = self.config.get('framework-name')
-        if self.framework is None and _framework != '':
+        if framework is None and _framework != '':
             self.framework = _framework
 
         if 'timeout' in kwargs and kwargs['timeout'] is not None:
