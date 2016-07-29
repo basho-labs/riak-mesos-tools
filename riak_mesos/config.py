@@ -86,7 +86,8 @@ class RiakMesosConfig(object):
                         'RIAK_MESOS_EXECUTOR_CPUS', conf)
         self._from_conf('executor', 'mem',
                         'RIAK_MESOS_EXECUTOR_MEM', conf)
-        self._from_conf('node', 'network_interface_name', 'RIAK_MESOS_NODE_IFACE', conf)
+        self._from_conf('node', 'network_interface_name',
+                        'RIAK_MESOS_NODE_IFACE', conf)
         self._from_conf('node', 'cpus', 'RIAK_MESOS_NODE_CPUS', conf)
         self._from_conf('node', 'mem', 'RIAK_MESOS_NODE_MEM', conf)
         self._from_conf('node', 'disk', 'RIAK_MESOS_NODE_DISK', conf)
