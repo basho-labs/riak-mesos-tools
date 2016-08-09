@@ -172,9 +172,11 @@ class RiakMesosClient(object):
     def marathon_framework_url(self):
         client = self.ctx.marathon_client()
         tasks = client.get_tasks(self.ctx.framework)
-        if len(tasks) != 0:
-            host = tasks[0]['host']
-            port = tasks[0]['ports'][0]
+        for task in tasks:
+            if task['state'] != "TASK_RUNNING":
+                continue
+            host = task['host']
+            port = task['ports'][0]
             _framework_url = 'http://' + host + ':' + str(port) + '/'
             r = self.ctx.http_request('get',
                                       _framework_url + 'healthcheck',
