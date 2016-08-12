@@ -98,8 +98,11 @@ def config(ctx, delete, riak_file, **kwargs):
     ctx.init_args(**kwargs)
     url = 'clusters/' + ctx.cluster + '/config'
     if delete:
-        r = ctx.api_request('delete', url)
-        click.echo(r.text)
+        r = ctx.api_request('delete', url, headers={'Accept': '*/*'}, data='')
+        if r.status_code == 404:
+            click.echo('No riak.conf set for cluster ' + ctx.cluster)
+        else:
+            click.echo(r.text)
     elif riak_file is None:
         r = ctx.api_request('get', url, headers={'Accept': '*/*'})
         if r.status_code == 404:
@@ -131,8 +134,11 @@ def config_advanced(ctx, delete, advanced_file, **kwargs):
     ctx.init_args(**kwargs)
     url = 'clusters/' + ctx.cluster + '/advancedConfig'
     if delete:
-        r = ctx.api_request('delete', url)
-        click.echo(r.text)
+        r = ctx.api_request('delete', url, headers={'Accept': '*/*'}, data='')
+        if r.status_code == 404:
+            click.echo('No advanced.config set for cluster ' + ctx.cluster)
+        else:
+            click.echo(r.text)
     elif advanced_file is None:
         r = ctx.api_request('get', url,
                             headers={'Accept': '*/*'})
