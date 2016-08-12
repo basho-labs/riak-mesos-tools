@@ -102,7 +102,10 @@ def config(ctx, delete, riak_file, **kwargs):
         click.echo(r.text)
     elif riak_file is None:
         r = ctx.api_request('get', url, headers={'Accept': '*/*'})
-        click.echo(r.text)
+        if r.status_code == 404:
+            click.echo('No riak.conf set for cluster ' + ctx.cluster)
+        else:
+            click.echo(r.text)
     else:
         with open(riak_file) as data_file:
             payload = data_file.read()
@@ -133,7 +136,10 @@ def config_advanced(ctx, delete, advanced_file, **kwargs):
     elif advanced_file is None:
         r = ctx.api_request('get', url,
                             headers={'Accept': '*/*'})
-        click.echo(r.text)
+        if r.status_code == 404:
+            click.echo('No advanced.config set for cluster ' + ctx.cluster)
+        else:
+            click.echo(r.text)
     else:
         with open(advanced_file) as data_file:
             payload = data_file.read()
