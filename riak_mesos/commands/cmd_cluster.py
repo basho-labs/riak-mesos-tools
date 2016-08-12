@@ -85,26 +85,35 @@ def info(ctx, **kwargs):
 
 
 @cli.command()
+@click.option('-d', '--delete', is_flag=True,
+              help='Delete the cluster\'s riak.conf file.')
 @click.option('--file', 'riak_file',
               type=click.Path(exists=True, file_okay=True,
                               resolve_path=True),
               help='Cluster riak.conf file to save.')
 @pass_context
-def config(ctx, riak_file, **kwargs):
+def config(ctx, delete, riak_file, **kwargs):
     """Gets or sets the riak.conf configuration for a cluster, specify cluster
     id with --cluster and config file location with --file"""
     ctx.init_args(**kwargs)
-    if riak_file is None:
-        r = ctx.api_request('get', 'clusters/' +
-                            ctx.cluster + '/config',
-                            headers={'Accept': '*/*'})
-        click.echo(r.text)
+    url = 'clusters/' + ctx.cluster + '/config'
+    if delete:
+        r = ctx.api_request('delete', url, headers={'Accept': '*/*'}, data='')
+        if r.status_code == 404:
+            click.echo('No riak.conf set for cluster ' + ctx.cluster)
+        else:
+            click.echo(r.text)
+    elif riak_file is None:
+        r = ctx.api_request('get', url, headers={'Accept': '*/*'})
+        if r.status_code == 404:
+            click.echo('No riak.conf set for cluster ' + ctx.cluster)
+        else:
+            click.echo(r.text)
     else:
         with open(riak_file) as data_file:
             payload = data_file.read()
             r = ctx.api_request(
-                'put', 'clusters/' +
-                ctx.cluster + '/config',
+                'put', url,
                 data=payload,
                 headers={'Accept': '*/*',
                          'Content-Type': 'plain/text'})
@@ -112,20 +121,31 @@ def config(ctx, riak_file, **kwargs):
 
 
 @cli.command('config-advanced')
+@click.option('-d', '--delete', is_flag=True,
+              help='Delete the cluster\'s advanced.config file.')
 @click.option('--file', 'advanced_file',
               type=click.Path(exists=True, file_okay=True,
                               resolve_path=True),
               help='Cluster advanced.config file to save.')
 @pass_context
-def config_advanced(ctx, advanced_file, **kwargs):
+def config_advanced(ctx, delete, advanced_file, **kwargs):
     """Gets or sets the advanced.config configuration for a cluster, specify
     cluster id with --cluster and config file location with --file"""
     ctx.init_args(**kwargs)
-    if advanced_file is None:
-        r = ctx.api_request('get', 'clusters/' +
-                            ctx.cluster + '/advancedConfig',
+    url = 'clusters/' + ctx.cluster + '/advancedConfig'
+    if delete:
+        r = ctx.api_request('delete', url, headers={'Accept': '*/*'}, data='')
+        if r.status_code == 404:
+            click.echo('No advanced.config set for cluster ' + ctx.cluster)
+        else:
+            click.echo(r.text)
+    elif advanced_file is None:
+        r = ctx.api_request('get', url,
                             headers={'Accept': '*/*'})
-        click.echo(r.text)
+        if r.status_code == 404:
+            click.echo('No advanced.config set for cluster ' + ctx.cluster)
+        else:
+            click.echo(r.text)
     else:
         with open(advanced_file) as data_file:
             payload = data_file.read()

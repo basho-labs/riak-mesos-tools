@@ -266,10 +266,12 @@ Other useful information can be found by executing these commands:
     riak-mesos node ringready --node riak-default-1
     riak-mesos node transfers --node riak-default-1
 
-Update the Cluster Configuration
---------------------------------
+Cluster Configuration
+---------------------
 
-You can customize the `riak.conf` and `advanced.config` for a cluster if necessary. Use [riak-mesos-scheduler/master/priv/riak.conf.default](https://raw.githubusercontent.com/basho-labs/riak-mesos-scheduler/master/priv/riak.conf.default) and [riak-mesos-scheduler/master/priv/advanced.config.default](https://raw.githubusercontent.com/basho-labs/riak-mesos-scheduler/master/priv/advanced.config.default) as templates. It is important that all of the values specified with `{{...}}` remain intact.
+By default, the Riak-Mesos Framework will use the config file that ships with the Riak archive you install, plus some automated modifications. However, you can customize the `riak.conf` and `advanced.config` for a cluster if necessary. Use [riak-mesos/master/docs/riak.conf.default](https://raw.githubusercontent.com/basho-labs/riak-mesos/master/docs/riak.conf.default) and [riak-mesos/master/docs/advanced.config.default](https://raw.githubusercontent.com/basho-labs/riak-mesos/master/docs/advanced.config.default) as templates.
+
+It is important to note that [certain configuration items](#executor-config-template-variables) cannot be customised. Their values are controlled by the executor, as is required to allow operation within Mesos.
 
 Once you have created your customized versions of these files, you can save them to the cluster using the following commands:
 
@@ -288,6 +290,23 @@ Similarly the advanced.config can be updated like so:
     riak-mesos cluster config-advanced --file /path/to/your/advanced.config
 
 **Note:** If you already have nodes running in a cluster, you'll need to perform a `riak-mesos cluster restart` to force the cluster to pick up the new changes.
+
+Executor Config Template Variables
+----------------------------------
+
+The following template variables are used when modifying the Riak config template, upon creating a node in a cluster:
+
+| Variable                 | Meaning             |
+| ------------------------ | ------------------- |
+| `fullyqualifiednodename` | Riak nodename       |
+| `handoffport`            | Handoff Port        |
+| `disterlport`            | Erlang distribution |
+| `httpport`               | HTTP Port           |
+| `pbport`                 | Protobuf Port       |
+| `cepmdport`              | EPMD Port           |
+| `data_dir`               | Riak Data dir       |
+| `bindaddress`            | Network bind addr   |
+
 
 Restart the Cluster
 -------------------
