@@ -65,11 +65,11 @@ class RiakMesosDCOSStrategy(object):
         self._framework_url = None
         self.ctx = ctx
         self.framework = self.ctx.framework
-        # TODO Maybe we should pipe this back to self.ctx?
         if self.framework is None:
             # Grab argv, pump $0 via dcos.subcommand.noun to get the fw name
             exe = sys.argv[0]
             self.framework = dcos_subcommand.noun(exe)
+            self.ctx.framework = self.framework
         try:
             self.ctx.vlog('Attempting to create DCOSClient')
             dcos_client = mesos.DCOSClient()
