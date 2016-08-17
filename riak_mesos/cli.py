@@ -25,6 +25,7 @@ from os.path import expanduser
 import click
 from dcos import config as dcos_config
 from dcos import errors as dcos_errors
+from dcos import subcommand as dcos_subcommand
 from dcos import http, marathon, mesos
 from kazoo.client import KazooClient
 
@@ -63,6 +64,12 @@ class RiakMesosDCOSStrategy(object):
         self._marathon_url = None
         self._framework_url = None
         self.ctx = ctx
+        self.framework = self.ctx.framework
+        # TODO Maybe we should pipe this back to self.ctx?
+        if self.framework is None:
+            # Grab argv, pump $0 via dcos.subcommand.noun to get the fw name
+            exe = sys.argv[0]
+            self.framework = dcos_subcommand.noun(exe)
         try:
             self.ctx.vlog('Attempting to create DCOSClient')
             dcos_client = mesos.DCOSClient()
@@ -85,7 +92,7 @@ class RiakMesosDCOSStrategy(object):
         if self._framework_url is not None:
             return self._framework_url
         # TODO: get framework name from dcos?
-        _framework_url = self.dcos_url + '/service/' + self.ctx.framework + '/'
+        _framework_url = self.dcos_url + '/service/' + self.framework + '/'
         r = self.ctx.http_request('get',
                                   _framework_url + 'healthcheck',
                                   False)
