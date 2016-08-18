@@ -22,8 +22,9 @@ import click
 
 
 def wait_for_node(ctx, node):
-    def inner_wait_for_node(seconds):
-        if seconds == 0:
+    timeout = ctx.timeout
+    while timeout >= 0:
+        if timeout == 0:
             click.echo('Node ' + node + ' did not respond in ' +
                        str(ctx.timeout) + ' seconds.')
             return
@@ -32,9 +33,8 @@ def wait_for_node(ctx, node):
             click.echo('Node ' + node + ' is ready.')
             return
         time.sleep(1)
-        return inner_wait_for_node(seconds - 1)
-
-    return inner_wait_for_node(ctx.timeout)
+        timeout = timeout - 1
+    return
 
 
 def node_info(ctx, node):
