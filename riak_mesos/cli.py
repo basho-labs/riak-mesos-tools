@@ -66,7 +66,7 @@ class RiakMesosDCOSStrategy(object):
         self.ctx = ctx
         try:
             if self.ctx.framework is None:
-                # Grab argv, pump $0 via dcos.subcommand.noun to get the fw name
+                # Grab argv0, pump via dcos.subcommand.noun to get the fw name
                 exe = sys.argv[0]
                 self.framework = dcos_subcommand.noun(exe)
                 if self.framework is None:
