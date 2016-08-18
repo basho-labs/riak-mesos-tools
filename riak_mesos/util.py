@@ -62,8 +62,9 @@ def node_info(ctx, node):
 
 
 def wait_for_node_status_valid(ctx, node, num_nodes):
-    def inner_wait_for_node_status_valid(seconds):
-        if seconds == 0:
+    timeout = ctx.timeout
+    while timeout >= 0:
+        if timeout == 0:
             click.echo('Cluster ' + ctx.cluster + ' did not respond with ' +
                        str(num_nodes) + ' valid nodes in ' +
                        str(ctx.timeout) + ' seconds.')
@@ -73,9 +74,8 @@ def wait_for_node_status_valid(ctx, node, num_nodes):
             click.echo('Cluster ' + ctx.cluster + ' is ready.')
             return
         time.sleep(1)
-        return inner_wait_for_node_status_valid(seconds - 1)
-
-    return inner_wait_for_node_status_valid(ctx.timeout)
+        timeout = timeout - 1
+    return
 
 
 def node_status(ctx, node):
