@@ -89,6 +89,7 @@ def wait_for_service(ctx, **kwargs):
         timeout = timeout - 1
     return
 
+
 @cli.command()
 @pass_context
 def uninstall(ctx, **kwargs):
