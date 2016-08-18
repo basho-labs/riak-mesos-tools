@@ -76,19 +76,19 @@ def wait_for_service(ctx, **kwargs):
     """Waits timeout seconds (default is 60) or until Framework is running.
     Specify timeout with --timeout."""
     ctx.init_args(**kwargs)
-
-    def inner_wait_for_framework(seconds):
-        if seconds == 0:
+    timeout = ctx.timeout
+    while timeout >= 0:
+        if timeout == 0:
             click.echo('Riak Mesos Framework did not respond within ' +
                        str(ctx.timeout) + ' seconds.')
+            return
         r = ctx.framework_request('get', 'healthcheck', False)
         if r.status_code == 200:
             click.echo('Riak Mesos Framework is ready.')
             return
         time.sleep(1)
-        return inner_wait_for_framework(seconds - 1)
-
-    return inner_wait_for_framework(ctx.timeout)
+        timeout = timeout - 1
+    return
 
 
 @cli.command()
