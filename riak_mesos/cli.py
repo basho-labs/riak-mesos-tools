@@ -64,13 +64,15 @@ class RiakMesosDCOSStrategy(object):
         self._marathon_url = None
         self._framework_url = None
         self.ctx = ctx
-        self.framework = self.ctx.framework
-        if self.framework is None:
-            # Grab argv, pump $0 via dcos.subcommand.noun to get the fw name
-            exe = sys.argv[0]
-            self.framework = dcos_subcommand.noun(exe)
-            self.ctx.framework = self.framework
         try:
+            if self.ctx.framework is None:
+                # Grab argv, pump $0 via dcos.subcommand.noun to get the fw name
+                exe = sys.argv[0]
+                self.framework = dcos_subcommand.noun(exe)
+                if self.framework is None:
+                    raise Exception("Unable to find Framework name")
+                # Update the context with our newly found FW name
+                self.ctx.framework = self.framework
             self.ctx.vlog('Attempting to create DCOSClient')
             dcos_client = mesos.DCOSClient()
             self.client = dcos_client
