@@ -81,6 +81,7 @@ def wait_for_service(ctx, **kwargs):
         if timeout == 0:
             click.echo('Riak Mesos Framework did not respond within ' +
                        str(ctx.timeout) + ' seconds.')
+            return
         r = ctx.framework_request('get', 'healthcheck', False)
         if r.status_code == 200:
             click.echo('Riak Mesos Framework is ready.')
