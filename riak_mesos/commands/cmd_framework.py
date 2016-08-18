@@ -76,7 +76,6 @@ def wait_for_service(ctx, **kwargs):
     """Waits timeout seconds (default is 60) or until Framework is running.
     Specify timeout with --timeout."""
     ctx.init_args(**kwargs)
-
     timeout = ctx.timeout
     while timeout >= 0:
         if timeout == 0:
@@ -88,7 +87,6 @@ def wait_for_service(ctx, **kwargs):
             return
         time.sleep(1)
         timeout = timeout - 1
-
     return
 
 @cli.command()
