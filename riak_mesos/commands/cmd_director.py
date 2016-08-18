@@ -45,10 +45,10 @@ def config(ctx, **kwargs):
 def wait_for_service(ctx, **kwargs):
     """Waits --timeout seconds or until director is running"""
     ctx.init_args(**kwargs)
-
-    def inner_wait_for_director(seconds):
+    timeout = ctx.timeout
+    while timeout >= 0:
         try:
-            if seconds == 0:
+            if timeout == 0:
                 click.echo('Director did not respond in ' + str(ctx.timeout) +
                            ' seconds.')
 
@@ -63,9 +63,8 @@ def wait_for_service(ctx, **kwargs):
         except:
             pass
         time.sleep(1)
-        return inner_wait_for_director(seconds - 1)
-
-    return inner_wait_for_director(ctx.timeout)
+        timeout = timeout - 1
+    return
 
 
 @cli.command()
