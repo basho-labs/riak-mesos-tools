@@ -86,8 +86,9 @@ def node_status(ctx, node):
 
 
 def wait_for_node_transfers(ctx, node):
-    def inner_wait_for_node_transfers(seconds):
-        if seconds == 0:
+    timeout = ctx.timeout
+    while timeout >= 0:
+        if timeout == 0:
             click.echo('Node ' + node + ' transfers did not complete in ' +
                        str(ctx.timeout) + 'seconds.')
             return
@@ -96,15 +97,14 @@ def wait_for_node_transfers(ctx, node):
         node_json = json.loads(r.text)
         waiting = len(node_json['transfers']['waiting_to_handoff'])
         active = len(node_json['transfers']['active'])
-        if seconds % 5 == 0 and seconds != ctx.timeout:
+        if timeout % 5 == 0 and timeout != ctx.timeout:
             click.echo(r.text)
         if waiting == 0 and active == 0:
             click.echo('Node ' + node + ' transfers complete.')
             return
         time.sleep(1)
-        return inner_wait_for_node_transfers(seconds - 1)
-
-    return inner_wait_for_node_transfers(ctx.timeout)
+        timeout = timeout - 1
+    return
 
 
 def get_node_name(ctx, node):
