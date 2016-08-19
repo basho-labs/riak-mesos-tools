@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
+import click, json
 
 from riak_mesos.cli import CliError, pass_context
 from riak_mesos.util import (get_node_name, wait_for_node,
@@ -197,10 +197,28 @@ def bucket_type_update(ctx, b_type, props, **kwargs):
         raise CliError('--props JSON must be specified')
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
+                        '/nodes/' + ctx.node + '/types')
+    if r.status_code != 200:
+        click.echo('Failed to get bucket types, status_code: ' +
+                   str(r.status_code))
+        return
+    if not is_bucket_type_exists(b_type, r):
+        click.echo('Bucket with such type: ' + b_type  + ' does not exist')
+        return
+    r = ctx.api_request('post',
+                        'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node +
                         '/types/' + b_type,
                         data=props)
-    print r
+    click.echo(r.text)
+
+
+def is_bucket_type_exists(b_type, r):
+    bucket_types = json.loads(r.text)['bucket_types']
+    for bucket_type in bucket_types:
+        if b_type == bucket_type['id']:
+            return True
+    return False
 
 
 @bucket_type.command('list')
