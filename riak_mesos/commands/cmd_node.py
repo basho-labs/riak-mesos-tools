@@ -174,6 +174,16 @@ def bucket_type_create(ctx, b_type, props, **kwargs):
         raise CliError('--bucket-type must be specified')
     if props is None:
         raise CliError('--props JSON must be specified')
+    r = ctx.api_request('get',
+                        'clusters/' + ctx.cluster +
+                        '/nodes/' + ctx.node + '/types')
+    if r.status_code != 200:
+        click.echo('Failed to get bucket types, status_code: ' +
+                   str(r.status_code))
+        return
+    if is_bucket_type_exists(b_type, r):
+        click.echo('Bucket with such type: ' + b_type  + ' exists')
+        return
     r = ctx.api_request('post',
                         'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node +
