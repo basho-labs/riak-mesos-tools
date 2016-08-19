@@ -545,7 +545,7 @@ class RiakMesosCLI(click.MultiCommand):
         try:
             if sys.version_info[0] == 2:
                 name = name.encode('ascii', 'replace')
-            if name == "riak":
+            if name in ['riak', 'riak-ts', 'riak-kv']:
                 return cli
             mod = __import__('riak_mesos.commands.cmd_' + name,
                              None, None, ['cli'])
