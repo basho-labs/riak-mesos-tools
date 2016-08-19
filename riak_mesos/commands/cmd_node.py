@@ -181,6 +181,28 @@ def bucket_type_create(ctx, b_type, props, **kwargs):
     click.echo(r.text)
 
 
+@bucket_type.command('update')
+@click.option('--bucket-type', 'b_type',
+              help='Bucket type name.')
+@click.option('--props',
+              help='Bucket type properties json.')
+@pass_context
+def bucket_type_update(ctx, b_type, props, **kwargs):
+    """Updates a bucket type on a node, specify node id with
+    --node, bucket type with --bucket-type, and JSON props with --props"""
+    ctx.init_args(**kwargs)
+    if b_type is None:
+        raise CliError('--bucket-type must be specified')
+    if props is None:
+        raise CliError('--props JSON must be specified')
+    r = ctx.api_request('get',
+                        'clusters/' + ctx.cluster +
+                        '/nodes/' + ctx.node +
+                        '/types/' + b_type,
+                        data=props)
+    print r
+
+
 @bucket_type.command('list')
 @pass_context
 def bucket_type_list(ctx, **kwargs):
