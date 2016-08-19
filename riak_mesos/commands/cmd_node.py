@@ -182,7 +182,7 @@ def bucket_type_create(ctx, b_type, props, **kwargs):
                    str(r.status_code))
         return
     if is_bucket_type_exists(b_type, r):
-        click.echo('Bucket with such type: ' + b_type  + ' exists')
+        click.echo('Bucket with such type: ' + b_type + ' exists')
         return
     r = ctx.api_request('post',
                         'clusters/' + ctx.cluster +
