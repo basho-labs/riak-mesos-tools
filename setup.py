@@ -96,6 +96,8 @@ setup(
     extras_require={
         'dev': ['check-manifest'],
         'test': ['coverage'],
+        'KV': [],
+        'TS': [],
     },
 
     # If there are data files included in your packages that need to be
@@ -114,8 +116,9 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'riak-mesos=riak_mesos.cli:cli',
-            'dcos-riak=riak_mesos.cli:cli'
+            'dcos-riak-kv=riak_mesos.cli:cli [KV]',
+            'dcos-riak-ts=riak_mesos.cli:cli [TS]',
+            'riak-mesos=riak_mesos.cli:cli'
         ],
     },
 )
