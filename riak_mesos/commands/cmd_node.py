@@ -204,7 +204,7 @@ def bucket_type_update(ctx, b_type, props, **kwargs):
                    str(r.status_code))
         return
     if not is_bucket_type_exists(b_type, r):
-        click.echo('Bucket with such type: ' + b_type  + ' does not exist')
+        click.echo('Bucket with such type: ' + b_type + ' does not exist')
         return
     r = ctx.api_request('post',
                         'clusters/' + ctx.cluster +
