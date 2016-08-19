@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click, json
+import click
+import json
 
 from riak_mesos.cli import CliError, pass_context
 from riak_mesos.util import (get_node_name, wait_for_node,
