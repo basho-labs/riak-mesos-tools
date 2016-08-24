@@ -162,7 +162,7 @@ class RiakMesosCli(object):
 
 def main():
     args = sys.argv[1:]
-    if len(sys.argv) >= 2 and sys.argv[1] == 'riak':
+    if len(sys.argv) >= 2 and sys.argv[1] in ['riak', 'riak-kv', 'riak-ts']:
         args = sys.argv[2:]
     if len(args) == 0:
         print(constants.usage)
