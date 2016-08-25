@@ -1,4 +1,4 @@
-# Riak Mesos CLI / DCOS Riak
+# Riak Mesos CLI / DC/OS Riak
 
 
 CLI and other tools for interacting with the Riak Mesos Framework.
@@ -11,12 +11,12 @@ CLI and other tools for interacting with the Riak Mesos Framework.
 
 Before getting started with the RMF, there are a few environment and system related requirements that are assumed for the remainder of this tutorial:
 
--   A Mesos cluster version 0.26 - 0.28.
+-   A Mesos cluster version 0.28.x or above
 -   Python version 2.7 or above.
 -   One of the currently supported operating systems. Check the [configuration](#create-a-configuration-file) section for more information.
 
 
-### Note to DCOS Users
+### Note to DC/OS and DC/OS CLI Users
 
 
 All of the below instructions will work for the `dcos riak` command, just replace `riak-mesos` with `dcos riak`. Some other differences will be pointed out in the corresponding sections.
@@ -39,10 +39,10 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
         sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@master#egg=riak_mesos
 
-### DCOS v0.4.x Install
+### DC/OS CLI v0.4.x Install
 
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
-- Add the DCOS Riak package to your DCOS repository sources:
+- Add the DC/OS Riak package to your DC/OS repository sources:
 
 		dcos package repo add --index=0 Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.4.x.zip
 
@@ -54,12 +54,12 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
     NB: the `--options foo.json` argument must come AFTER the package name, or dcos will silently ignore it.
 
-### DCOS v0.3.2 Install
+### DC/OS CLI v0.3.2 Install
 
 
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
 
--   Append the DCOS Riak package repo to your DCOS repo sources:
+-   Append the DC/OS Riak package repo to your DC/OS repo sources:
 
         dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.3.x.zip
 
@@ -76,7 +76,7 @@ All of the below instructions will work for the `dcos riak` command, just replac
 Create a Configuration File
 ---------------------------
 
-- Copy the contents of [config.example.json](config/config.example.json) ([config.dcos.json](config/config.dcos.json) for DCOS users) into a local file at the path `/etc/riak-mesos/config.json`:
+- Copy the contents of [config.example.json](config/config.example.json) ([config.dcos.json](config/config.dcos.json) for DC/OS users) into a local file at the path `/etc/riak-mesos/config.json`:
 
         mkdir -p /etc/riak-mesos
         curl https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/master/config/config.example.json > /etc/riak-mesos/config.json
@@ -101,7 +101,7 @@ riak-mesos --help
 
 Usage: riak-mesos [OPTIONS] COMMAND [ARGS]...
 
-  Command line utility for the Riak Mesos Framework / DCOS Service. This
+  Command line utility for the Riak Mesos Framework / DC/OS Service. This
   utility provides tools for modifying and accessing your Riak on Mesos
   installation.
 
@@ -152,7 +152,7 @@ Commands:
 Install the RMF
 ---------------
 
-**NOTE:** This step is unecessary for DCOS users since the `dcos package install` automatically performs this step.
+**NOTE:** This step is unecessary for DC/OS users since the `dcos package install` automatically performs this step.
 
 Run the following command to create a Marathon application with an id that matches the `riak.framework-name` configuration value:
 
@@ -445,10 +445,10 @@ The following commands can be used to remove part or all of the RMF.
 
         sudo pip uninstall riak-mesos
 
-DCOS Riak Uninstall
+DC/OS Riak Uninstall
 -------------------
 
-Follow these steps to cleanly remove riak from a DCOS cluster:
+Follow these steps to cleanly remove riak from a DC/OS cluster:
 
     dcos riak director uninstall
     dcos riak cluster destroy
