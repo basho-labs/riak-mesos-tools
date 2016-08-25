@@ -208,8 +208,10 @@ class RiakMesosConfig(object):
         return json.dumps(self.framework_marathon_json())
 
     def director_marathon_json(self, cluster):
+        framework = self.get('framework-name')
+        director_marathon_name = "-".join((framework, cluster, 'director'))
         director_marathon_conf = {
-            'id': '/' + cluster + '-director',
+            'id': '/' + director_marathon_name,
             'cmd': './riak_mesos_director/bin/ermf-director',
             'cpus': self.get('director', 'cpus'),
             'mem': self.get('director', 'mem'),

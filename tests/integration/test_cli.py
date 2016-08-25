@@ -4,7 +4,7 @@ from common import exec_command as _c
 
 
 def test_version():
-    c, o, e = _c(['dcos-riak', '--version'])
+    c, o, e = _c(['riak-mesos', '--version'])
     assert c == 0
     assert e == b''
 
