@@ -11,7 +11,7 @@ CLI and other tools for interacting with the Riak Mesos Framework.
 
 Before getting started with the RMF, there are a few environment and system related requirements that are assumed for the remainder of this tutorial:
 
--   A Mesos cluster version 0.28.x
+-   A Mesos cluster version 0.28.x or above
 -   Python version 2.7 or above.
 -   One of the currently supported operating systems. Check the [configuration](#create-a-configuration-file) section for more information.
 
