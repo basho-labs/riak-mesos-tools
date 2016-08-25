@@ -211,7 +211,7 @@ class RiakMesosConfig(object):
         framework = self.get('framework-name')
         director_marathon_name = "-".join((framework, cluster, 'director'))
         director_marathon_conf = {
-            'id': '/' + director_marathon_name
+            'id': '/' + director_marathon_name,
             'cmd': './riak_mesos_director/bin/ermf-director',
             'cpus': self.get('director', 'cpus'),
             'mem': self.get('director', 'mem'),
