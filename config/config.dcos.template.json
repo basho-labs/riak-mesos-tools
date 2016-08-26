@@ -1,9 +1,7 @@
 {
     "riak": {
         "framework-name": "riak",
-        "hostname": "riak.marathon.mesos",
         "user": "root",
-        "role": "riak",
         "auth-principal": "riak",
         "auth-provider": "",
         "auth-secret-file": "",
