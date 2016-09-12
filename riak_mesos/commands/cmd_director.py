@@ -53,7 +53,9 @@ def wait_for_service(ctx, **kwargs):
                            ' seconds.')
 
             client = ctx.marathon_client()
-            app = client.get_app('/' + ctx.cluster + '-director')
+            framework = ctx.get('framework-name')
+            app_name = "-".join((framework, ctx.cluster, 'director'))
+            app = client.get_app('/' + app_name)
             if len(app['tasks']) == 0:
                 click.echo("Director is not installed.")
                 return
