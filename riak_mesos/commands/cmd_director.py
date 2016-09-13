@@ -46,6 +46,10 @@ def wait_for_service(ctx, **kwargs):
     """Waits --timeout seconds or until director is running"""
     ctx.init_args(**kwargs)
     timeout = ctx.timeout
+    framework = ctx.get('framework-name')
+    app_name = "-".join((framework, ctx.cluster, 'director'))
+    click.echo("Checking status of director " + app_name)
+    ctx.vlog('Waiting for director ' + app_name)
     while timeout >= 0:
         try:
             if timeout == 0:
@@ -53,9 +57,6 @@ def wait_for_service(ctx, **kwargs):
                            ' seconds.')
 
             client = ctx.marathon_client()
-            framework = ctx.get('framework-name')
-            app_name = "-".join((framework, ctx.cluster, 'director'))
-            click.echo("Checking status of director " + app_name)
             app = client.get_app('/' + app_name)
             if len(app['tasks']) == 0:
                 click.echo("Director is not installed.")
