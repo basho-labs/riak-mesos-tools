@@ -91,7 +91,8 @@ def uninstall(ctx, **kwargs):
     """Uninstalls the riak-mesos-director marathon app"""
     ctx.init_args(**kwargs)
     client = ctx.marathon_client()
-    client.remove_app('/' + ctx.cluster + '-director')
+    app_name = "-".join((ctx.framework, ctx.cluster, 'director'))
+    client.remove_app('/' + app_name)
     click.echo('Finished removing ' + '/' + ctx.cluster +
                '-director' + ' from marathon')
 
