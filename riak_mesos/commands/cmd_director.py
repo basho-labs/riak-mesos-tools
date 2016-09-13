@@ -46,6 +46,9 @@ def wait_for_service(ctx, **kwargs):
     """Waits --timeout seconds or until director is running"""
     ctx.init_args(**kwargs)
     timeout = ctx.timeout
+    framework = ctx.framework
+    app_name = "-".join((framework, ctx.cluster, 'director'))
+    ctx.vlog('Waiting for director ' + app_name)
     while timeout >= 0:
         try:
             if timeout == 0:
@@ -53,7 +56,7 @@ def wait_for_service(ctx, **kwargs):
                            ' seconds.')
 
             client = ctx.marathon_client()
-            app = client.get_app('/' + ctx.cluster + '-director')
+            app = client.get_app('/' + app_name)
             if len(app['tasks']) == 0:
                 click.echo("Director is not installed.")
                 return
@@ -74,8 +77,7 @@ def install(ctx, **kwargs):
     using --cluster (default is default)"""
     ctx.init_args(**kwargs)
     ctx.config.from_marathon(ctx)
-    director_json = ctx.config.director_marathon_json(
-        ctx.cluster)
+    director_json = ctx.config.director_marathon_json(ctx.cluster)
     client = ctx.marathon_client()
     client.add_app(director_json)
     click.echo('Finished adding ' + director_json['id'] + ' to marathon.')
@@ -87,9 +89,9 @@ def uninstall(ctx, **kwargs):
     """Uninstalls the riak-mesos-director marathon app"""
     ctx.init_args(**kwargs)
     client = ctx.marathon_client()
-    client.remove_app('/' + ctx.cluster + '-director')
-    click.echo('Finished removing ' + '/' + ctx.cluster +
-               '-director' + ' from marathon')
+    app_name = "-".join((ctx.framework, ctx.cluster, 'director'))
+    client.remove_app('/' + app_name)
+    click.echo('Finished removing ' + '/' + app_name + ' from marathon')
 
 
 @cli.command()
@@ -98,7 +100,8 @@ def endpoints(ctx, **kwargs):
     """Lists the endpoints exposed by a riak-mesos-director marathon app"""
     ctx.init_args(**kwargs)
     client = ctx.marathon_client()
-    app = client.get_app('/' + ctx.cluster + '-director')
+    app_name = "-".join((ctx.framework, ctx.cluster, 'director'))
+    app = client.get_app('/' + app_name)
     if len(app['tasks']) == 0:
         click.echo("Director is not installed.")
         return
