@@ -48,7 +48,6 @@ def wait_for_service(ctx, **kwargs):
     timeout = ctx.timeout
     framework = ctx.framework
     app_name = "-".join((framework, ctx.cluster, 'director'))
-    click.echo("Checking status of director " + app_name)
     ctx.vlog('Waiting for director ' + app_name)
     while timeout >= 0:
         try:
