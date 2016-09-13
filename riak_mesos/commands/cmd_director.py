@@ -77,7 +77,7 @@ def install(ctx, **kwargs):
     using --cluster (default is default)"""
     ctx.init_args(**kwargs)
     ctx.config.from_marathon(ctx)
-    director_json = ctx.config.director_marathon_json( ctx.cluster)
+    director_json = ctx.config.director_marathon_json(ctx.cluster)
     client = ctx.marathon_client()
     client.add_app(director_json)
     click.echo('Finished adding ' + director_json['id'] + ' to marathon.')
