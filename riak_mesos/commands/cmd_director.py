@@ -103,7 +103,8 @@ def endpoints(ctx, **kwargs):
     """Lists the endpoints exposed by a riak-mesos-director marathon app"""
     ctx.init_args(**kwargs)
     client = ctx.marathon_client()
-    app = client.get_app('/' + ctx.cluster + '-director')
+    app_name = "-".join((ctx.framework, ctx.cluster, 'director'))
+    app = client.get_app('/' + app_name)
     if len(app['tasks']) == 0:
         click.echo("Director is not installed.")
         return
