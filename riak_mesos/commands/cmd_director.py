@@ -78,8 +78,7 @@ def install(ctx, **kwargs):
     using --cluster (default is default)"""
     ctx.init_args(**kwargs)
     ctx.config.from_marathon(ctx)
-    director_json = ctx.config.director_marathon_json(
-        ctx.cluster)
+    director_json = ctx.config.director_marathon_json( ctx.cluster)
     client = ctx.marathon_client()
     client.add_app(director_json)
     click.echo('Finished adding ' + director_json['id'] + ' to marathon.')
@@ -93,8 +92,7 @@ def uninstall(ctx, **kwargs):
     client = ctx.marathon_client()
     app_name = "-".join((ctx.framework, ctx.cluster, 'director'))
     client.remove_app('/' + app_name)
-    click.echo('Finished removing ' + '/' + ctx.cluster +
-               '-director' + ' from marathon')
+    click.echo('Finished removing ' + '/' + app_name + ' from marathon')
 
 
 @cli.command()
