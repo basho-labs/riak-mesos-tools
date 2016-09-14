@@ -14,4 +14,4 @@
 # limitations under the License.
 """DCOS Riak Constants"""
 
-version = '1.3.1'
+version = '1.3.2'
