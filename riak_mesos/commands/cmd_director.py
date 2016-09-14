@@ -45,6 +45,7 @@ def config(ctx, **kwargs):
 def wait_for_service(ctx, **kwargs):
     """Waits --timeout seconds or until director is running"""
     ctx.init_args(**kwargs)
+    ctx.config.from_marathon(ctx)
     timeout = ctx.timeout
     framework = ctx.framework
     app_name = "-".join((framework, ctx.cluster, 'director'))
