@@ -78,7 +78,7 @@ class RiakMesosDCOSStrategy(object):
             self.client = dcos_client
             dcos_url = self.client.get_dcos_url('')
             ssl_verify = dcos_config.get_config().get('core.ssl_verify')
-            self.ctx.vlog('DCOS core.ssl_verify value = ' + ssl_verify)
+            self.ctx.vlog('DCOS core.ssl_verify value = ' + str(ssl_verify))
             if ssl_verify is not None and (
                     not ssl_verify or ssl_verify == 'false'):
                 self.ctx.vlog('Setting insecure_ssl to True')
