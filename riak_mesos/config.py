@@ -97,7 +97,7 @@ class RiakMesosConfig(object):
         self._from_conf('node', 'explorer-package',
                         'RIAK_MESOS_EXPLORER_PKG', conf)
 
-    def framework_marathon_json(self, ctx = None):
+    def framework_marathon_json(self, ctx=None):
         mj = {}
         mj['id'] = self.get('framework-name')
         mj['instances'] = self.get('instances')
