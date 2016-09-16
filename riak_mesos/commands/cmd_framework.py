@@ -48,11 +48,13 @@ def endpoints(ctx, **kwargs):
 
 
 @cli.command()
+@click.option('--attache', is_flag=True,
+              help='Enables attache.')
 @pass_context
 def install(ctx, **kwargs):
     """Generates and installs a marathon app for the framework"""
     ctx.init_args(**kwargs)
-    framework_json = ctx.config.framework_marathon_json()
+    framework_json = ctx.config.framework_marathon_json(ctx)
     client = ctx.marathon_client()
     client.add_app(framework_json)
     click.echo('Finished adding ' + framework_json['id'] + ' to marathon.')

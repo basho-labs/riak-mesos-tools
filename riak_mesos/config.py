@@ -97,7 +97,7 @@ class RiakMesosConfig(object):
         self._from_conf('node', 'explorer-package',
                         'RIAK_MESOS_EXPLORER_PKG', conf)
 
-    def framework_marathon_json(self):
+    def framework_marathon_json(self, ctx = None):
         mj = {}
         mj['id'] = self.get('framework-name')
         mj['instances'] = self.get('instances')
@@ -188,6 +188,8 @@ class RiakMesosConfig(object):
         if self.get('executor', 'mem') != '':
             mj['env']['RIAK_MESOS_EXECUTOR_MEM'] = str(self.get(
                 'executor', 'mem'))
+        if ctx is not None and ctx.attache:
+            mj['env']['RIAK_MESOS_ATTACHE'] = 'True'
         healthcheck = {'path': '/healthcheck'}
         healthcheck.update({'portIndex': 0}),
         healthcheck.update({'protocol': 'HTTP'})
