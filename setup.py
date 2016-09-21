@@ -83,7 +83,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'docopt',
-        'dcos',
+        'dcos>=0.4.6,<0.4.12',
         'kazoo',
         'click',
         'futures'
