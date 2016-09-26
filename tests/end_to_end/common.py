@@ -1,10 +1,10 @@
+import os
 import subprocess
 
 
 def exec_framework_command(cmd, env=None, stdin=None):
-    # config = os.path.dirname(__file__) + '/../../config/config.test.json'
-    # cmd = ['riak-mesos', '--config', config] + cmd
-    cmd = ['riak-mesos'] + cmd
+    base_cmd = os.environ.get('RIAK_MESOS_CMD', 'riak-mesos').split()
+    cmd = base_cmd + cmd
     return exec_command(cmd, env, stdin)
 
 

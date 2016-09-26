@@ -82,11 +82,9 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'docopt',
+        'click',
         'dcos>=0.4.6,<0.4.12',
         'kazoo',
-        'click',
-        'futures'
     ],
 
     # List additional groups of dependencies here (e.g. development
@@ -95,7 +93,11 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
         'dev': ['check-manifest'],
-        'test': ['coverage'],
+        'test': [
+            'coverage',
+            'requests',
+            'tox'
+        ],
     },
 
     # If there are data files included in your packages that need to be

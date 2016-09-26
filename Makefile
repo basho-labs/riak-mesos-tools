@@ -16,8 +16,7 @@ activate-env: env
 	echo "Virtualenv activated."
 
 deps:
-	pip install -r $(BASEDIR)/requirements.txt
-	pip install -e $(BASEDIR)
+	pip install -e $(BASEDIR)[test]
 	echo "Requirements installed."
 
 test: deps
