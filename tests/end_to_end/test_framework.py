@@ -207,6 +207,6 @@ def test_uninstall():
 
 
 def put_data(host, port, bucket, key, value):
-    requests.put('http://' + host + ":" + str(port) +
-                 '/buckets/' + '/keys/' + 'test',
+    requests.put('http://' + host + ":" + str(port) + '/riak/' +
+                 bucket + '/' + key,
                  data=value)
