@@ -62,7 +62,7 @@ def test_node_list_add():
     assert e == b''
     assert "-default-1 is ready" in o.strip()
     assert "-default-2 is ready" in o.strip()
-    ## TODO This only gets printed if enough nodes are up
+    # TODO This only gets printed if enough nodes are up
     assert "Cluster default is ready." in o.strip()
 
 
