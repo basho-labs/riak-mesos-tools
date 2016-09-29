@@ -164,8 +164,8 @@ def test_second_cluster_node_list_add():
                    '--cluster', 'second', '--timeout', '600', '--nodes', '2'])
     assert c == 0
     assert e == b''
-    assert "riak-second-1 is ready" in o.strip()
-    assert "riak-second-2 is ready" in o.strip()
+    assert "-second-1 is ready" in o.strip()
+    assert "-second-2 is ready" in o.strip()
 
 
 def test_second_cluster_node_status():
