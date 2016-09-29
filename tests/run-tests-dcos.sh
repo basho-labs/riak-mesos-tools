@@ -26,7 +26,8 @@ dcos package repo add Riak https://github.com/basho-labs/riak-mesos-dcos-repo/ar
 git config --global --unset-all 'url.ssh://git@github.com.insteadof'
 git config --global --unset-all 'url.ssh://git@github.com/.insteadof'
 
-dcos package install riak-ts --yes --cli
+dcos --log-level=ERROR package install riak-ts --yes # --cli
+dcos riak-ts framework wait-for-service --timeout 1000000
 
 cd /root
 
