@@ -20,7 +20,9 @@ pip install virtualenv
 curl https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.8/dcos -o dcos &&
     sudo mv dcos /usr/local/bin &&
     sudo chmod +x /usr/local/bin/dcos
-dcos package repo add Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/develop.zip --index 0
+# TODO vv Change this back to 'develop.zip' vv
+dcos package repo add Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/mtc-th-dcos-tests-fixup.zip --index 0
+
 dcos package install riak-ts --yes --cli
 
 cd /root
