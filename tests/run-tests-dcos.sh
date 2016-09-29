@@ -42,6 +42,6 @@ else
 fi
 
 cd riak-mesos-tools
-export RIAK_MESOS_CMD='dcos riak-ts --verbose'
+export RIAK_MESOS_CMD='dcos riak-ts'
 make test-end-to-end
 find . -name "end-to-end.html" -exec cp \{} /tmp/riak-mesos-tools \;
