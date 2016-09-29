@@ -6,16 +6,16 @@ import requests
 from common import exec_framework_command as _fc
 
 
-def test_framework_install():
-    c, o, e = _fc(['framework', 'install'])
-    assert o.strip() == b'Finished adding riak to marathon.'
-    assert c == 0
-    assert e == b''
-    c, o, e = _fc(['framework', 'wait-for-service', '--timeout', '600'])
-    assert o.strip() == b'Riak Mesos Framework is ready.'
-    assert c == 0
-    assert e == b''
-
+#def test_framework_install():
+#    c, o, e = _fc(['framework', 'install'])
+#    assert o.strip() == b'Finished adding riak to marathon.'
+#    assert c == 0
+#    assert e == b''
+#    c, o, e = _fc(['framework', 'wait-for-service', '--timeout', '600'])
+#    assert o.strip() == b'Riak Mesos Framework is ready.'
+#    assert c == 0
+#    assert e == b''
+#
 
 def test_cluster_create():
     c, o, e = _fc(['cluster', 'create'])
