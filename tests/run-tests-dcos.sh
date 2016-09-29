@@ -15,8 +15,6 @@ if [ -e /tmp/dcos.toml ]; then
     cp /tmp/dcos.toml /root/.dcos
 fi
 
-apt-get update && apt-get upgrade -y &&
-    apt-get install -y python-pip
 pip install virtualenv
 
 curl https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.8/dcos -o dcos &&
