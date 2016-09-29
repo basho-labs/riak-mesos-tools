@@ -3,7 +3,7 @@ import time
 
 import requests
 
-from common import exec_framework_command as _fc
+from common import exec_framework_command as _fc, get_framework_name as _fn
 
 
 #def test_framework_install():
@@ -35,6 +35,7 @@ def test_cluster_list():
 
 
 def test_node_list_add():
+    fwname = _fn()
     c, o, e = _fc(['node', 'list'])
     if o == b'''{"nodes":[]}\n''':
         c, o, e = _fc(['node', 'add', '--nodes', '2'])
@@ -47,11 +48,11 @@ def test_node_list_add():
         assert e == b''
         js = json.loads(o.decode("utf-8").strip())
         assert len(js['nodes']) >= 2
-    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-1',
+    c, o, e = _fc(['node', 'wait-for-service', '--node', fwname + '-default-1',
                    '--timeout', '600'])
     assert c == 0
     assert e == ''
-    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-2',
+    c, o, e = _fc(['node', 'wait-for-service', '--node', fwname + '-default-2',
                    '--timeout', '600'])
     assert c == 0
     assert e == ''
@@ -59,12 +60,15 @@ def test_node_list_add():
                    '--timeout', '600', '--nodes', '2'])
     assert c == 0
     assert e == b''
-    assert "riak-default-1 is ready" in o.strip()
-    assert "riak-default-2 is ready" in o.strip()
+    assert "-default-1 is ready" in o.strip()
+    assert "-default-2 is ready" in o.strip()
+    ## TODO This only gets printed if enough nodes are up
+    assert "Cluster default is ready." in o.strip()
 
 
 def test_node_status():
-    c, o, e = _fc(['node', 'status', '--node', 'riak-default-1'])
+    fwname = _fn()
+    c, o, e = _fc(['node', 'status', '--node', fwname + '-default-1'])
     js = json.loads(o.decode("utf-8").strip())
     assert js["status"]["valid"] == 2
     assert c == 0
@@ -72,20 +76,21 @@ def test_node_status():
 
 
 def test_one_by_one():
-    c, o, e = _fc(['node', 'info', '--node', 'riak-default-1'])
+    fwname = _fn()
+    c, o, e = _fc(['node', 'info', '--node', fwname + '-default-1'])
     js = json.loads(o.decode("utf-8").strip())
-    host = js["riak-default-1"]["location"]["hostname"]
-    port = js["riak-default-1"]["location"]["http_port"]
+    host = js[fwname + "-default-1"]["location"]["hostname"]
+    port = js[fwname + "-default-1"]["location"]["http_port"]
     put_data(host, port, 'test', 'test', 'test1')
     put_data(host, port, 'test', 'test', 'test2')
     put_data(host, port, 'test', 'test', 'test3')
     put_data(host, port, 'test', 'test', 'test4')
     put_data(host, port, 'test', 'test', 'test5')
     c, o, e = _fc(['node', 'add'])
-    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-default-3',
+    c, o, e = _fc(['node', 'wait-for-service', '--node', fwname + '-default-3',
                    '--timeout', '600'])
     c, o, e = _fc(['node', 'transfers', 'wait-for-service', '--node',
-                   'riak-default-3', '--timeout', '600'])
+                   fwname + '-default-3', '--timeout', '6000'])
     assert "transfers complete" in o.strip()
     assert c == 0
     assert e == b''
@@ -101,9 +106,9 @@ def test_cluster_restart():
                    '--timeout', '600', '--nodes', '3'])
     assert c == 0
     assert e == b''
-    assert "riak-default-1 is ready" in o.strip()
-    assert "riak-default-2 is ready" in o.strip()
-    assert "riak-default-3 is ready" in o.strip()
+    assert "-default-1 is ready" in o.strip()
+    assert "-default-2 is ready" in o.strip()
+    assert "-default-3 is ready" in o.strip()
 
 
 def test_director_install():
@@ -134,6 +139,7 @@ def test_second_cluster_list():
 
 
 def test_second_cluster_node_list_add():
+    fwname = _fn()
     c, o, e = _fc(['node', 'list', '--cluster', 'second'])
     if o == b'''{"nodes":[]}\n''':
         c, o, e = _fc(['node', 'add', '--nodes', '2', '--cluster', 'second'])
@@ -146,11 +152,11 @@ def test_second_cluster_node_list_add():
         assert e == b''
         js = json.loads(o.decode("utf-8").strip())
         assert len(js['nodes']) >= 2
-    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-second-1',
+    c, o, e = _fc(['node', 'wait-for-service', '--node', fwname + '-second-1',
                    '--cluster', 'second', '--timeout', '600'])
     assert c == 0
     assert e == ''
-    c, o, e = _fc(['node', 'wait-for-service', '--node', 'riak-second-2',
+    c, o, e = _fc(['node', 'wait-for-service', '--node', fwname + '-second-2',
                    '--cluster', 'second', '--timeout', '600'])
     assert c == 0
     assert e == ''
@@ -163,8 +169,9 @@ def test_second_cluster_node_list_add():
 
 
 def test_second_cluster_node_status():
+    fwname = _fn()
     c, o, e = _fc(['node', 'status', '--cluster', 'second',
-                   '--node', 'riak-second-1'])
+                   '--node', fwname + '-second-1'])
     js = json.loads(o.decode("utf-8").strip())
     assert js["status"]["valid"] == 2
     assert c == 0
