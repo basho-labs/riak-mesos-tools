@@ -5,7 +5,7 @@
 #
 # docker run --rm -t -v $HOME/.dcos/dcos.toml:/tmp/dcos.toml \
 # -v $(pwd)/tests/run-tests-dcos.sh:/root/run-tests-dcos.sh -v $(pwd):/tmp/riak-mesos-tools \
-# basho/build-essential-mesos:14.04-0.26 /root/run-tests-dcos.sh
+# basho/build-essential-mesos:ubuntu-14.04 /root/run-tests-dcos.sh
 
 mkdir -p /root/.dcos
 
