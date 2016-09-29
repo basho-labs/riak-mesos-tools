@@ -1,11 +1,20 @@
 import os
 import subprocess
+import json
 
 
 def exec_framework_command(cmd, env=None, stdin=None):
     base_cmd = os.environ.get('RIAK_MESOS_CMD', 'riak-mesos').split()
     cmd = base_cmd + cmd
     return exec_command(cmd, env, stdin)
+
+
+def get_framework_name(env=None, stdin=None):
+    c, o, e = exec_framework_command(['framework', 'status'])
+    js = json.loads(o.decode("utf-8").strip())
+    fwid = js['id']
+    fwname = fwid.lstrip('/')
+    return fwname
 
 
 def exec_command(cmd, env=None, stdin=None):
