@@ -39,13 +39,17 @@ def wait_for_node(ctx, node):
 
 def node_info(ctx, node):
     cluster = ctx.cluster
-    fw = ctx.framework
     r = ctx.api_request('get', 'clusters/' + cluster +
                         '/nodes/' + node)
     node_json = json.loads(r.text)
     http_port = str(node_json[node]['location']['http_port'])
     pb_port = str(node_json[node]['location']['pb_port'])
     direct_host = node_json[node]['location']['hostname']
+    # TODO We can't guarantee having a value for ctx.framework until
+    # here because there are side-effects of `ctx.api_request(...)` which
+    # lazy-load the RiakMesosDCOSStrategy, which fills in the blank
+    # if we didn't provide a fw-name in config or args
+    fw = ctx.framework
     mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
     r = ctx.node_request('get', node, 'ping', False,
                          headers={'Accept': '*/*'})
