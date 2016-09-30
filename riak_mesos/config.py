@@ -153,6 +153,10 @@ class RiakMesosConfig(object):
             mj['env']['RIAK_MESOS_EXPLORER_PKG'] = explorer_pkg
             mj['uris'].append(self.get('node', 'explorer-url'))
 
+        if mj['uris'] == []:
+            # If we set no packages, delete the uris bit
+            mj.pop('uris', None)
+
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
