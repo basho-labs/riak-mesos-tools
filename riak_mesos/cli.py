@@ -249,6 +249,7 @@ class Context(object):
         self.insecure_ssl = False
         self.json = False
         self.flags_set = False
+        self.attach = False
         # Paths
         self.home = os.getcwd()
         self.config_file = None
@@ -291,6 +292,7 @@ class Context(object):
             self.insecure_ssl = insecure_ssl
         self.json = True if self.json or '--json' in args else json
         self.debug = True if self.debug or '--debug' in args else debug
+        self.attach = True if self.attach or '--attach' in args else False
         # Configure logging for 3rd party libs
         if self.debug:
             logging.basicConfig(level=0)
