@@ -48,8 +48,8 @@ def endpoints(ctx, **kwargs):
 
 
 @cli.command()
-@click.option('--attache', is_flag=True,
-              help='Enables attache.')
+@click.option('--attach', is_flag=True,
+              help='Enables attach.')
 @pass_context
 def install(ctx, **kwargs):
     """Generates and installs a marathon app for the framework"""

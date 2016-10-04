@@ -188,8 +188,8 @@ class RiakMesosConfig(object):
         if self.get('executor', 'mem') != '':
             mj['env']['RIAK_MESOS_EXECUTOR_MEM'] = str(self.get(
                 'executor', 'mem'))
-        if ctx is not None and ctx.attache:
-            mj['env']['RIAK_MESOS_ATTACHE'] = 'True'
+        if ctx is not None and ctx.attach:
+            mj['env']['RIAK_MESOS_ATTACH'] = 'True'
         healthcheck = {'path': '/healthcheck'}
         healthcheck.update({'portIndex': 0}),
         healthcheck.update({'protocol': 'HTTP'})
