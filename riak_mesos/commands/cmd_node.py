@@ -129,9 +129,10 @@ def ringready(ctx, **kwargs):
 
 
 @cli.group(invoke_without_command=True)
+@click.argument('node')
 @pass_context
 def transfers(ctx, **kwargs):
-    """Gets the transfers status for a node, specify node id with --node"""
+    """Gets the transfers status for a node"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
