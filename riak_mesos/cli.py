@@ -258,7 +258,7 @@ class Context(object):
         # Conditional options
         self.framework = None
         self.cluster = 'default'
-        self.node = 'riak-default-1'
+        self.node = None
         self.timeout = 60
         # RiakMesosClient
         self.client = None
@@ -307,7 +307,7 @@ class Context(object):
         self.vlog("Debug Mode: " + str(self.debug))
         self.vlog("JSON Mode: " + str(self.json))
 
-    def init_args(self, home, config, framework, cluster, node, **kwargs):
+    def init_args(self, home, config, framework, cluster, **kwargs):
         self._init_flags(**kwargs)
 
         if home is not None:
@@ -338,8 +338,9 @@ class Context(object):
 
         if cluster is not None:
             self.cluster = cluster
-        if node is not None:
-            self.node = node
+
+        if 'node' in kwargs and kwargs['node'] is not None:
+            self.node = kwargs['node']
 
         if framework is not None:
             self.framework = framework
@@ -511,8 +512,6 @@ _common_options = [
                  help='Changes the framework instance to operate on.'),
     click.option('--cluster',
                  help='Changes the cluster to operate on.'),
-    click.option('--node',
-                 help='Changes the node to operate on.'),
     click.option('--json', is_flag=True,
                  help='Enables json output.'),
     click.option('--insecure-ssl', is_flag=True,

@@ -77,11 +77,12 @@ def add(ctx, nodes, **kwargs):
 
 
 @cli.command()
+@click.argument('node')
 @click.option('-f', '--force', is_flag=True,
               help='Forcefully remove node.')
 @pass_context
 def remove(ctx, force, **kwargs):
-    """Removes a node from the cluster, specify node id with --node"""
+    """Removes a node from the cluster"""
     ctx.init_args(**kwargs)
     requrl = 'clusters/'
     requrl += ctx.cluster + '/nodes/' + ctx.node
