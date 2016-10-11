@@ -117,9 +117,10 @@ def status(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('node')
 @pass_context
 def ringready(ctx, **kwargs):
-    """Gets the ringready value for a node, specify node id with --node"""
+    """Gets the ringready value for a node"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
