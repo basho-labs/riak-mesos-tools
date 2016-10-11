@@ -105,9 +105,10 @@ def aae_status(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('node')
 @pass_context
 def status(ctx, **kwargs):
-    """Gets the member-status of a node, specify node id with --node"""
+    """Gets the member-status of a node"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
