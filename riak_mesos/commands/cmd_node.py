@@ -296,9 +296,10 @@ def log_list(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('node')
 @pass_context
 def stats(ctx, **kwargs):
-    """Shows the statistics for a node, specify node id with --node"""
+    """Shows the statistics for a node"""
     ctx.init_args(**kwargs)
     r = ctx.framework_request('get', 'riak/nodes/' +
                               ctx.node + '/stats',
