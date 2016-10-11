@@ -93,10 +93,10 @@ def remove(ctx, force, **kwargs):
 
 
 @cli.command('aae-status')
+@click.argument('node')
 @pass_context
 def aae_status(ctx, **kwargs):
-    """Gets the active anti entropy status for a node, specify node id with
-    --node"""
+    """Gets the active anti entropy status for a node"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
