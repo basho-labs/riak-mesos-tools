@@ -52,6 +52,7 @@ def node_list(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('node')
 @pass_context
 def info(ctx, **kwargs):
     """Retrieves node info"""
