@@ -16,7 +16,7 @@
 import json
 import click
 
-from riak_mesos.cli import CliError, pass_context
+from riak_mesos.cli import pass_context
 from riak_mesos.util import (get_node_name, wait_for_node,
                              wait_for_node_transfers)
 
