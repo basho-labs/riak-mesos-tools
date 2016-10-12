@@ -29,6 +29,7 @@ def cli(ctx, **kwargs):
 
 
 @cli.command('wait-for-service')
+@click.argument('node')
 @click.option('--timeout', type=int,
               help='Number of seconds to wait for a response.')
 @pass_context
