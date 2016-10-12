@@ -247,14 +247,15 @@ def log(ctx, **kwargs):
 
 
 @log.command('tail')
+@click.argument('node')
 @click.option('--file', 'log_file',
               help='Log file to view.', default='console.log')
 @click.option('--lines', type=int, default=500,
               help='Number of log lines to view.')
 @pass_context
 def log_tail(ctx, log_file, lines, **kwargs):
-    """Shows tail of log file for a node, specify node id with --node,
-    filename with --file, and number of lines with --lines"""
+    """Shows tail of log file for a node, filename with --file
+    and number of lines with --lines"""
     ctx.init_args(**kwargs)
     node_name = get_node_name(ctx, ctx.node)
     r = ctx.framework_request('get', 'explore/clusters/' +
@@ -270,9 +271,10 @@ def log_tail(ctx, log_file, lines, **kwargs):
 
 
 @log.command('list')
+@click.argument('node')
 @pass_context
 def log_list(ctx, **kwargs):
-    """Lists the available log files for a node, specify node id with --node"""
+    """Lists the available log files for a node"""
     ctx.init_args(**kwargs)
     node_name = get_node_name(ctx, ctx.node)
     r = ctx.framework_request('get', 'explore/clusters/' +
