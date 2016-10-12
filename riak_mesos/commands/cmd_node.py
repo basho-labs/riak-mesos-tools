@@ -128,32 +128,23 @@ def ringready(ctx, **kwargs):
     click.echo(r.text)
 
 
-@cli.group(invoke_without_command=True)
+@cli.command()
 @click.argument('node')
+@click.option('-w-f-s', '--wait-for-service', is_flag=True,
+              help='Waits for transfers to complete.')
+@click.option('--timeout', type=int,
+              help='Number of seconds to wait for a response.')
 @pass_context
-def transfers(ctx, **kwargs):
+def transfers(ctx, wait_for_service, **kwargs):
     """Gets the transfers status for a node"""
     ctx.init_args(**kwargs)
+    if wait_for_service:
+        wait_for_node_transfers(ctx, ctx.node)
+        return
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node + '/transfers')
     click.echo(r.text)
-
-
-@cli.command('transfers wait-for-service')
-def _transfers_wait_for_service():
-    """Waits for transfers to complete, specify node id with --node"""
-    pass
-
-
-@transfers.command('wait-for-service')
-@click.option('--timeout', type=int,
-              help='Number of seconds to wait for a response.')
-@pass_context
-def transfers_wait_for_service(ctx, **kwargs):
-    """Waits for transfers to complete, specify node id with --node"""
-    ctx.init_args(**kwargs)
-    wait_for_node_transfers(ctx, ctx.node)
 
 
 @cli.group('bucket-type')
