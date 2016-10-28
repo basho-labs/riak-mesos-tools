@@ -184,6 +184,7 @@ def create(ctx, riak_version, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @pass_context
 def restart(ctx, **kwargs):
     """Performs a rolling restart on a cluster. Specify the name with
