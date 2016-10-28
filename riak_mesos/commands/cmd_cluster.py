@@ -75,6 +75,7 @@ def endpoints(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @pass_context
 def info(ctx, **kwargs):
     """Gets current metadata about a cluster"""
