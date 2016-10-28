@@ -27,8 +27,14 @@ class RiakMesosConfig(object):
         else:
             self._config = {}
 
-    def _get_resource_value(self, name):
-        return self._config['resources'][name]
+    def _get_config_value(self, *keys):
+        value = self._config
+        for key in keys:
+            value = value[key]
+        return value
+
+    def _get_resource_value(self, *keys):
+        return self._get_config_value('resources', *keys)
 
     def _from_conf(self, key, subkey, env_name, conf):
         if env_name not in conf:
@@ -158,7 +164,8 @@ class RiakMesosConfig(object):
             'node', 'patches-url').rsplit('/', 1)[-1]
         mj['env']['RIAK_MESOS_EXPLORER_PKG'] = self.get(
             'node', 'explorer-url').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_RIAK_URLS'] = json.dumps(self._get_resource_value('riak'))
+        mj['env']['RIAK_MESOS_RIAK_URLS'] = json.dumps(
+            self._get_resource_value('riak'))
         if self.get('scheduler', 'constraints') != '':
             mj['env']['RIAK_MESOS_CONSTRAINTS'] = json.dumps(
                 self.get('scheduler', 'constraints'))
