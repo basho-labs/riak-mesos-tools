@@ -168,14 +168,17 @@ def cluster_list(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
+@click.argument('riak_version')
 @pass_context
-def create(ctx, **kwargs):
-    """Creates a new cluster. Specify the name with --cluster (default is
-    default)"""
+def create(ctx, riak_version, **kwargs):
+    """Creates a new cluster."""
     ctx.init_args(**kwargs)
-    r = ctx.api_request('put',
-                        'clusters/' + ctx.cluster,
-                        data='')
+    data = json.dumps({'riak_version': riak_version})
+    r = ctx.api_request('post',
+                        'clusters/' + ctx.cluster + '/create',
+                        headers={'Content-Type': 'application/json'},
+                        data=data)
     click.echo(r.text)
 
 
