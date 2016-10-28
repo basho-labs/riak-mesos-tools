@@ -58,9 +58,10 @@ def wait_for_service(ctx, nodes, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @pass_context
 def endpoints(ctx, **kwargs):
-    """Iterates over all nodes in cluster and prints connection information"""
+    """Iterates over all nodes in cluster and prints connection information."""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get', 'clusters/' +
                         ctx.cluster + '/nodes')
@@ -78,7 +79,7 @@ def endpoints(ctx, **kwargs):
 @click.argument('cluster')
 @pass_context
 def info(ctx, **kwargs):
-    """Gets current metadata about a cluster"""
+    """Gets current metadata about a cluster."""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get', 'clusters/' +
                         ctx.cluster)
@@ -187,8 +188,7 @@ def create(ctx, riak_version, **kwargs):
 @click.argument('cluster')
 @pass_context
 def restart(ctx, **kwargs):
-    """Performs a rolling restart on a cluster. Specify the name with
-    --cluster (default is default)"""
+    """Performs a rolling restart on a cluster."""
     ctx.init_args(**kwargs)
     r = ctx.api_request('post',
                         'clusters/' + ctx.cluster +
@@ -200,8 +200,7 @@ def restart(ctx, **kwargs):
 @click.argument('cluster')
 @pass_context
 def destroy(ctx, **kwargs):
-    """Destroys a cluster. Specify the name with --cluster (default is
-    default)"""
+    """Destroys a cluster."""
     ctx.init_args(**kwargs)
     r = ctx.api_request('delete', 'clusters/' +
                         ctx.cluster, data='')
