@@ -196,6 +196,7 @@ def restart(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @pass_context
 def destroy(ctx, **kwargs):
     """Destroys a cluster. Specify the name with --cluster (default is
