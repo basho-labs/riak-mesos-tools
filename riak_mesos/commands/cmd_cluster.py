@@ -211,3 +211,17 @@ def destroy(ctx, **kwargs):
     r = ctx.api_request('delete', 'clusters/' +
                         ctx.cluster, data='')
     click.echo(r.text)
+
+
+@cli.command('add-node')
+@click.argument('cluster')
+@click.option('--nodes', type=int, default=1,
+              help='Number of nodes to add.')
+@pass_context
+def add_node(ctx, nodes, **kwargs):
+    """Adds one or more (using --nodes) nodes."""
+    ctx.init_args(**kwargs)
+    for x in range(0, nodes):
+        r = ctx.api_request('post', 'clusters/' +
+                            ctx.cluster + '/nodes', data='')
+        click.echo(r.text)
