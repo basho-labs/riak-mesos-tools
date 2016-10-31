@@ -40,18 +40,6 @@ def wait_for_service(ctx, **kwargs):
     wait_for_node(ctx, ctx.node)
 
 
-@cli.command('list')
-@pass_context
-def node_list(ctx, **kwargs):
-    """Retrieves a list of node ids for a given --cluster (default is
-    default)"""
-    ctx.init_args(**kwargs)
-    r = ctx.api_request('get', 'clusters/' +
-                        ctx.cluster +
-                        '/nodes')
-    click.echo(r.text)
-
-
 @cli.command()
 @click.argument('node')
 @pass_context
