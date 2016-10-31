@@ -39,7 +39,7 @@ def cli(ctx, **kwargs):
 def wait_for_service(ctx, nodes, **kwargs):
     """Iterates over all nodes in cluster and executes node wait-for-service.
     Optionally waits until the number of nodes (specified by --nodes) at
-    minimum are joined to the cluster"""
+    minimum are joined to the cluster."""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get', 'clusters/' + ctx.cluster + '/nodes')
     if r.status_code != 200:
@@ -91,6 +91,7 @@ def info(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @click.option('-d', '--delete', is_flag=True,
               help='Delete the cluster\'s riak.conf file.')
 @click.option('--file', 'riak_file',
@@ -100,7 +101,7 @@ def info(ctx, **kwargs):
 @pass_context
 def config(ctx, delete, riak_file, **kwargs):
     """Gets or sets the riak.conf configuration for a cluster, specify config
-    file location with --file"""
+    file location with --file."""
     ctx.init_args(**kwargs)
     url = 'clusters/' + ctx.cluster + '/config'
     if delete:
@@ -127,6 +128,7 @@ def config(ctx, delete, riak_file, **kwargs):
 
 
 @cli.command('config-advanced')
+@click.argument('cluster')
 @click.option('-d', '--delete', is_flag=True,
               help='Delete the cluster\'s advanced.config file.')
 @click.option('--file', 'advanced_file',
@@ -136,7 +138,7 @@ def config(ctx, delete, riak_file, **kwargs):
 @pass_context
 def config_advanced(ctx, delete, advanced_file, **kwargs):
     """Gets or sets the advanced.config configuration for a cluster, specify
-    cluster id with --cluster and config file location with --file"""
+    config file location with --file."""
     ctx.init_args(**kwargs)
     url = 'clusters/' + ctx.cluster + '/advancedConfig'
     if delete:
