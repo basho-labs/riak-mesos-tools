@@ -30,6 +30,7 @@ def cli(ctx, **kwargs):
 
 
 @cli.command('wait-for-service')
+@click.argument('cluster')
 @click.option('--nodes', type=int,
               help='Number of nodes to wait for.', default=1)
 @click.option('--timeout', type=int,
@@ -41,6 +42,9 @@ def wait_for_service(ctx, nodes, **kwargs):
     minimum are joined to the cluster"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get', 'clusters/' + ctx.cluster + '/nodes')
+    if r.status_code != 200:
+        click.echo(r.text)
+        return
     js = json.loads(r.text)
     ctx.vlog(nodes)
     num_nodes = len(js['nodes'])
@@ -95,8 +99,8 @@ def info(ctx, **kwargs):
               help='Cluster riak.conf file to save.')
 @pass_context
 def config(ctx, delete, riak_file, **kwargs):
-    """Gets or sets the riak.conf configuration for a cluster, specify cluster
-    id with --cluster and config file location with --file"""
+    """Gets or sets the riak.conf configuration for a cluster, specify config
+    file location with --file"""
     ctx.init_args(**kwargs)
     url = 'clusters/' + ctx.cluster + '/config'
     if delete:
