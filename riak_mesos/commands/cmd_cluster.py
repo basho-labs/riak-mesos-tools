@@ -167,11 +167,18 @@ def config_advanced(ctx, delete, advanced_file, **kwargs):
 
 
 @cli.command('list')
+@click.option('--output', type=click.File('wb'),
+              help='Output file.')
 @pass_context
-def cluster_list(ctx, **kwargs):
-    """Retrieves a list of cluster names"""
+def cluster_list(ctx, output, **kwargs):
+    """Retrieves a list of clusters"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get', 'clusters')
+    if r.status_code != 200:
+        click.echo(r.text)
+        return
+    if output is not None:
+        output.write(r.text)
     click.echo(r.text)
 
 
