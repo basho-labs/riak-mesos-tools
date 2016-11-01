@@ -16,10 +16,10 @@ def test_help():
     c, o, e = _c(['riak-mesos', '--help'])
     assert c == 0
     assert e == b''
-    c, o, e = _c(['riak-mesos', 'config', '--help'])
+    c, o, e = _c(['riak-mesos', 'config', 'local', '--help'])
     assert c == 0
     assert e == b''
-    assert b'Displays configuration' in o.strip()
+    assert b'Displays local configuration' in o.strip()
 
 
 def test_config():
