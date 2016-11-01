@@ -29,16 +29,18 @@ def cli(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @pass_context
 def config(ctx, **kwargs):
     """Generates a marathon json config using --zookeeper (default is
-    leader.mesos:2181) and --cluster (default is default)"""
+    leader.mesos:2181)"""
     ctx.init_args(**kwargs)
     ctx.config.from_marathon(ctx)
     click.echo(ctx.config.director_marathon_string(ctx.cluster))
 
 
 @cli.command('wait-for-service')
+@click.argument('cluster')
 @click.option('--timeout', type=int,
               help='Number of seconds to wait for a response.')
 @pass_context
@@ -72,10 +74,10 @@ def wait_for_service(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @pass_context
 def install(ctx, **kwargs):
-    """Installs a riak-mesos-director marathon app on the public Mesos node
-    using --cluster (default is default)"""
+    """Installs a riak-mesos-director marathon app on the public Mesos node"""
     ctx.init_args(**kwargs)
     ctx.config.from_marathon(ctx)
     director_json = ctx.config.director_marathon_json(ctx.cluster)
@@ -85,6 +87,7 @@ def install(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @pass_context
 def uninstall(ctx, **kwargs):
     """Uninstalls the riak-mesos-director marathon app"""
@@ -96,6 +99,7 @@ def uninstall(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('cluster')
 @pass_context
 def endpoints(ctx, **kwargs):
     """Lists the endpoints exposed by a riak-mesos-director marathon app"""
