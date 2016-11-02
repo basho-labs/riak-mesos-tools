@@ -23,7 +23,7 @@ def test_help():
 
 
 def test_config():
-    c, o, e = _c(['riak-mesos', 'config', 'local',
+    c, o, e = _c(['riak-mesos', 'config', 'local', '--config',
                   './config/config.example.json'])
     js = json.loads(o.decode("utf-8").strip())
     assert js['riak']['framework-name'] == 'riak'
