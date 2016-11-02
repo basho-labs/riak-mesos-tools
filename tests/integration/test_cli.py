@@ -32,7 +32,7 @@ def test_config():
 
 
 def test_marathon_config():
-    c, o, e = _c(['riak-mesos', 'framework', 'config', 'marathon', '--config',
+    c, o, e = _c(['riak-mesos', 'config', 'marathon', '--config',
                   './config/config.example.json'])
     js = json.loads(o.decode("utf-8").strip())
     assert js['id'] == 'riak'
