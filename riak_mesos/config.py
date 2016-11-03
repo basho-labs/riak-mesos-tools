@@ -147,7 +147,8 @@ class RiakMesosConfig(object):
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
         mj['env'] = {}
-        mj['env']['RIAK_MESOS_DIRECTOR_URL'] = self.get('director', 'url')
+        mj['env']['RIAK_MESOS_DIRECTOR_URL'] = self._get_resource_url(
+            'director')
         mj['env']['RIAK_MESOS_DIRECTOR_CPUS'] = \
             str(self.get('director', 'cpus'))
         mj['env']['RIAK_MESOS_DIRECTOR_MEM'] = str(self.get('director', 'mem'))
@@ -243,7 +244,7 @@ class RiakMesosConfig(object):
                 'DIRECTOR_CLUSTER': cluster
             },
             # 'fetch': [{'uri': self.get('director', 'url')}],
-            'uris': [self.get('director', 'url')],
+            'uris': [self._get_resource_url('director')],
             'healthChecks': [
                 {
                     'protocol': 'HTTP',
