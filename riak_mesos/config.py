@@ -37,7 +37,7 @@ class RiakMesosConfig(object):
         return self._get_config_value('resources', key)
 
     def _get_resource_urls(self):
-        return self._get_config_value('resources').values()
+        return list(self._get_config_value('resources').values())
 
     def _get_riak_resources(self):
         resources = self._get_config_value('resources')
