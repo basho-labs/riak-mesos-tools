@@ -33,8 +33,19 @@ class RiakMesosConfig(object):
             value = value[key]
         return value
 
-    def _get_resource_value(self, *keys):
-        return self._get_config_value('resources', *keys)
+    def _get_resource_url(self, key):
+        return self._get_config_value('resources', key)
+
+    def _get_resource_urls(self):
+        return self._get_config_value('resources').values()
+
+    def _get_riak_resources(self):
+        resources = self._get_config_value('resources')
+        riak_resources = {}
+        for resource in resources:
+            if resource.startswith('riak-'):
+                riak_resources[resource] = resources[resource]
+        return riak_resources
 
     def _from_conf(self, key, subkey, env_name, conf):
         if env_name not in conf:
@@ -131,12 +142,7 @@ class RiakMesosConfig(object):
         #     {'uri': self.get('node', 'explorer-url'),
         #      'extract': False})
         # mj['cmd'] = './bin/ermf-scheduler'
-        mj['uris'] = []
-        mj['uris'].append(self._get_resource_value('scheduler'))
-        mj['uris'].append(self._get_resource_value('executor'))
-        mj['uris'].append(self._get_resource_value('node'))
-        mj['uris'].append(self._get_resource_value('node-patches'))
-        mj['uris'].append(self._get_resource_value('node-explorer'))
+        mj['uris'] = self._get_resource_urls()
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
@@ -154,18 +160,18 @@ class RiakMesosConfig(object):
         mj['env']['RIAK_MESOS_ZK'] = self.get('zk')
         mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
         mj['env']['RIAK_MESOS_USER'] = self.get('user')
-        mj['env']['RIAK_MESOS_SCHEDULER_PKG'] = self._get_resource_value(
+        mj['env']['RIAK_MESOS_SCHEDULER_PKG'] = self._get_resource_url(
             'scheduler').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_EXECUTOR_PKG'] = self._get_resource_value(
+        mj['env']['RIAK_MESOS_EXECUTOR_PKG'] = self._get_resource_url(
             'executor').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_RIAK_PKG'] = self._get_resource_value(
+        mj['env']['RIAK_MESOS_RIAK_PKG'] = self._get_resource_url(
             'node').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_PATCHES_PKG'] = self._get_resource_value(
+        mj['env']['RIAK_MESOS_PATCHES_PKG'] = self._get_resource_url(
             'node-patches').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_EXPLORER_PKG'] = self._get_resource_value(
+        mj['env']['RIAK_MESOS_EXPLORER_PKG'] = self._get_resource_url(
             'node-explorer').rsplit('/', 1)[-1]
         mj['env']['RIAK_MESOS_RIAK_URLS'] = json.dumps(
-            self._get_resource_value('riak'))
+            self._get_riak_resources())
         if self.get('scheduler', 'constraints') != '':
             mj['env']['RIAK_MESOS_CONSTRAINTS'] = json.dumps(
                 self.get('scheduler', 'constraints'))
