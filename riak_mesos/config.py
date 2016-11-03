@@ -133,7 +133,7 @@ class RiakMesosConfig(object):
         # mj['cmd'] = './bin/ermf-scheduler'
         mj['uris'] = []
         mj['uris'].append(self._get_resource_value('scheduler'))
-        mj['uris'].append(self.get('executor', 'url'))
+        mj['uris'].append(self._get_resource_value('executor'))
         mj['uris'].append(self.get('node', 'url'))
         mj['uris'].append(self.get('node', 'patches-url'))
         mj['uris'].append(self.get('node', 'explorer-url'))
@@ -156,8 +156,8 @@ class RiakMesosConfig(object):
         mj['env']['RIAK_MESOS_USER'] = self.get('user')
         mj['env']['RIAK_MESOS_SCHEDULER_PKG'] = self._get_resource_value(
             'scheduler').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_EXECUTOR_PKG'] = self.get(
-            'executor', 'url').rsplit('/', 1)[-1]
+        mj['env']['RIAK_MESOS_EXECUTOR_PKG'] = self._get_resource_value(
+            'executor').rsplit('/', 1)[-1]
         mj['env']['RIAK_MESOS_RIAK_PKG'] = self.get(
             'node', 'url').rsplit('/', 1)[-1]
         mj['env']['RIAK_MESOS_PATCHES_PKG'] = self.get(
