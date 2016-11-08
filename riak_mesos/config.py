@@ -36,8 +36,15 @@ class RiakMesosConfig(object):
     def _get_resource_url(self, key):
         return self._get_config_value('resources', key)
 
-    def _get_resource_urls(self):
-        return list(self._get_config_value('resources').values())
+    def _get_resource_fetch_urls(self):
+        fetch_urls = []
+        resources = self._get_config_value('resources')
+        for resource in resources:
+            fetch_url = {'uri': resources[resource], 'extract': False}
+            if resource == 'scheduler':
+                fetch_url['extract'] = True
+            fetch_urls.append(fetch_url)
+        return fetch_urls
 
     def _from_conf(self, key, subkey, env_name, conf):
         if env_name not in conf:
@@ -124,7 +131,7 @@ class RiakMesosConfig(object):
         #     {'uri': self.get('node', 'explorer-url'),
         #      'extract': False})
         # mj['cmd'] = './bin/ermf-scheduler'
-        mj['uris'] = self._get_resource_urls()
+        mj['fetch'] = self._get_resource_fetch_urls()
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
