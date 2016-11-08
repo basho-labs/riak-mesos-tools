@@ -76,7 +76,6 @@ class RiakMesosConfig(object):
         self._from_conf('auth-principal', None, 'RIAK_MESOS_PRINCIPAL', conf)
         self._from_conf('auth-secret-file', None,
                         'RIAK_MESOS_SECRET_FILE', conf)
-        self._from_conf('director', 'url', 'RIAK_MESOS_DIRECTOR_URL', conf)
         if 'RIAK_MESOS_DIRECTOR_CPUS' in conf:
             self._config['riak']['director']['cpus'] = \
                 float(conf['RIAK_MESOS_DIRECTOR_CPUS'])
@@ -88,12 +87,8 @@ class RiakMesosConfig(object):
                 self._config['riak']['director']['use-public'] = True
             else:
                 self._config['riak']['director']['use-public'] = False
-        self._from_conf('scheduler', 'package',
-                        'RIAK_MESOS_SCHEDULER_PKG', conf)
         self._from_conf('scheduler', 'constraints',
                         'RIAK_MESOS_CONSTRAINTS', conf)
-        self._from_conf('executor', 'package',
-                        'RIAK_MESOS_EXECUTOR_PKG', conf)
         self._from_conf('executor', 'cpus',
                         'RIAK_MESOS_EXECUTOR_CPUS', conf)
         self._from_conf('executor', 'mem',
@@ -103,11 +98,6 @@ class RiakMesosConfig(object):
         self._from_conf('node', 'cpus', 'RIAK_MESOS_NODE_CPUS', conf)
         self._from_conf('node', 'mem', 'RIAK_MESOS_NODE_MEM', conf)
         self._from_conf('node', 'disk', 'RIAK_MESOS_NODE_DISK', conf)
-        self._from_conf('node', 'package', 'RIAK_MESOS_RIAK_PKG', conf)
-        self._from_conf('node', 'patches-package',
-                        'RIAK_MESOS_PATCHES_PKG', conf)
-        self._from_conf('node', 'explorer-package',
-                        'RIAK_MESOS_EXPLORER_PKG', conf)
 
     def framework_marathon_json(self, ctx=None):
         mj = {}
