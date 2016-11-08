@@ -39,14 +39,6 @@ class RiakMesosConfig(object):
     def _get_resource_urls(self):
         return list(self._get_config_value('resources').values())
 
-    def _get_riak_resources(self):
-        resources = self._get_config_value('resources')
-        riak_resources = {}
-        for resource in resources:
-            if resource.startswith('riak-'):
-                riak_resources[resource] = resources[resource]
-        return riak_resources
-
     def _from_conf(self, key, subkey, env_name, conf):
         if env_name not in conf:
             return
@@ -147,8 +139,6 @@ class RiakMesosConfig(object):
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
         mj['env'] = {}
-        mj['env']['RIAK_MESOS_DIRECTOR_URL'] = self._get_resource_url(
-            'director')
         mj['env']['RIAK_MESOS_DIRECTOR_CPUS'] = \
             str(self.get('director', 'cpus'))
         mj['env']['RIAK_MESOS_DIRECTOR_MEM'] = str(self.get('director', 'mem'))
@@ -161,18 +151,8 @@ class RiakMesosConfig(object):
         mj['env']['RIAK_MESOS_ZK'] = self.get('zk')
         mj['env']['RIAK_MESOS_MASTER'] = self.get('master')
         mj['env']['RIAK_MESOS_USER'] = self.get('user')
-        mj['env']['RIAK_MESOS_SCHEDULER_PKG'] = self._get_resource_url(
-            'scheduler').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_EXECUTOR_PKG'] = self._get_resource_url(
-            'executor').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_RIAK_PKG'] = self._get_resource_url(
-            'node').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_PATCHES_PKG'] = self._get_resource_url(
-            'node-patches').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_EXPLORER_PKG'] = self._get_resource_url(
-            'node-explorer').rsplit('/', 1)[-1]
-        mj['env']['RIAK_MESOS_RIAK_URLS'] = json.dumps(
-            self._get_riak_resources())
+        mj['env']['RIAK_MESOS_RESOURCE_URLS'] = json.dumps(
+            self._get_config_value('resources'))
         if self.get('scheduler', 'constraints') != '':
             mj['env']['RIAK_MESOS_CONSTRAINTS'] = json.dumps(
                 self.get('scheduler', 'constraints'))
@@ -243,7 +223,6 @@ class RiakMesosConfig(object):
                 'DIRECTOR_FRAMEWORK': self.get('framework-name'),
                 'DIRECTOR_CLUSTER': cluster
             },
-            # 'fetch': [{'uri': self.get('director', 'url')}],
             'uris': [self._get_resource_url('director')],
             'healthChecks': [
                 {
