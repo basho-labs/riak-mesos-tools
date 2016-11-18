@@ -30,6 +30,11 @@ class RiakMesosConfig(object):
     def _get_config_value(self, *keys):
         value = self._config
         for key in keys:
+            # Quick fix solution for DCOS package config.
+            # TODO: handle this case more correct.
+            if key not in value:
+                value = None
+                break
             value = value[key]
         return value
 
@@ -39,6 +44,8 @@ class RiakMesosConfig(object):
     def _get_resource_fetch_urls(self):
         fetch_urls = []
         resources = self._get_config_value('resources')
+        if not resources:
+            return
         for resource in resources:
             fetch_url = {'uri': resources[resource], 'extract': False}
             if resource == 'scheduler':
@@ -132,12 +139,7 @@ class RiakMesosConfig(object):
         #      'extract': False})
         # mj['cmd'] = './bin/ermf-scheduler'
 
-        # Quick fix solution for DCOS package config.
-        # TODO: handle this case more correct.
-        try:
-            mj['fetch'] = self._get_resource_fetch_urls()
-        except KeyError:
-            pass
+        mj['fetch'] = self._get_resource_fetch_urls()
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
