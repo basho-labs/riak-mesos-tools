@@ -131,7 +131,13 @@ class RiakMesosConfig(object):
         #     {'uri': self.get('node', 'explorer-url'),
         #      'extract': False})
         # mj['cmd'] = './bin/ermf-scheduler'
-        mj['fetch'] = self._get_resource_fetch_urls()
+
+        # Quick fix solution for DCOS package config.
+        # TODO: handle this case more correct.
+        try:
+            mj['fetch'] = self._get_resource_fetch_urls()
+        except KeyError:
+            pass
         mj['cmd'] = './riak_mesos_scheduler/bin/ermf-scheduler'
         if self.get('constraints') != '':
             mj['constraints'] = self.get('constraints')
