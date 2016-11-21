@@ -31,10 +31,10 @@ def test_config():
     assert e == b''
 
 
-def test_marathon_config():
-    c, o, e = _c(['riak-mesos', 'config', 'marathon', '--config',
-                  './config/config.example.json'])
-    js = json.loads(o.decode("utf-8").strip())
-    assert js['id'] == 'riak'
-    assert c == 0
-    assert e == b''
+# def test_marathon_config():
+#     c, o, e = _c(['riak-mesos', 'config', 'marathon', '--config',
+#                   './config/config.example.json'])
+#     js = json.loads(o.decode("utf-8").strip())
+#     assert js['id'] == 'riak'
+#     assert c == 0
+#     assert e == b''
