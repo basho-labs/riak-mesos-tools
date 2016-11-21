@@ -81,6 +81,8 @@ class RiakMesosConfig(object):
         self._from_conf('auth-principal', None, 'RIAK_MESOS_PRINCIPAL', conf)
         self._from_conf('auth-secret-file', None,
                         'RIAK_MESOS_SECRET_FILE', conf)
+        if 'director' not in self._config['riak']:
+            self._config['riak']['director'] = {}
         if 'RIAK_MESOS_DIRECTOR_CPUS' in conf:
             self._config['riak']['director']['cpus'] = \
                 float(conf['RIAK_MESOS_DIRECTOR_CPUS'])
