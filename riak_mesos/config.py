@@ -104,7 +104,8 @@ class RiakMesosConfig(object):
         self._from_conf('node', 'mem', 'RIAK_MESOS_NODE_MEM', conf)
         self._from_conf('node', 'disk', 'RIAK_MESOS_NODE_DISK', conf)
         # Load resources from marathon.
-        self._config['resources'] = json.loads(conf['RIAK_MESOS_RESOURCE_URLS'])
+        self._config['resources'] = \
+            json.loads(conf['RIAK_MESOS_RESOURCE_URLS'])
 
     def framework_marathon_json(self, ctx=None):
         mj = {}
