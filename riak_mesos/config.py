@@ -30,11 +30,6 @@ class RiakMesosConfig(object):
     def _get_config_value(self, *keys):
         value = self._config
         for key in keys:
-            # Quick fix solution for DCOS package config.
-            # TODO: handle this case more correct.
-            if key not in value:
-                value = None
-                break
             value = value[key]
         return value
 
@@ -44,8 +39,6 @@ class RiakMesosConfig(object):
     def _get_resource_fetch_urls(self):
         fetch_urls = []
         resources = self._get_config_value('resources')
-        if not resources:
-            return
         for resource in resources:
             fetch_url = {'uri': resources[resource], 'extract': False}
             if resource == 'scheduler':
@@ -66,8 +59,6 @@ class RiakMesosConfig(object):
             self._config['riak'][key] = conf[env_name]
 
     def from_marathon(self, ctx):
-        if self.config_file is not None:
-            return
         client = ctx.marathon_client()
         app = {}
         try:
@@ -112,6 +103,8 @@ class RiakMesosConfig(object):
         self._from_conf('node', 'cpus', 'RIAK_MESOS_NODE_CPUS', conf)
         self._from_conf('node', 'mem', 'RIAK_MESOS_NODE_MEM', conf)
         self._from_conf('node', 'disk', 'RIAK_MESOS_NODE_DISK', conf)
+        # Load resources from marathon.
+        self._config['resources'] = json.loads(conf['RIAK_MESOS_RESOURCE_URLS'])
 
     def framework_marathon_json(self, ctx=None):
         mj = {}

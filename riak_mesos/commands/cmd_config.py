@@ -38,6 +38,7 @@ def local(ctx, **kwargs):
 def marathon(ctx, **kwargs):
     """Displays marathon configuration."""
     ctx.init_args(**kwargs)
+    ctx.config.from_marathon(ctx)
     click.echo(ctx.config.framework_marathon_string())
 
 
