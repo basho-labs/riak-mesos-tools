@@ -39,22 +39,23 @@ def wait_for_node(ctx, node):
 
 def node_info(ctx, node):
     cluster = ctx.cluster
-    fw = ctx.framework
+    # TODO: fix getting framework for DCOS and put back mesos dns fields.
+    # fw = ctx.framework
     r = ctx.api_request('get', 'clusters/' + cluster +
                         '/nodes/' + node)
     node_json = json.loads(r.text)
     http_port = str(node_json[node]['location']['http_port'])
     pb_port = str(node_json[node]['location']['pb_port'])
     direct_host = node_json[node]['location']['hostname']
-    mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
+    # mesos_dns_cluster = fw + '-' + cluster + '.' + fw + '.mesos'
     r = ctx.node_request('get', node, 'ping', False,
                          headers={'Accept': '*/*'})
     alive = r.status_code == 200
     node_data = {
         'http_direct': direct_host + ':' + http_port,
-        'http_mesos_dns': mesos_dns_cluster + ':' + http_port,
+        # 'http_mesos_dns': mesos_dns_cluster + ':' + http_port,
         'pb_direct': direct_host + ':' + pb_port,
-        'pb_mesos_dns': mesos_dns_cluster + ':' + pb_port,
+        # 'pb_mesos_dns': mesos_dns_cluster + ':' + pb_port,
         'status': node_json[node]['status'],
         'alive': alive
     }

@@ -16,14 +16,14 @@ def test_help():
     c, o, e = _c(['riak-mesos', '--help'])
     assert c == 0
     assert e == b''
-    c, o, e = _c(['riak-mesos', 'config', '--help'])
+    c, o, e = _c(['riak-mesos', 'config', 'local', '--help'])
     assert c == 0
     assert e == b''
-    assert b'Displays configuration' in o.strip()
+    assert b'Displays local configuration' in o.strip()
 
 
 def test_config():
-    c, o, e = _c(['riak-mesos', 'config', '--json', '--config',
+    c, o, e = _c(['riak-mesos', 'config', 'local', '--config',
                   './config/config.example.json'])
     js = json.loads(o.decode("utf-8").strip())
     assert js['riak']['framework-name'] == 'riak'
@@ -31,10 +31,10 @@ def test_config():
     assert e == b''
 
 
-def test_framework_config():
-    c, o, e = _c(['riak-mesos', 'framework', 'config', '--json', '--config',
-                  './config/config.example.json'])
-    js = json.loads(o.decode("utf-8").strip())
-    assert js['id'] == 'riak'
-    assert c == 0
-    assert e == b''
+# def test_marathon_config():
+#     c, o, e = _c(['riak-mesos', 'config', 'marathon', '--config',
+#                   './config/config.example.json'])
+#     js = json.loads(o.decode("utf-8").strip())
+#     assert js['id'] == 'riak'
+#     assert c == 0
+#     assert e == b''

@@ -18,9 +18,34 @@ import click
 from riak_mesos.cli import pass_context
 
 
-@click.command()
+@click.group()
 @pass_context
 def cli(ctx, **kwargs):
-    """Displays configuration"""
+    """Interact with configuration."""
+    ctx.init_args(**kwargs)
+
+
+@cli.command()
+@pass_context
+def local(ctx, **kwargs):
+    """Displays local configuration."""
     ctx.init_args(**kwargs)
     click.echo(ctx.config.string())
+
+
+@cli.command()
+@pass_context
+def marathon(ctx, **kwargs):
+    """Displays marathon configuration."""
+    ctx.init_args(**kwargs)
+    ctx.config.from_marathon(ctx)
+    click.echo(ctx.config.framework_marathon_string())
+
+
+@cli.command('riak-versions')
+@pass_context
+def riak_versions(ctx, **kwargs):
+    """Displays available riak-versions."""
+    ctx.init_args(**kwargs)
+    r = ctx.api_request('get', 'riak/versions')
+    click.echo(r.text)

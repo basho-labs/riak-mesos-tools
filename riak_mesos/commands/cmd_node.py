@@ -16,7 +16,7 @@
 import json
 import click
 
-from riak_mesos.cli import CliError, pass_context
+from riak_mesos.cli import pass_context
 from riak_mesos.util import (get_node_name, wait_for_node,
                              wait_for_node_transfers)
 
@@ -29,6 +29,7 @@ def cli(ctx, **kwargs):
 
 
 @cli.command('wait-for-service')
+@click.argument('node')
 @click.option('--timeout', type=int,
               help='Number of seconds to wait for a response.')
 @pass_context
@@ -39,19 +40,8 @@ def wait_for_service(ctx, **kwargs):
     wait_for_node(ctx, ctx.node)
 
 
-@cli.command('list')
-@pass_context
-def node_list(ctx, **kwargs):
-    """Retrieves a list of node ids for a given --cluster (default is
-    default)"""
-    ctx.init_args(**kwargs)
-    r = ctx.api_request('get', 'clusters/' +
-                        ctx.cluster +
-                        '/nodes')
-    click.echo(r.text)
-
-
 @cli.command()
+@click.argument('node')
 @pass_context
 def info(ctx, **kwargs):
     """Retrieves node info"""
@@ -63,25 +53,12 @@ def info(ctx, **kwargs):
 
 
 @cli.command()
-@click.option('--nodes', type=int, default=1,
-              help='Number of nodes to add.')
-@pass_context
-def add(ctx, nodes, **kwargs):
-    """Adds one or more (using --nodes) nodes to a --cluster (default is
-    default)"""
-    ctx.init_args(**kwargs)
-    for x in range(0, nodes):
-        r = ctx.api_request('post', 'clusters/' +
-                            ctx.cluster + '/nodes', data='')
-        click.echo(r.text)
-
-
-@cli.command()
+@click.argument('node')
 @click.option('-f', '--force', is_flag=True,
               help='Forcefully remove node.')
 @pass_context
 def remove(ctx, force, **kwargs):
-    """Removes a node from the cluster, specify node id with --node"""
+    """Removes a node from the cluster"""
     ctx.init_args(**kwargs)
     requrl = 'clusters/'
     requrl += ctx.cluster + '/nodes/' + ctx.node
@@ -92,10 +69,10 @@ def remove(ctx, force, **kwargs):
 
 
 @cli.command('aae-status')
+@click.argument('node')
 @pass_context
 def aae_status(ctx, **kwargs):
-    """Gets the active anti entropy status for a node, specify node id with
-    --node"""
+    """Gets the active anti entropy status for a node"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
@@ -104,9 +81,10 @@ def aae_status(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('node')
 @pass_context
 def status(ctx, **kwargs):
-    """Gets the member-status of a node, specify node id with --node"""
+    """Gets the member-status of a node"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
@@ -115,9 +93,10 @@ def status(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('node')
 @pass_context
 def ringready(ctx, **kwargs):
-    """Gets the ringready value for a node, specify node id with --node"""
+    """Gets the ringready value for a node"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
@@ -125,31 +104,23 @@ def ringready(ctx, **kwargs):
     click.echo(r.text)
 
 
-@cli.group(invoke_without_command=True)
+@cli.command()
+@click.argument('node')
+@click.option('-w-f-s', '--wait-for-service', is_flag=True,
+              help='Waits for transfers to complete.')
+@click.option('--timeout', type=int,
+              help='Number of seconds to wait for a response.')
 @pass_context
-def transfers(ctx, **kwargs):
-    """Gets the transfers status for a node, specify node id with --node"""
+def transfers(ctx, wait_for_service, **kwargs):
+    """Gets the transfers status for a node"""
     ctx.init_args(**kwargs)
+    if wait_for_service:
+        wait_for_node_transfers(ctx, ctx.node)
+        return
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node + '/transfers')
     click.echo(r.text)
-
-
-@cli.command('transfers wait-for-service')
-def _transfers_wait_for_service():
-    """Waits for transfers to complete, specify node id with --node"""
-    pass
-
-
-@transfers.command('wait-for-service')
-@click.option('--timeout', type=int,
-              help='Number of seconds to wait for a response.')
-@pass_context
-def transfers_wait_for_service(ctx, **kwargs):
-    """Waits for transfers to complete, specify node id with --node"""
-    ctx.init_args(**kwargs)
-    wait_for_node_transfers(ctx, ctx.node)
 
 
 @cli.group('bucket-type')
@@ -161,19 +132,13 @@ def bucket_type(ctx, **kwargs):
 
 
 @bucket_type.command('create')
-@click.option('--bucket-type', 'b_type',
-              help='Bucket type name.')
-@click.option('--props',
-              help='Bucket type properties json.')
+@click.argument('node')
+@click.argument('bucket-type')
+@click.argument('props')
 @pass_context
-def bucket_type_create(ctx, b_type, props, **kwargs):
-    """Creates and activates a bucket type on a node, specify node id with
-    --node, bucket type with --bucket-type, and JSON props with --props"""
+def bucket_type_create(ctx, bucket_type, props, **kwargs):
+    """Creates and activates a bucket type on a node"""
     ctx.init_args(**kwargs)
-    if b_type is None:
-        raise CliError('--bucket-type must be specified')
-    if props is None:
-        raise CliError('--props JSON must be specified')
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node + '/types')
@@ -181,31 +146,25 @@ def bucket_type_create(ctx, b_type, props, **kwargs):
         click.echo('Failed to get bucket types, status_code: ' +
                    str(r.status_code))
         return
-    if is_bucket_type_exists(b_type, r):
-        click.echo('Bucket with such type: ' + b_type + ' exists')
+    if is_bucket_type_exists(bucket_type, r):
+        click.echo('Bucket with such type: ' + bucket_type + ' exists')
         return
     r = ctx.api_request('post',
                         'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node +
-                        '/types/' + b_type,
+                        '/types/' + bucket_type,
                         data=props)
     click.echo(r.text)
 
 
 @bucket_type.command('update')
-@click.option('--bucket-type', 'b_type',
-              help='Bucket type name.')
-@click.option('--props',
-              help='Bucket type properties json.')
+@click.argument('node')
+@click.argument('bucket-type')
+@click.argument('props')
 @pass_context
-def bucket_type_update(ctx, b_type, props, **kwargs):
-    """Updates a bucket type on a node, specify node id with
-    --node, bucket type with --bucket-type, and JSON props with --props"""
+def bucket_type_update(ctx, bucket_type, props, **kwargs):
+    """Updates a bucket type on a node"""
     ctx.init_args(**kwargs)
-    if b_type is None:
-        raise CliError('--bucket-type must be specified')
-    if props is None:
-        raise CliError('--props JSON must be specified')
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node + '/types')
@@ -213,13 +172,13 @@ def bucket_type_update(ctx, b_type, props, **kwargs):
         click.echo('Failed to get bucket types, status_code: ' +
                    str(r.status_code))
         return
-    if not is_bucket_type_exists(b_type, r):
-        click.echo('Bucket with such type: ' + b_type + ' does not exist')
+    if not is_bucket_type_exists(bucket_type, r):
+        click.echo('Bucket with such type: ' + bucket_type + ' does not exist')
         return
     r = ctx.api_request('post',
                         'clusters/' + ctx.cluster +
                         '/nodes/' + ctx.node +
-                        '/types/' + b_type,
+                        '/types/' + bucket_type,
                         data=props)
     click.echo(r.text)
 
@@ -233,9 +192,10 @@ def is_bucket_type_exists(b_type, r):
 
 
 @bucket_type.command('list')
+@click.argument('node')
 @pass_context
 def bucket_type_list(ctx, **kwargs):
-    """Gets the bucket type list from a node, specify node id with --node"""
+    """Gets the bucket type list from a node"""
     ctx.init_args(**kwargs)
     r = ctx.api_request('get',
                         'clusters/' + ctx.cluster +
@@ -252,14 +212,15 @@ def log(ctx, **kwargs):
 
 
 @log.command('tail')
+@click.argument('node')
 @click.option('--file', 'log_file',
               help='Log file to view.', default='console.log')
 @click.option('--lines', type=int, default=500,
               help='Number of log lines to view.')
 @pass_context
 def log_tail(ctx, log_file, lines, **kwargs):
-    """Shows tail of log file for a node, specify node id with --node,
-    filename with --file, and number of lines with --lines"""
+    """Shows tail of log file for a node, filename with --file
+    and number of lines with --lines"""
     ctx.init_args(**kwargs)
     node_name = get_node_name(ctx, ctx.node)
     r = ctx.framework_request('get', 'explore/clusters/' +
@@ -275,9 +236,10 @@ def log_tail(ctx, log_file, lines, **kwargs):
 
 
 @log.command('list')
+@click.argument('node')
 @pass_context
 def log_list(ctx, **kwargs):
-    """Lists the available log files for a node, specify node id with --node"""
+    """Lists the available log files for a node"""
     ctx.init_args(**kwargs)
     node_name = get_node_name(ctx, ctx.node)
     r = ctx.framework_request('get', 'explore/clusters/' +
@@ -292,9 +254,10 @@ def log_list(ctx, **kwargs):
 
 
 @cli.command()
+@click.argument('node')
 @pass_context
 def stats(ctx, **kwargs):
-    """Shows the statistics for a node, specify node id with --node"""
+    """Shows the statistics for a node"""
     ctx.init_args(**kwargs)
     r = ctx.framework_request('get', 'riak/nodes/' +
                               ctx.node + '/stats',

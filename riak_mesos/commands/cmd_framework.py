@@ -29,17 +29,6 @@ def cli(ctx, **kwargs):
 
 
 @cli.command()
-@click.option('--json', is_flag=True,
-              help='Enables json output.')
-@pass_context
-def config(ctx, **kwargs):
-    """Displays configration for riak marathon app"""
-    ctx.init_args(**kwargs)
-    obj = ctx.config.framework_marathon_string()
-    click.echo(obj)
-
-
-@cli.command()
 @pass_context
 def endpoints(ctx, **kwargs):
     """Retrieves useful endpoints for the framework"""
