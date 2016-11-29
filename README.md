@@ -35,10 +35,6 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
         sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@riak-mesos-v1.1.x#egg=riak_mesos
 
-- Or install the current master branch:
-
-        sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@master#egg=riak_mesos
-
 ### DC/OS CLI v0.4.x Install
 
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
