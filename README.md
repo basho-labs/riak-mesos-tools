@@ -52,7 +52,6 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
 ### DC/OS CLI v0.3.2 Install
 
-
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
 
 -   Append the DC/OS Riak package repo to your DC/OS repo sources:
@@ -75,7 +74,7 @@ Create a Configuration File
 - Copy the contents of [config.example.json](config/config.example.json) ([config.dcos.json](config/config.dcos.json) for DC/OS users) into a local file at the path `/etc/riak-mesos/config.json`:
 
         mkdir -p /etc/riak-mesos
-        curl https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/master/config/config.example.json > /etc/riak-mesos/config.json
+        curl https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/riak-mesos-v1.1.x/config/config.example.json > /etc/riak-mesos/config.json
 
 - Inspect the resulting `/etc/riak-mesos/config.json` and make changes to parameters according to your system requirements. For more information on each of the configuration values, please see [this schema file](https://raw.githubusercontent.com/basho-labs/riak-mesos-dcos-repo/master/repo/packages/R/riak/0/config.json) for field descriptions.
 
