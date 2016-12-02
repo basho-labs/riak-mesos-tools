@@ -162,7 +162,7 @@ After a few moments, we can verify that individual nodes are ready for service w
 
 Alternatively a shortcut to the above is:
 
-    riak-mesos cluster wait-for-service
+    riak-mesos cluster wait-for-service ts
 
 To get connection information about each of the nodes directly, try this command:
 
