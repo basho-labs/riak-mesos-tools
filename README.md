@@ -77,7 +77,7 @@ riak-mesos --help
 
 Usage: riak-mesos [OPTIONS] COMMAND [ARGS]...
 
-  Command line utility for the Riak Mesos Framework / DC/OS Service. This
+  Command line utility for the Riak Mesos Framework / DCOS Service. This
   utility provides tools for modifying and accessing your Riak on Mesos
   installation.
 
@@ -89,18 +89,18 @@ Options:
   --info            Display information.
   --version         Display version.
   --config-schema   Display config schema.
-  --cluster TEXT    Changes the cluster to operate on.
-  --node TEXT       Changes the node to operate on.
+  --framework TEXT  Changes the framework instance to operate on.
   --json            Enables json output.
   --insecure-ssl    Turns SSL verification off on HTTP requests
   --help            Show this message and exit.
 
 Commands:
   cluster    Interact with Riak clusters
-  config     Displays configuration
+  config     Interact with configuration.
   director   Interact with an instance of Riak Mesos...
   framework  Interact with an instance of Riak Mesos...
   node       Interact with a Riak node
+  riak       Command line utility for the Riak Mesos...
 ```
 
 To get information about a sub-command, try `riak-mesos <command> --help`:
@@ -114,14 +114,16 @@ Usage: riak-mesos cluster [OPTIONS] COMMAND [ARGS]...
 ...
 
 Commands:
+  add-node          Adds one or more (using --nodes) nodes.
   config            Gets or sets the riak.conf configuration for...
   config-advanced   Gets or sets the advanced.config...
   create            Creates a new cluster.
   destroy           Destroys a cluster.
   endpoints         Iterates over all nodes in cluster and prints...
-  info              Gets current metadata about a cluster
-  list              Retrieves a list of cluster names
+  info              Gets current metadata about a cluster.
+  list              Retrieves a list of clusters
   restart           Performs a rolling restart on a cluster.
+  set               Sets list of clusters
   wait-for-service  Iterates over all nodes in cluster and...
 ```
 
