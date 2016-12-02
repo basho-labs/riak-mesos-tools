@@ -5,17 +5,15 @@
         "patches": "{{patches_url}}",
         "explorer": "{{explorer_url}}",
         "director": "{{director_url}}",
-        "riak-ts-1.3": "{{riak_ts_1_3_url}}",
-        "riak-kv-2.1": "{{riak_kv_2_1_url}}"
+        "riak-kv-2-2": "{{riak_kv_2_2_url}}",
+        "riak-ts-1-4": "{{riak_ts_1_4_url}}"
     },
     "riak": {
         "framework-name": "riak",
-        "hostname": "riak.marathon.mesos",
         "marathon": "marathon.mesos:8080",
         "master": "leader.mesos:5050",
         "zk": "leader.mesos:2181",
         "user": "root",
-        "role": "riak",
         "auth-principal": "riak",
         "auth-provider": "",
         "auth-secret-file": "",
@@ -46,3 +44,4 @@
         }
     }
 }
+
