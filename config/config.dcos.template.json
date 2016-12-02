@@ -1,13 +1,4 @@
 {
-    "resources": {
-        "scheduler": "{{scheduler_url}}",
-        "executor": "{{executor_url}}",
-        "patches": "{{patches_url}}",
-        "explorer": "{{explorer_url}}",
-        "director": "{{director_url}}",
-        "riak-ts-1.3": "{{riak_ts_1_3_url}}",
-        "riak-kv-2.1": "{{riak_kv_2_1_url}}"
-    },
     "riak": {
         "framework-name": "riak",
         "user": "root",
