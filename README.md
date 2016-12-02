@@ -40,31 +40,13 @@ All of the below instructions will work for the `dcos riak` command, just replac
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
 - Add the DC/OS Riak package to your DC/OS repository sources:
 
-		dcos package repo add --index=0 Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.4.x.zip
+		dcos package repo add --index=0 Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/2.0.0.zip
 
 	NB: the `--index=0` argument is required for the Riak package to show up in `dcos package search riak`
 
 - Install the `dcos riak` subcommand:
 
 		dcos package install riak --options /etc/riak-mesos/config.json
-
-    NB: the `--options foo.json` argument must come AFTER the package name, or dcos will silently ignore it.
-
-### DC/OS CLI v0.3.2 Install
-
--   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
-
--   Append the DC/OS Riak package repo to your DC/OS repo sources:
-
-        dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.3.x.zip
-
--   Update packages:
-
-        dcos package update
-
--   Install the `dcos riak` subcommand:
-
-        dcos package install riak --options /etc/riak-mesos/config.json
 
     NB: the `--options foo.json` argument must come AFTER the package name, or dcos will silently ignore it.
 
