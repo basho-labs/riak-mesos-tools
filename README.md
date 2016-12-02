@@ -143,24 +143,22 @@ To make deployment scripting easier, use the `wait-for-service` command to block
 Create a cluster
 ----------------
 
-Let's start with a 3 node cluster. First check if any clusters have already been created, and then verify the configuration:
-
+Let's start with a 3 node cluster. First check if any clusters have already been created, and check available Riak versions:
 
     riak-mesos cluster list
-    riak-mesos cluster config
-    riak-mesos cluster config-advanced
+    riak-mesos config riak-versions
 
 Create the cluster object in the RMF metadata, and then instruct the scheduler to create 3 Riak nodes:
 
-    riak-mesos cluster create
-    riak-mesos node add --nodes 3
-    riak-mesos node list
+    riak-mesos cluster create ts riak-ts-1-4
+    riak-mesos cluster add-node ts --nodes 3
+    riak-mesos cluster list
 
 After a few moments, we can verify that individual nodes are ready for service with:
 
-    riak-mesos node wait-for-service --node riak-default-1
-    riak-mesos node wait-for-service --node riak-default-2
-    riak-mesos node wait-for-service --node riak-default-3
+    riak-mesos node wait-for-service riak-ts-1
+    riak-mesos node wait-for-service riak-ts-2
+    riak-mesos node wait-for-service riak-ts-3
 
 Alternatively a shortcut to the above is:
 
@@ -168,25 +166,25 @@ Alternatively a shortcut to the above is:
 
 To get connection information about each of the nodes directly, try this command:
 
-    riak-mesos cluster endpoints | python -m json.tool
+    riak-mesos cluster endpoints ts | python -m json.tool
 
 The output should look similar to this:
 
 ```
 {
-    "riak-default-1": {
+    "riak-ts-1": {
         "alive": true,
         "http_direct": "mesos-agent-1.com:31716",
         "pb_direct": "mesos-agent-1.com:31717",
         "status": "started"
     },
-    "riak-default-2": {
+    "riak-ts-2": {
         "alive": true,
         "http_direct": "mesos-agent-2.com:31589",
         "pb_direct": "mesos-agent-2.com:31590",
         "status": "started"
     },
-    "riak-default-3": {
+    "riak-ts-3": {
         "alive": true,
         "http_direct": "mesos-agent-3.com:31491",
         "pb_direct": "mesos-agent-3.com:31492",
