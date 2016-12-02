@@ -55,20 +55,17 @@ Create a Configuration File
 
 - Copy the contents of [config.example.json](config/config.example.json) ([config.dcos.json](config/config.dcos.json) for DC/OS users) into a local file at the path `/etc/riak-mesos/config.json`:
 
-        mkdir -p /etc/riak-mesos
-        curl https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/riak-mesos-v1.1.x/config/config.example.json > /etc/riak-mesos/config.json
+    mkdir -p /etc/riak-mesos
+    curl https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/riak-mesos-v1.1.x/config/config.example.json > /etc/riak-mesos/config.json
 
 - Inspect the resulting `/etc/riak-mesos/config.json` and make changes to parameters according to your system requirements. For more information on each of the configuration values, please see [this schema file](https://raw.githubusercontent.com/basho-labs/riak-mesos-dcos-repo/2.0.0/repo/packages/R/riak/2/config.json) for field descriptions.
 
-
-
-- The example config files expect an environment based on Riak-KV and mesos-0.28.1 running on ubuntu-14.04. Change the various `url` and `package` fields to point to the relevant artifacts for your mesos and OS setup, or to switch to Riak TS. Available packages for each corresponding configuration item are located as follows:
-    - `riak.scheduler.url`: [riak-mesos-scheduler/releases](https://github.com/basho-labs/riak-mesos-scheduler/releases)
-    - `riak.executor.url`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
-    - `riak.node.url`: [riak-mesos/releases](https://github.com/basho-labs/riak-mesos/releases)
-    - `riak.node.patches-url`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
-    - `riak.node.explorer-url`: [riak_explorer/releases](https://github.com/basho-labs/riak_explorer/releases)
-    - `riak.director.url`: [riak-mesos-director/releases](https://github.com/basho-labs/riak-mesos-director/releases)
+- The example config files expect an environment based on mesos-1.0.1 running on ubuntu-14.04. Change the various `url` and `package` fields to point to the relevant artifacts for your mesos and OS setup, or to switch to Riak TS. Available packages for each corresponding configuration item are located as follows:
+    - `resources.scheduler`: [riak-mesos-scheduler/releases](https://github.com/basho-labs/riak-mesos-scheduler/releases)
+    - `resources.executor`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
+    - `resources.patches`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
+    - `resources.explorer`: [riak_explorer/releases](https://github.com/basho-labs/riak_explorer/releases)
+    - `resources.director`: [riak-mesos-director/releases](https://github.com/basho-labs/riak-mesos-director/releases)
 
 Usage
 =====
