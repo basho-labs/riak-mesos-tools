@@ -305,11 +305,11 @@ Create Bucket Types
 
 Several newer features in Riak require the creation of bucket types. To see the current bucket types and their properties, use the following:
 
-    riak-mesos node bucket-type list --node riak-default-1 | python -m json.tool
+    riak-mesos node bucket-type list riak-ts-1 | python -m json.tool
 
 Use this command to create a new bucket type with custom properties:
 
-    riak-mesos node bucket-type create --node riak-default-1 --bucket-type mytype --props '{"props":{"n_val": 3}}'
+    riak-mesos node bucket-type create riak-ts-1 mytype '{"props":{"n_val": 3}}'
 
 More information about specific bucket type properties can be found here: <http://docs.basho.com/riak/latest/dev/advanced/bucket-types/>.
 
@@ -319,7 +319,7 @@ A successful response looks like this:
 
 To update an existing type, just modify the command and run it again:
 
-    riak-mesos node bucket-type create --node riak-default-1 --bucket-type mytype --props '{"props":{"n_val": 2}}'
+    riak-mesos node bucket-type update riak-ts-1 mytype '{"props":{"n_val": 2}}'
 
 Which should give something like this back:
 
