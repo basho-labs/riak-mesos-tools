@@ -198,11 +198,11 @@ Inspecting Nodes
 
 Now that the cluster is running, let's perform some checks on individual nodes. This first command will show the hostname and ports for http and protobufs, as well as the metadata stored by the RMF:
 
-    riak-mesos node info --node riak-default-1
+    riak-mesos node info riak-ts-1
 
 To get the current ring membership and partition ownership information for a node, try:
 
-    riak-mesos node status --node riak-default-1 | python -m json.tool
+    riak-mesos node status riak-ts-1 | python -m json.tool
 
 The output of that command should yield results similar to the following if everything went well:
 
@@ -214,19 +214,19 @@ The output of that command should yield results similar to the following if ever
     "leaving": 0,
     "nodes": [
         {
-            "id": "riak-default-1@mesos-agent-1.com",
+            "id": "riak-ts-1@ubuntu.local",
             "pending_percentage": null,
             "ring_percentage": 32.8125,
             "status": "valid"
         },
         {
-            "id": "riak-default-2@mesos-agent-2.com",
+            "id":  "riak-ts-2@ubuntu.local",
             "pending_percentage": null,
             "ring_percentage": 32.8125,
             "status": "valid"
         },
         {
-            "id": "riak-default-3@mesos-agent-3.com",
+            "id": "riak-ts-3@ubuntu.local",
             "pending_percentage": null,
             "ring_percentage": 34.375,
             "status": "valid"
@@ -238,9 +238,9 @@ The output of that command should yield results similar to the following if ever
 
 Other useful information can be found by executing these commands:
 
-    riak-mesos node aae-status --node riak-default-1
-    riak-mesos node ringready --node riak-default-1
-    riak-mesos node transfers --node riak-default-1
+    riak-mesos node aae-status riak-ts-1
+    riak-mesos node ringready riak-ts-1
+    riak-mesos node transfers riak-ts-1
 
 Cluster Configuration
 ---------------------
