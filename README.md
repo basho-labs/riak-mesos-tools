@@ -55,6 +55,7 @@ Create a Configuration File
 
 - Copy the contents of [config.example.json](config/config.example.json) ([config.dcos.json](config/config.dcos.json) for DC/OS users) into a local file at the path `/etc/riak-mesos/config.json`:
 
+
     mkdir -p /etc/riak-mesos
     curl https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/riak-mesos-v1.1.x/config/config.example.json > /etc/riak-mesos/config.json
 
