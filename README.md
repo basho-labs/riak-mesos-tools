@@ -289,9 +289,9 @@ Restart the Cluster
 
 If your Riak cluster is in a stable state (no active transfers, ringready is true), there are certain situations where you might want to perform a rolling restart on your cluster. Execute the following to restart your cluster:
 
-    riak-mesos node ringready --node riak-default-1
-    riak-mesos node transfers wait-for-service --node riak-default-1
-    riak-mesos cluster restart
+    riak-mesos node ringready riak-ts-1
+    riak-mesos node transfers riak-ts-1 --wait-for-service
+    riak-mesos cluster restart ts
 
 Situations where a cluster restart is required include:
 
