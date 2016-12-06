@@ -403,11 +403,11 @@ The following commands can be used to remove part or all of the RMF.
 
 - Uninstall the Director
 
-        riak-mesos director uninstall
+        riak-mesos director uninstall ts
 
 - Destroy Clusters
 
-        riak-mesos cluster destroy
+        riak-mesos cluster destroy ts
 
 - Uninstall a framework instance
 
@@ -426,6 +426,6 @@ DC/OS Riak Uninstall
 
 Follow these steps to cleanly remove riak from a DC/OS cluster:
 
-    dcos riak director uninstall
-    dcos riak cluster destroy
+    dcos riak director uninstall ts
+    dcos riak cluster destroy ts
     dcos package uninstall riak
