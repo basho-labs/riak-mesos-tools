@@ -256,14 +256,14 @@ Update riak.conf
 
 As an example, I've created a file called `riak.more_logging.conf` in which I've updated this line: `log.console.level = debug`
 
-    riak-mesos cluster config --file riak.more_logging.conf
+    riak-mesos cluster config ts --file riak.more_logging.conf
 
 Update advanced.config
 ----------------------
 
 Similarly the advanced.config can be updated like so:
 
-    riak-mesos cluster config-advanced --file /path/to/your/advanced.config
+    riak-mesos cluster config-advanced ts --file /path/to/your/advanced.config
 
 **Note:** If you already have nodes running in a cluster, you'll need to perform a `riak-mesos cluster restart` to force the cluster to pick up the new changes.
 
