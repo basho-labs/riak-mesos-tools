@@ -334,7 +334,7 @@ To account for this difficulty, we've created a smart proxy called the `riak-mes
 
 To install the director as a marathon app with an id that matches your configured cluster name (default is `default`) + `-director`, simply run:
 
-    riak-mesos director install
+    riak-mesos director install ts
 
 Add Some Data
 -------------
