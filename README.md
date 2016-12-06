@@ -11,7 +11,7 @@ CLI and other tools for interacting with the Riak Mesos Framework.
 
 Before getting started with the RMF, there are a few environment and system related requirements that are assumed for the remainder of this tutorial:
 
--   A Mesos cluster version 0.28.x or above
+-   A Mesos cluster version 1.0.x or above
 -   Python version 2.7 or above.
 -   One of the currently supported operating systems. Check the [configuration](#create-a-configuration-file) section for more information.
 
@@ -35,16 +35,12 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
         sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@riak-mesos-v1.1.x#egg=riak_mesos
 
-- Or install the current master branch:
-
-        sudo pip install --upgrade git+https://github.com/basho-labs/riak-mesos-tools.git@master#egg=riak_mesos
-
 ### DC/OS CLI v0.4.x Install
 
 -   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
 - Add the DC/OS Riak package to your DC/OS repository sources:
 
-		dcos package repo add --index=0 Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.4.x.zip
+		dcos package repo add --index=0 Riak https://github.com/basho-labs/riak-mesos-dcos-repo/archive/2.0.0.zip
 
 	NB: the `--index=0` argument is required for the Riak package to show up in `dcos package search riak`
 
@@ -54,42 +50,22 @@ All of the below instructions will work for the `dcos riak` command, just replac
 
     NB: the `--options foo.json` argument must come AFTER the package name, or dcos will silently ignore it.
 
-### DC/OS CLI v0.3.2 Install
-
-
--   [Create a Configuration File](#create-a-configuration-file) and store it in `/etc/riak-mesos/config.json`
-
--   Append the DC/OS Riak package repo to your DC/OS repo sources:
-
-        dcos config prepend package.sources https://github.com/basho-labs/riak-mesos-dcos-repo/archive/dcoscli-v0.3.x.zip
-
--   Update packages:
-
-        dcos package update
-
--   Install the `dcos riak` subcommand:
-
-        dcos package install riak --options /etc/riak-mesos/config.json
-
-    NB: the `--options foo.json` argument must come AFTER the package name, or dcos will silently ignore it.
-
 Create a Configuration File
 ---------------------------
 
 - Copy the contents of [config.example.json](config/config.example.json) ([config.dcos.json](config/config.dcos.json) for DC/OS users) into a local file at the path `/etc/riak-mesos/config.json`:
 
-        mkdir -p /etc/riak-mesos
-        curl https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/master/config/config.example.json > /etc/riak-mesos/config.json
+		mkdir -p /etc/riak-mesos
+		curl https://raw.githubusercontent.com/basho-labs/riak-mesos-tools/riak-mesos-v1.1.x/config/config.example.json > /etc/riak-mesos/config.json
 
-- Inspect the resulting `/etc/riak-mesos/config.json` and make changes to parameters according to your system requirements. For more information on each of the configuration values, please see [this schema file](https://raw.githubusercontent.com/basho-labs/riak-mesos-dcos-repo/master/repo/packages/R/riak/0/config.json) for field descriptions.
+- Inspect the resulting `/etc/riak-mesos/config.json` and make changes to parameters according to your system requirements. For more information on each of the configuration values, please see [this schema file](https://raw.githubusercontent.com/basho-labs/riak-mesos-dcos-repo/2.0.0/repo/packages/R/riak/2/config.json) for field descriptions.
 
-- The example config files expect an environment based on Riak-KV and mesos-0.28.1 running on ubuntu-14.04. Change the various `url` and `package` fields to point to the relevant artifacts for your mesos and OS setup, or to switch to Riak TS. Available packages for each corresponding configuration item are located as follows:
-    - `riak.scheduler.url`: [riak-mesos-scheduler/releases](https://github.com/basho-labs/riak-mesos-scheduler/releases)
-    - `riak.executor.url`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
-    - `riak.node.url`: [riak-mesos/releases](https://github.com/basho-labs/riak-mesos/releases)
-    - `riak.node.patches-url`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
-    - `riak.node.explorer-url`: [riak_explorer/releases](https://github.com/basho-labs/riak_explorer/releases)
-    - `riak.director.url`: [riak-mesos-director/releases](https://github.com/basho-labs/riak-mesos-director/releases)
+- The example config files expect an environment based on mesos-1.0.1 running on ubuntu-14.04. Change the various `url` and `package` fields to point to the relevant artifacts for your mesos and OS setup, or to switch to Riak TS. Available packages for each corresponding configuration item are located as follows:
+    - `resources.scheduler`: [riak-mesos-scheduler/releases](https://github.com/basho-labs/riak-mesos-scheduler/releases)
+    - `resources.executor`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
+    - `resources.patches`: [riak-mesos-executor/releases](https://github.com/basho-labs/riak-mesos-executor/releases)
+    - `resources.explorer`: [riak_explorer/releases](https://github.com/basho-labs/riak_explorer/releases)
+    - `resources.director`: [riak-mesos-director/releases](https://github.com/basho-labs/riak-mesos-director/releases)
 
 Usage
 =====
@@ -101,7 +77,7 @@ riak-mesos --help
 
 Usage: riak-mesos [OPTIONS] COMMAND [ARGS]...
 
-  Command line utility for the Riak Mesos Framework / DC/OS Service. This
+  Command line utility for the Riak Mesos Framework / DCOS Service. This
   utility provides tools for modifying and accessing your Riak on Mesos
   installation.
 
@@ -113,18 +89,18 @@ Options:
   --info            Display information.
   --version         Display version.
   --config-schema   Display config schema.
-  --cluster TEXT    Changes the cluster to operate on.
-  --node TEXT       Changes the node to operate on.
+  --framework TEXT  Changes the framework instance to operate on.
   --json            Enables json output.
   --insecure-ssl    Turns SSL verification off on HTTP requests
   --help            Show this message and exit.
 
 Commands:
   cluster    Interact with Riak clusters
-  config     Displays configuration
+  config     Interact with configuration.
   director   Interact with an instance of Riak Mesos...
   framework  Interact with an instance of Riak Mesos...
   node       Interact with a Riak node
+  riak       Command line utility for the Riak Mesos...
 ```
 
 To get information about a sub-command, try `riak-mesos <command> --help`:
@@ -138,14 +114,16 @@ Usage: riak-mesos cluster [OPTIONS] COMMAND [ARGS]...
 ...
 
 Commands:
+  add-node          Adds one or more (using --nodes) nodes.
   config            Gets or sets the riak.conf configuration for...
   config-advanced   Gets or sets the advanced.config...
   create            Creates a new cluster.
   destroy           Destroys a cluster.
   endpoints         Iterates over all nodes in cluster and prints...
-  info              Gets current metadata about a cluster
-  list              Retrieves a list of cluster names
+  info              Gets current metadata about a cluster.
+  list              Retrieves a list of clusters
   restart           Performs a rolling restart on a cluster.
+  set               Sets list of clusters
   wait-for-service  Iterates over all nodes in cluster and...
 ```
 
@@ -165,50 +143,48 @@ To make deployment scripting easier, use the `wait-for-service` command to block
 Create a cluster
 ----------------
 
-Let's start with a 3 node cluster. First check if any clusters have already been created, and then verify the configuration:
-
+Let's start with a 3 node cluster. First check if any clusters have already been created, and check available Riak versions:
 
     riak-mesos cluster list
-    riak-mesos cluster config
-    riak-mesos cluster config-advanced
+    riak-mesos config riak-versions
 
 Create the cluster object in the RMF metadata, and then instruct the scheduler to create 3 Riak nodes:
 
-    riak-mesos cluster create
-    riak-mesos node add --nodes 3
-    riak-mesos node list
+    riak-mesos cluster create ts riak-ts-1-4
+    riak-mesos cluster add-node ts --nodes 3
+    riak-mesos cluster list
 
 After a few moments, we can verify that individual nodes are ready for service with:
 
-    riak-mesos node wait-for-service --node riak-default-1
-    riak-mesos node wait-for-service --node riak-default-2
-    riak-mesos node wait-for-service --node riak-default-3
+    riak-mesos node wait-for-service riak-ts-1
+    riak-mesos node wait-for-service riak-ts-2
+    riak-mesos node wait-for-service riak-ts-3
 
 Alternatively a shortcut to the above is:
 
-    riak-mesos cluster wait-for-service
+    riak-mesos cluster wait-for-service ts
 
 To get connection information about each of the nodes directly, try this command:
 
-    riak-mesos cluster endpoints | python -m json.tool
+    riak-mesos cluster endpoints ts | python -m json.tool
 
 The output should look similar to this:
 
 ```
 {
-    "riak-default-1": {
+    "riak-ts-1": {
         "alive": true,
         "http_direct": "mesos-agent-1.com:31716",
         "pb_direct": "mesos-agent-1.com:31717",
         "status": "started"
     },
-    "riak-default-2": {
+    "riak-ts-2": {
         "alive": true,
         "http_direct": "mesos-agent-2.com:31589",
         "pb_direct": "mesos-agent-2.com:31590",
         "status": "started"
     },
-    "riak-default-3": {
+    "riak-ts-3": {
         "alive": true,
         "http_direct": "mesos-agent-3.com:31491",
         "pb_direct": "mesos-agent-3.com:31492",
@@ -222,11 +198,11 @@ Inspecting Nodes
 
 Now that the cluster is running, let's perform some checks on individual nodes. This first command will show the hostname and ports for http and protobufs, as well as the metadata stored by the RMF:
 
-    riak-mesos node info --node riak-default-1
+    riak-mesos node info riak-ts-1
 
 To get the current ring membership and partition ownership information for a node, try:
 
-    riak-mesos node status --node riak-default-1 | python -m json.tool
+    riak-mesos node status riak-ts-1 | python -m json.tool
 
 The output of that command should yield results similar to the following if everything went well:
 
@@ -238,19 +214,19 @@ The output of that command should yield results similar to the following if ever
     "leaving": 0,
     "nodes": [
         {
-            "id": "riak-default-1@mesos-agent-1.com",
+            "id": "riak-ts-1@ubuntu.local",
             "pending_percentage": null,
             "ring_percentage": 32.8125,
             "status": "valid"
         },
         {
-            "id": "riak-default-2@mesos-agent-2.com",
+            "id":  "riak-ts-2@ubuntu.local",
             "pending_percentage": null,
             "ring_percentage": 32.8125,
             "status": "valid"
         },
         {
-            "id": "riak-default-3@mesos-agent-3.com",
+            "id": "riak-ts-3@ubuntu.local",
             "pending_percentage": null,
             "ring_percentage": 34.375,
             "status": "valid"
@@ -262,9 +238,9 @@ The output of that command should yield results similar to the following if ever
 
 Other useful information can be found by executing these commands:
 
-    riak-mesos node aae-status --node riak-default-1
-    riak-mesos node ringready --node riak-default-1
-    riak-mesos node transfers --node riak-default-1
+    riak-mesos node aae-status riak-ts-1
+    riak-mesos node ringready riak-ts-1
+    riak-mesos node transfers riak-ts-1
 
 Cluster Configuration
 ---------------------
@@ -280,14 +256,14 @@ Update riak.conf
 
 As an example, I've created a file called `riak.more_logging.conf` in which I've updated this line: `log.console.level = debug`
 
-    riak-mesos cluster config --file riak.more_logging.conf
+    riak-mesos cluster config ts --file riak.more_logging.conf
 
 Update advanced.config
 ----------------------
 
 Similarly the advanced.config can be updated like so:
 
-    riak-mesos cluster config-advanced --file /path/to/your/advanced.config
+    riak-mesos cluster config-advanced ts --file /path/to/your/advanced.config
 
 **Note:** If you already have nodes running in a cluster, you'll need to perform a `riak-mesos cluster restart` to force the cluster to pick up the new changes.
 
@@ -313,9 +289,9 @@ Restart the Cluster
 
 If your Riak cluster is in a stable state (no active transfers, ringready is true), there are certain situations where you might want to perform a rolling restart on your cluster. Execute the following to restart your cluster:
 
-    riak-mesos node ringready --node riak-default-1
-    riak-mesos node transfers wait-for-service --node riak-default-1
-    riak-mesos cluster restart
+    riak-mesos node ringready riak-ts-1
+    riak-mesos node transfers riak-ts-1 --wait-for-service
+    riak-mesos cluster restart ts
 
 Situations where a cluster restart is required include:
 
@@ -329,11 +305,11 @@ Create Bucket Types
 
 Several newer features in Riak require the creation of bucket types. To see the current bucket types and their properties, use the following:
 
-    riak-mesos node bucket-type list --node riak-default-1 | python -m json.tool
+    riak-mesos node bucket-type list riak-ts-1 | python -m json.tool
 
 Use this command to create a new bucket type with custom properties:
 
-    riak-mesos node bucket-type create --node riak-default-1 --bucket-type mytype --props '{"props":{"n_val": 3}}'
+    riak-mesos node bucket-type create riak-ts-1 mytype '{"props":{"n_val": 3}}'
 
 More information about specific bucket type properties can be found here: <http://docs.basho.com/riak/latest/dev/advanced/bucket-types/>.
 
@@ -343,7 +319,7 @@ A successful response looks like this:
 
 To update an existing type, just modify the command and run it again:
 
-    riak-mesos node bucket-type create --node riak-default-1 --bucket-type mytype --props '{"props":{"n_val": 2}}'
+    riak-mesos node bucket-type update riak-ts-1 mytype '{"props":{"n_val": 2}}'
 
 Which should give something like this back:
 
@@ -356,22 +332,22 @@ There are a few ways to access the Riak nodes in your cluster, including hosting
 
 To account for this difficulty, we've created a smart proxy called the `riak-mesos-director`. The director should keep tabs on the current state of the cluster including all of the hostnames and ports, and it also provides a load balancer / proxy to spread load across all of the nodes.
 
-To install the director as a marathon app with an id that matches your configured cluster name (default is `default`) + `-director`, simply run:
+To install the director as a marathon app with an id that matches your configured cluster name + `-director`, simply run:
 
-    riak-mesos director install
+    riak-mesos director install ts
 
 Add Some Data
 -------------
 
 Assuming that the director is now running, we can now find an endpoint to talk to Riak with this command:
 
-    riak-mesos director endpoints
+    riak-mesos director endpoints ts
 
 The output should look similar to this:
 
 ```
 {
-    "cluster": "default",
+    "cluster": "ts",
     "director_http": "mesos-agent-4.com:31694",
     "framework": "riak",
     "riak_http": "mesos-agent-4.com:31692",
@@ -381,7 +357,7 @@ The output should look similar to this:
 
 Let's write a few keys to the cluster using the director:
 
-    RIAK_HTTP=$(riak-mesos director endpoints | python -c 'import sys, json; print json.load(sys.stdin)["riak_http"]')
+    RIAK_HTTP=$(riak-mesos director endpoints ts | python -c 'import sys, json; print json.load(sys.stdin)["riak_http"]')
     curl -XPUT $RIAK_HTTP/buckets/test/keys/one -d "this is data"
     curl -XPUT $RIAK_HTTP/buckets/test/keys/two -d "this is data too"
 
@@ -390,33 +366,33 @@ Scale up
 
 When scaling a cluster up, you should attempt to do so days or even weeks before the additional load is expected to allow the cluster some time to transfer partitions around and stabilize. When you are ready to increase the node count, you can just run the node add command like so:
 
-    riak-mesos node add
-    riak-mesos node wait-for-service --node riak-default-4
-    riak-mesos node transfers wait-for-service --node riak-default-4
+    riak-mesos cluster add-node ts
+    riak-mesos node wait-for-service riak-ts-4
+    riak-mesos node transfers riak-ts-4 --wait-for-service
 
 Check the status of the node and make sure it was successfully joined to the cluster using:
 
-    riak-mesos node status --node riak-default-4
+    riak-mesos node status riak-ts-4
 
 Scale down
 ----------
 
 Scaling down requires the same patience as scaling up in that you should be waiting for transfers to complete between each node removal.
 
-Let's remove all but one of the nodes by performing a remove on `riak-default-2`, `riak-default-3`, and `riak-default-4`, verifying the data and node status after each step.
+Let's remove all but one of the nodes by performing a remove on `riak-ts-2`, `riak-ts-3`, and `riak-ts-4`, verifying the data and node status after each step.
 
-    riak-mesos node remove --node riak-default-4
-    riak-mesos node transfers wait-for-service --node riak-default-1
+    riak-mesos node remove riak-ts-4
+    riak-mesos node transfers riak-ts-1 --wait-for-service
     curl $RIAK_HTTP/buckets/test/keys/one
 
 
-    riak-mesos node remove --node riak-default-3
-    riak-mesos node transfers wait-for-service --node riak-default-1
+    riak-mesos node remove riak-ts-3
+    riak-mesos node transfers riak-ts-1 --wait-for-service
     curl $RIAK_HTTP/buckets/test/keys/two
 
 
-    riak-mesos node remove --node riak-default-2
-    riak-mesos node transfers wait-for-service --node riak-default-1
+    riak-mesos node remove riak-ts-2
+    riak-mesos node transfers riak-ts-1 --wait-for-service
     curl $RIAK_HTTP/buckets/test/keys/one
     curl $RIAK_HTTP/buckets/test/keys/two
 
@@ -427,11 +403,11 @@ The following commands can be used to remove part or all of the RMF.
 
 - Uninstall the Director
 
-        riak-mesos director uninstall
+        riak-mesos director uninstall ts
 
 - Destroy Clusters
 
-        riak-mesos cluster destroy
+        riak-mesos cluster destroy ts
 
 - Uninstall a framework instance
 
@@ -450,6 +426,6 @@ DC/OS Riak Uninstall
 
 Follow these steps to cleanly remove riak from a DC/OS cluster:
 
-    dcos riak director uninstall
-    dcos riak cluster destroy
+    dcos riak director uninstall ts
+    dcos riak cluster destroy ts
     dcos package uninstall riak

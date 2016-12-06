@@ -1,19 +1,21 @@
 {
     "resources": {
-        "scheduler": "https://github.com/basho-labs/riak-mesos-scheduler/releases/download/1.8.0/riak_mesos_scheduler-1.8.0-mesos-1.0.0-ubuntu-14.04.tar.gz",
-        "executor": "https://github.com/basho-labs/riak-mesos-executor/releases/download/1.7.0/riak_mesos_executor-1.7.0-mesos-1.0.0-ubuntu-14.04.tar.gz",
-        "patches": "https://github.com/basho-labs/riak-mesos-executor/releases/download/1.7.0/riak_erlpmd_patches-1.7.0-mesos-1.0.0-ubuntu-14.04.tar.gz",
-        "explorer": "https://github.com/basho-labs/riak_explorer/releases/download/1.2.0/riak_explorer-1.2.0.patch-ubuntu-14.04.tar.gz",
+        "scheduler": "https://github.com/basho-labs/riak-mesos-scheduler/releases/download/2.0.1/riak_mesos_scheduler-2.0.1-mesos-1.0.0-ubuntu-14.04.tar.gz",
+        "executor": "https://github.com/basho-labs/riak-mesos-executor/releases/download/1.7.1/riak_mesos_executor-1.7.1-mesos-1.0.0-ubuntu-14.04.tar.gz",
+        "patches": "https://github.com/basho-labs/riak-mesos-executor/releases/download/1.7.1/riak_erlpmd_patches-rel-1.7.1-mesos-1.0.0-ubuntu-14.04.tar.gz",
+        "explorer": "https://github.com/basho-labs/riak_explorer/releases/download/1.2.3/riak_explorer-1.2.3.relpatch-ubuntu-14.04.tar.gz",
         "director": "https://github.com/basho-labs/riak-mesos-director/releases/download/1.0.1/riak_mesos_director-1.0.1-ubuntu-14.04.tar.gz",
-        "riak-kv-2.1": "https://github.com/basho-labs/riak-mesos/releases/download/1.1.0/riak-2.1.4-ubuntu-14.04.tar.gz",
-        "riak-ts-1.3": "https://github.com/basho-labs/riak-mesos/releases/download/1.1.0/riak_ts-1.3.1-ubuntu-14.04.tar.gz"
+        "riak-kv-2-2": "https://github.com/basho-labs/riak-mesos/releases/download/2.0.0-rc1/riak-2.2.0-ubuntu-14.04.tar.gz",
+        "riak-ts-1-4": "https://github.com/basho-labs/riak-mesos/releases/download/2.0.0-rc1/riak_ts-1.4.0-ubuntu-14.04.tar.gz"
     },
     "riak": {
         "framework-name": "riak",
+        "hostname": "riak.marathon.mesos",
         "marathon": "marathon.mesos:8080",
         "master": "leader.mesos:5050",
         "zk": "leader.mesos:2181",
         "user": "root",
+        "role": "riak",
         "auth-principal": "riak",
         "auth-provider": "",
         "auth-secret-file": "",
@@ -44,3 +46,4 @@
         }
     }
 }
+
