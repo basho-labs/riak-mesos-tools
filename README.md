@@ -366,33 +366,33 @@ Scale up
 
 When scaling a cluster up, you should attempt to do so days or even weeks before the additional load is expected to allow the cluster some time to transfer partitions around and stabilize. When you are ready to increase the node count, you can just run the node add command like so:
 
-    riak-mesos node add
-    riak-mesos node wait-for-service --node riak-default-4
-    riak-mesos node transfers wait-for-service --node riak-default-4
+    riak-mesos cluster add-node ts
+    riak-mesos node wait-for-service riak-ts-4
+    riak-mesos node transfers riak-ts-4 --wait-for-service
 
 Check the status of the node and make sure it was successfully joined to the cluster using:
 
-    riak-mesos node status --node riak-default-4
+    riak-mesos node status riak-ts-4
 
 Scale down
 ----------
 
 Scaling down requires the same patience as scaling up in that you should be waiting for transfers to complete between each node removal.
 
-Let's remove all but one of the nodes by performing a remove on `riak-default-2`, `riak-default-3`, and `riak-default-4`, verifying the data and node status after each step.
+Let's remove all but one of the nodes by performing a remove on `riak-ts-2`, `riak-ts-3`, and `riak-ts-4`, verifying the data and node status after each step.
 
-    riak-mesos node remove --node riak-default-4
-    riak-mesos node transfers wait-for-service --node riak-default-1
+    riak-mesos node remove riak-ts-4
+    riak-mesos node transfers riak-ts-1 --wait-for-service
     curl $RIAK_HTTP/buckets/test/keys/one
 
 
-    riak-mesos node remove --node riak-default-3
-    riak-mesos node transfers wait-for-service --node riak-default-1
+    riak-mesos node remove riak-ts-3
+    riak-mesos node transfers riak-ts-1 --wait-for-service
     curl $RIAK_HTTP/buckets/test/keys/two
 
 
-    riak-mesos node remove --node riak-default-2
-    riak-mesos node transfers wait-for-service --node riak-default-1
+    riak-mesos node remove riak-ts-2
+    riak-mesos node transfers riak-ts-1 --wait-for-service
     curl $RIAK_HTTP/buckets/test/keys/one
     curl $RIAK_HTTP/buckets/test/keys/two
 
