@@ -332,7 +332,7 @@ There are a few ways to access the Riak nodes in your cluster, including hosting
 
 To account for this difficulty, we've created a smart proxy called the `riak-mesos-director`. The director should keep tabs on the current state of the cluster including all of the hostnames and ports, and it also provides a load balancer / proxy to spread load across all of the nodes.
 
-To install the director as a marathon app with an id that matches your configured cluster name (default is `default`) + `-director`, simply run:
+To install the director as a marathon app with an id that matches your configured cluster name + `-director`, simply run:
 
     riak-mesos director install ts
 
