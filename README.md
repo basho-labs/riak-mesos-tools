@@ -341,13 +341,13 @@ Add Some Data
 
 Assuming that the director is now running, we can now find an endpoint to talk to Riak with this command:
 
-    riak-mesos director endpoints
+    riak-mesos director endpoints ts
 
 The output should look similar to this:
 
 ```
 {
-    "cluster": "default",
+    "cluster": "ts",
     "director_http": "mesos-agent-4.com:31694",
     "framework": "riak",
     "riak_http": "mesos-agent-4.com:31692",
@@ -357,7 +357,7 @@ The output should look similar to this:
 
 Let's write a few keys to the cluster using the director:
 
-    RIAK_HTTP=$(riak-mesos director endpoints | python -c 'import sys, json; print json.load(sys.stdin)["riak_http"]')
+    RIAK_HTTP=$(riak-mesos director endpoints ts | python -c 'import sys, json; print json.load(sys.stdin)["riak_http"]')
     curl -XPUT $RIAK_HTTP/buckets/test/keys/one -d "this is data"
     curl -XPUT $RIAK_HTTP/buckets/test/keys/two -d "this is data too"
 
