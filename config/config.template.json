@@ -35,9 +35,9 @@
             "mem": 512.0
         },
         "node": {
-            "cpus": 1.0,
-            "mem": 8000.0,
-            "disk": 20000.0
+            "cpus": 8.0,
+            "mem": 16000.0,
+            "disk": 200000.0
         },
         "director": {
             "use-public": false,
