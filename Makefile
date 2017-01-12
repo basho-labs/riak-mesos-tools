@@ -33,6 +33,10 @@ packages: deps
 docs:
 	cat README.md | pandoc --from markdown_github --to rst > README.rst
 
+build:
+	pip install pyinstaller==3.1.1
+	pyinstaller binary.spec
+
 # Syntax / Test Checklist
 # pip install pytest
 # py.test -vv tests/integration
