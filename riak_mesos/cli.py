@@ -555,7 +555,6 @@ class RiakMesosCLI(click.MultiCommand):
             mod = __import__('riak_mesos.commands.cmd_' + name,
                              None, None, ['cli'])
         except ImportError:
-            print 'ImportError ImportError ImportError'
             return
         return mod.cli
 
