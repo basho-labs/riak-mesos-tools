@@ -488,8 +488,14 @@ def _default_is_success(status_code):
     return 200 <= status_code <= 404
 
 
-cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                          'commands'))
+commands_folder = 'commands'
+
+if getattr(sys, 'frozen', False):
+    cmd_folder = os.path.join(sys._MEIPASS, commands_folder)
+else:
+    cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                 commands_folder))
+
 _common_options = [
     click.make_pass_decorator(Context, ensure=True),
     click.option('--home',
@@ -549,6 +555,7 @@ class RiakMesosCLI(click.MultiCommand):
             mod = __import__('riak_mesos.commands.cmd_' + name,
                              None, None, ['cli'])
         except ImportError:
+            print 'ImportError ImportError ImportError'
             return
         return mod.cli
 
@@ -560,3 +567,7 @@ def cli(ctx, **kwargs):
     This utility provides tools for modifying and accessing your Riak
     on Mesos installation."""
     ctx.init_args(**kwargs)
+
+
+if __name__ == "__main__":
+    cli()
