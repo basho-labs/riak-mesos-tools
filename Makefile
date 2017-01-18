@@ -37,6 +37,12 @@ build:
 	pip install pyinstaller==3.1.1
 	pyinstaller binary.spec
 
+clear-build:
+	rm -rf $(BASEDIR)/build || true
+	rm -rf $(BASEDIR)/dist || true
+
+rebuild: clear-build build
+
 # Syntax / Test Checklist
 # pip install pytest
 # py.test -vv tests/integration
