@@ -1,5 +1,5 @@
 BASEDIR ?= $(PWD)
-DCOS_PACKAGE_NAME ?= "riak-mesos"
+DCOS_PACKAGE_NAME ?= "dcos-riak-linux"
 
 all: test packages
 dev: activate-env test packages
