@@ -488,13 +488,16 @@ def _default_is_success(status_code):
     return 200 <= status_code <= 404
 
 
-commands_folder = 'commands'
-
-if getattr(sys, 'frozen', False):
-    cmd_folder = os.path.join(sys._MEIPASS, commands_folder)
-else:
-    cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                 commands_folder))
+# This code was used only for list_commands method.
+# TODO: may be use this code for dynamic list of commands.
+#
+# commands_folder = 'commands'
+#
+# if getattr(sys, 'frozen', False):
+#     cmd_folder = os.path.join(sys._MEIPASS, commands_folder)
+# else:
+#     cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
+#                                  commands_folder))
 
 _common_options = [
     click.make_pass_decorator(Context, ensure=True),
@@ -538,12 +541,14 @@ class RiakMesosCLI(click.MultiCommand):
                                     **kwargs)
 
     def list_commands(self, ctx):
-        rv = []
-        for filename in os.listdir(cmd_folder):
-            if filename.endswith('.py') and \
-               filename.startswith('cmd_'):
-                rv.append(filename[4:-3])
-        rv.sort()
+        # TODO: make this
+        rv = ['cluster', 'config', 'director', 'framework', 'node', 'riak']
+        # rv = []
+        # for filename in os.listdir(cmd_folder):
+        #     if filename.endswith('.py') and \
+        #        filename.startswith('cmd_'):
+        #         rv.append(filename[4:-3])
+        # rv.sort()
         return rv
 
     def get_command(self, ctx, name):
