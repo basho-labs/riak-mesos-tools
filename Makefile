@@ -1,4 +1,5 @@
 BASEDIR ?= $(PWD)
+DCOS_PACKAGE_NAME ?= "riak-mesos"
 
 all: test packages
 dev: activate-env test packages
@@ -36,6 +37,7 @@ docs:
 build:
 	pip install pyinstaller==3.1.1
 	pyinstaller binary.spec
+	sha256sum $(BASEDIR)/dist/$(DCOS_PACKAGE_NAME) | head -c 64 > $(BASEDIR)/dist/sha256sum.txt
 
 clear-build:
 	rm -rf $(BASEDIR)/build || true
