@@ -541,7 +541,7 @@ class RiakMesosCLI(click.MultiCommand):
                                     **kwargs)
 
     def list_commands(self, ctx):
-        # TODO: make this
+        # TODO: make this dynamically
         rv = ['cluster', 'config', 'director', 'framework', 'node', 'riak']
         # rv = []
         # for filename in os.listdir(cmd_folder):
