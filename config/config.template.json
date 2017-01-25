@@ -6,7 +6,7 @@
         "explorer": "{{explorer_url}}",
         "director": "{{director_url}}",
         "riak-kv-2-2": "{{riak_kv_2_2_url}}",
-        "riak-ts-1-4": "{{riak_ts_1_4_url}}"
+        "riak-ts-1-5": "{{riak_ts_1_5_url}}"
     },
     "riak": {
         "framework-name": "riak",

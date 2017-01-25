@@ -1,4 +1,5 @@
 BASEDIR ?= $(PWD)
+DCOS_PACKAGE_NAME ?= "dcos-riak-linux"
 
 all: test packages
 dev: activate-env test packages
@@ -32,6 +33,17 @@ packages: deps
 
 docs:
 	cat README.md | pandoc --from markdown_github --to rst > README.rst
+
+build:
+	pip install pyinstaller==3.1.1
+	pyinstaller binary.spec
+	sha256sum $(BASEDIR)/dist/$(DCOS_PACKAGE_NAME) | head -c 64 > $(BASEDIR)/dist/sha256sum.txt
+
+clear-build:
+	rm -rf $(BASEDIR)/build || true
+	rm -rf $(BASEDIR)/dist || true
+
+rebuild: clear-build build
 
 # Syntax / Test Checklist
 # pip install pytest
