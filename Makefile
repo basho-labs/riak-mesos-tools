@@ -1,5 +1,7 @@
 BASEDIR ?= $(PWD)
-DCOS_PACKAGE_NAME ?= "dcos-riak-linux"
+SHASUM ?= shasum -p -a 256
+OS = $(shell uname | tr '[A-Z]' '[a-z]')
+DCOS_PACKAGE_NAME ?= "dcos-riak-$(OS)"
 
 all: test packages
 dev: activate-env test packages
@@ -37,7 +39,8 @@ docs:
 build:
 	pip install pyinstaller==3.1.1
 	pyinstaller binary.spec
-	sha256sum $(BASEDIR)/dist/$(DCOS_PACKAGE_NAME) | head -c 64 > $(BASEDIR)/dist/sha256sum.txt
+	mv $(BASEDIR)/dist/dcos-riak $(BASEDIR)/dist/$(DCOS_PACKAGE_NAME)
+	$(SHASUM) $(BASEDIR)/dist/$(DCOS_PACKAGE_NAME) | head -c 64 > $(BASEDIR)/dist/$(DCOS_PACKAGE_NAME)-sha256-sum.txt
 
 clear-build:
 	rm -rf $(BASEDIR)/build || true
