@@ -90,6 +90,20 @@ def info(ctx, **kwargs):
     click.echo(r.text)
 
 
+@cli.command('riak-version')
+@click.argument('cluster')
+@click.argument('riak_vsn')
+@pass_context
+def riak_version(ctx, riak_vsn, **kwargs):
+    """Sets the riak version for a given cluster"""
+    ctx.init_args(**kwargs)
+    url = 'clusters/' + ctx.cluster + '/riak_version'
+    r = ctx.api_request('put', url, data=riak_vsn,
+                        headers={'Accept': '*/*',
+                                 'Content-Type': 'plain/text'})
+    click.echo(r.text)
+
+
 @cli.command()
 @click.argument('cluster')
 @click.option('-d', '--delete', is_flag=True,
