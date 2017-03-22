@@ -98,9 +98,8 @@ def riak_version(ctx, riak_vsn, **kwargs):
     """Sets the riak version for a given cluster"""
     ctx.init_args(**kwargs)
     url = 'clusters/' + ctx.cluster + '/riak_version'
-    r = ctx.api_request('put', url, headers={'Accept': '*/*',
-                                             'Content-Type': 'plain/text'},
-                                    data=riak_vsn)
+    r = ctx.api_request('put', url, data=riak_vsn,
+            headers={'Accept': '*/*', 'Content-Type': 'plain/text'})
     click.echo(r.text)
 
 
